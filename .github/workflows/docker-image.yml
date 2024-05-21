@@ -27,7 +27,7 @@ jobs:
     
     - name: Push Images
       run: |
-        docker push ${{ secrets.DOCKER_USERNAME }}/chaaatra-backend:${{ github.sha }} || exit 1
+        docker push ${{ secrets.DOCKER_USERNAME }}/chaatra-backend:${{ github.sha }} || exit 1
         docker push ${{ secrets.DOCKER_USERNAME }}/chaatra-backend:latest || exit 1
 
   build-and-push-frontend:
