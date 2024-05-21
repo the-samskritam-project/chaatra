@@ -19,7 +19,7 @@ jobs:
 
     - name: Build and push Docker image for backend
       run: |
-        docker build ./backend -t ${{ secrets.DOCKER_USERNAME }}/chaatra-backend:${{ github.sha }} -t ${{ secrets.DOCKER_USERNAME }}/chaatra-backend:latest
+        docker build ./backend -t ${{ secrets.DOCKER_USERNAME }}/chaatra-backend:${{ github.sha }} -t ${{ secrets.DOCKER_USERNAME }}/chaatra-backend:latest ./backend
         docker push ${{ secrets.DOCKER_USERNAME }}/chaaatra-backend:${{ github.sha }} || exit 1
         docker push ${{ secrets.DOCKER_USERNAME }}/chaatra-backend:latest || exit 1
 
@@ -37,6 +37,6 @@ jobs:
 
     - name: Build and push Docker image for frontend
       run: |
-        docker build ./frontend -t ${{ secrets.DOCKER_USERNAME }}/chaatra-frontend:${{ github.sha }} -t ${{ secrets.DOCKER_USERNAME }}/chaatra-rontend:latest
+        docker build ./frontend -t ${{ secrets.DOCKER_USERNAME }}/chaatra-frontend:${{ github.sha }} -t ${{ secrets.DOCKER_USERNAME }}/chaatra-rontend:latest ./frontend
         docker push ${{ secrets.DOCKER_USERNAME }}/chaatra-frontend:${{ github.sha }}
         docker push ${{ secrets.DOCKER_USERNAME }}/chaatra-frontend:latest
