@@ -44,6 +44,6 @@ jobs:
 
     - name: Build and push Docker image for frontend
       run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/chaatra-frontend:${{ github.sha }} -t ${{ secrets.DOCKER_USERNAME }}/chaatra-rontend:latest ./frontend
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/chaatra-frontend:${{ github.sha }} -t ${{ secrets.DOCKER_USERNAME }}/chaatra-frontend:latest ./frontend
         docker push ${{ secrets.DOCKER_USERNAME }}/chaatra-frontend:${{ github.sha }}
         docker push ${{ secrets.DOCKER_USERNAME }}/chaatra-frontend:latest
