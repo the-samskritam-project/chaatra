@@ -20,8 +20,8 @@ jobs:
     - name: Build and push Docker image for backend
       run: |
         docker build ./backend -t ${{ secrets.DOCKER_USERNAME }}/chaatra-backend:${{ github.sha }} -t ${{ secrets.DOCKER_USERNAME }}/chaatra-backend:latest
-        docker push ${{ secrets.DOCKER_USERNAME }}/chaaatra-backend:${{ github.sha }}
-        docker push ${{ secrets.DOCKER_USERNAME }}/chaatra-backend:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/chaaatra-backend:${{ github.sha }} || exit 1
+        docker push ${{ secrets.DOCKER_USERNAME }}/chaatra-backend:latest || exit 1
 
   build-and-push-frontend:
     runs-on: ubuntu-latest
