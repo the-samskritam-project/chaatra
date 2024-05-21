@@ -1,0 +1,248 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind:wght@700&family=Roboto:wght@500&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Hind:wght@700&family=Roboto:wght@400&display=swap');  /* Updated to include normal weight for Roboto */
+
+.heading {
+    font-size: 24px; /* Base font size for the English text */
+    color: #333; /* Sets the text color */
+}
+
+.devanagari {
+    font-family: 'Hind', sans-serif; /* Sets the font family for Devanagari */
+    font-weight: 700; /* Ensures the Devanagari part is bold */
+    font-size: 1.25em; /* Makes the Devanagari text 1.25 times the base font size */
+    margin-right: 10px; /* Adds space between the Devanagari and English text */
+}
+
+.english {
+    font-family: 'Roboto', sans-serif; /* Sets the font family for English */
+    font-weight: 400; /* Normal weight, making it not bold */
+    color: #666; /* A lighter shade of grey for contrast */
+    font-style: italic; /* Keeps the text italic */
+}
+
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Centers children horizontally */
+  width: 100%;
+  /* Ensures it takes full width of the viewport */
+  max-width: 1200px;
+  /* Maximum width to prevent overly wide layouts */
+  margin: auto;
+  /* Centers the container in the viewport */
+  padding: 20px;
+  height: auto;
+}
+
+/* Container for the search bar */
+.search-bar {
+  display: flex;
+  align-items: center;
+  margin: 20px;
+  background-color: #f7f7f7;
+  /* Light grey background, similar to the keyboard */
+  border: 1px solid #ccc;
+  /* Light grey border for a subtle look */
+  border-radius: 5px;
+  /* Consistent rounded corners */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  /* Soft shadow for depth */
+}
+
+/* Input Field Styles */
+.search-input {
+  padding: 8px 15px;
+  font-size: 16px;
+  border: 2px solid #ccc;
+  border-right: none;
+  /* Remove the right border for a seamless transition to button */
+  border-radius: 5px 0 0 5px;
+  /* Rounded corners on the left side */
+  outline: none;
+  /* Remove outline */
+  width: 300px;
+  /* Set a fixed width */
+  transition: border-color 0.3s;
+  /* Smooth transition for focus */
+}
+
+.search-input:focus {
+  border-color: #0056b3;
+  /* Blue border on focus, keeping some color from the original design */
+}
+
+/* Button Styles */
+.search-button {
+  padding: 8px 15px;
+  font-size: 16px;
+  background-color: #007bff;
+  /* Consistent blue background */
+  color: white;
+  border: 2px solid #007bff;
+  border-radius: 0 5px 5px 0;
+  /* Rounded corners on the right side */
+  cursor: pointer;
+  transition: background-color 0.3s, border-color 0.3s;
+  /* Smooth transition for hover effects */
+}
+
+.search-button:hover {
+  background-color: #0056b3;
+  /* Darker blue on hover for a dynamic effect */
+  border-color: #004495;
+  /* Slightly darker border on hover for depth */
+}
+
+
+.entries-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Centers children vertically */
+  justify-content: center;
+  /* Centers children horizontally for all screen sizes */
+  background-color: #f9f9f9;
+  /* Light grey background similar to other containers */
+  padding: 20px;
+  border-radius: 8px;
+  /* Consistent rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* Subtle shadow for depth */
+  height: auto;
+  /* Automatically adjusts to the content height */
+}
+
+.entry {
+  text-align: justify;
+  width: 80%;
+  /* Adjust if needed to match other UI elements' width */
+  margin: 0 auto 20px;
+  /* Auto margins for horizontal centering, 20px bottom margin */
+  padding: 20px;
+  background-color: white;
+  /* Clean white background for readability */
+  border: 1px solid #ccc;
+  /* Lighter border to match the light theme */
+  border-radius: 5px;
+  /* Consistent rounded corners */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  /* Lighter shadow than container for hierarchical effect */
+  overflow: hidden;
+  position: relative;
+  transition: max-height 0.3s ease;
+}
+
+
+/* General Styles for Keyboard and Pagination Buttons */
+.key,
+.pagination-button {
+  margin: 5px;
+  padding: 10px;
+  border: 1px solid #bfbfbf;
+  background-color: #f7f7f7;
+  /* Light background for normal state */
+  transition: background-color 0.3s, transform 0.3s;
+  cursor: pointer;
+}
+
+/* Hover Effects for both Keyboard Keys and Pagination Buttons */
+.key:hover,
+.pagination-button:hover {
+  background-color: #0056b3;
+  /* Darker blue on hover, matching the search bar's hover state */
+  color: white;
+  /* White text for better readability on dark background */
+  transform: scale(1.05);
+  /* Subtle pop effect for interactive feedback */
+}
+
+.pagination-button:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+  background-color: #e7e7e7;
+  /* Light grey background for disabled state */
+  border-color: #ddd;
+}
+
+/* Specific Styles for Selected Keys and Disabled Buttons */
+.selected {
+  background-color: #007bff;
+  /* Blue background for selected state */
+  color: white;
+}
+
+.popping {
+  animation: pop 0.3s ease;
+}
+
+.undocked {
+  width: 100%;
+}
+
+.keyboard.docked {
+  display: none;
+}
+
+.undocked {
+  position: static;
+  margin: auto;
+}
+
+/* Animation for key 'pop' effect */
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.25);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Layout and spacing for keyboard sections */
+.key-row {
+  display: flex;
+  justify-content: center;
+}
+
+.key-section {
+  margin-top: 10px;
+}
+
+.keyboard.undocked {
+  position: fixed;
+  visibility: visible;
+  margin: 5px;
+  transition: background-color 0.3s, transform 0.3s;
+  cursor: pointer;
+  z-index: 1000;  /* High z-index to ensure it's on top of other content */
+  bottom: 0;  /* Align to the bottom of the viewport */
+  left: 50%;  /* Start at half the width of the viewport */
+  transform: translateX(-50%);  /* Shift it left by half its own width to center it */
+  width: 60%;  /* Keyboard takes up 60% of the viewport width */
+
+  background-color: #e6f7ff;  /* Light blue background for the keyboard */
+  padding: 10px 0;  /* Add some padding */
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);  /* Subtle shadow for some depth */
+  border-top: 1px solid #b3e0ff;  /* Optional: subtle border top for definition */
+}
+
+.keyboard.docked .key {
+  visibility: hidden;
+}
+
+.devanagari-output {
+  display: block; /* Make the span a block to center it properly */
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px; /* Add space between the text and the keys */
+}
