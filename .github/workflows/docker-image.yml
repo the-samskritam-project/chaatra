@@ -17,9 +17,16 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and push Docker image for backend
+    - name: Build Docker Image
       run: |
         docker build -t ${{ secrets.DOCKER_USERNAME }}/chaatra-backend:${{ github.sha }} -t ${{ secrets.DOCKER_USERNAME }}/chaatra-backend:latest ./backend
+        
+    - name: List Docker Images 
+      run: | 
+        docker images
+    
+    - name: Push Images
+      run: |
         docker push ${{ secrets.DOCKER_USERNAME }}/chaaatra-backend:${{ github.sha }} || exit 1
         docker push ${{ secrets.DOCKER_USERNAME }}/chaatra-backend:latest || exit 1
 
