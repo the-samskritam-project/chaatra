@@ -7,12 +7,10 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
     - name: Build the backend docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      run: docker build ./backend --file backend/Dockerfile --tag chaatra-backend:$(date +%s)
