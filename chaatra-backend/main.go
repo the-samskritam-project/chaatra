@@ -13,7 +13,7 @@ var d *dictionary
 
 func main() {
 	// initialize elastic search
-	initEs()
+	//initEs()
 
 	t = &trie{
 		root: &node{
