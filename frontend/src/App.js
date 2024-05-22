@@ -66,7 +66,10 @@ function App() {
 
       <SearchKeyboard handleSearch={handleSearch} />
 
-      <Entries entries={entries.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage)} />
+      <Entries
+        entries={entries.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage)} 
+        devSearchStr={devSearchStr}
+      />
       <div className="pagination">
         <button onClick={prevPage} disabled={currentPage === 1} className="pagination-button">←</button>
         <button onClick={nextPage} disabled={currentPage === totalPages} className="pagination-button">→</button>
