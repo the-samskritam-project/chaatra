@@ -1,5 +1,9 @@
 
 export function find(str, subStr) {
+    if (!str || !subStr) {
+        return [];
+    }
+
     const givenStr = [...str];
     const givenSubStr = [...subStr];
 
@@ -13,7 +17,7 @@ export function find(str, subStr) {
             continue;
         }
 
-        if (subStrIndex < givenSubStr.length 
+        if (subStrIndex < givenSubStr.length
             && givenStr[i] == givenSubStr[subStrIndex]) {
             subStrIndex++;
             continue;

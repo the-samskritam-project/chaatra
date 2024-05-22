@@ -21,4 +21,25 @@ describe('find function tests', () => {
         const expected = [12];
         expect(find(str, subStr)).toEqual(expected);
     });
+
+    test('returns a match where the substrings are not together', () => {
+        const str = "hello world hello";
+        const subStr = "hello";
+        const expected = [0, 12];
+        expect(find(str, subStr)).toEqual(expected);
+    });
+
+    test('empty string', () => {
+        const str = "";
+        const subStr = "world";
+        const expected = [];
+        expect(find(str, subStr)).toEqual(expected);
+    });
+
+    test('empty sub-string', () => {
+        const str = "hello world";
+        const subStr = "";
+        const expected = [];
+        expect(find(str, subStr)).toEqual(expected);
+    });
 });
