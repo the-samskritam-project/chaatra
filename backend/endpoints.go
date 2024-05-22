@@ -7,17 +7,16 @@ import (
 )
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
-	// Parse the query parameter "search" from the URL
-	searchQuery := r.URL.Query().Get("slp1")
-	if searchQuery == "" {
+	slp1Query := r.URL.Query().Get("slp1")
+	if slp1Query == "" {
 		http.Error(w, "Search query is required", http.StatusBadRequest)
 		return
 	}
 
-	log.Println("Search query is ...", searchQuery)
+	log.Println("SLP1 query : ", slp1Query)
 
 	var letters []*letter
-	for _, c := range searchQuery {
+	for _, c := range slp1Query {
 		l := theAlphabet[string(c)]
 
 		letters = append(letters, &l)
@@ -34,7 +33,12 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	//entries, _ := searchEntry(searchQuery)
+	devanagariQuery := r.URL.Query().Get("dev")
+	if devanagariQuery != "" {
+		log.Println("SLP1 query : ", devanagariQuery)
+		esEntries, _ := searchEntry(devanagariQuery)
+		entries = append(entries, esEntries...)
+	}
 
 	// Set the content type to application/json
 	w.Header().Set("Content-Type", "application/json")
