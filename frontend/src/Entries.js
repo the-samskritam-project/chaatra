@@ -3,8 +3,12 @@ import './App.css';
 import './utils/subStringMatcher'
 import { find } from './utils/subStringMatcher';
 
+const anusvara = 'ं';
+const visarga = 'ः';
+
 function Entries({ entries, devSearchStr }) {
   const highlightText = (text, search) => {
+    const chars = [...text];
     const indices = find(text, search);
     if (!indices.length) return text;
 
@@ -14,8 +18,15 @@ function Entries({ entries, devSearchStr }) {
       // Push non-matching text
       result.push(text.substring(lastIndex, index));
       // Push highlighted text
-      result.push(<b key={index}>{text.substr(index, search.length)}</b>);
-      lastIndex = index + search.length;
+      if (index + search.length < text.length - 1
+        && (chars[index + search.length] == anusvara
+          || chars[index + search.length] == visarga)) {
+        result.push(<b key={index}>{text.substr(index, search.length + 1)}</b>);
+        lastIndex = index + search.length + 1;
+      } else {
+        result.push(<b key={index}>{text.substr(index, search.length)}</b>);
+        lastIndex = index + search.length;
+      }
     });
     // Add any remaining text after the last match
     result.push(text.substr(lastIndex));
