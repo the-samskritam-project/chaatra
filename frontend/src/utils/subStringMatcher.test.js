@@ -42,4 +42,19 @@ describe('find function tests', () => {
         const expected = [];
         expect(find(str, subStr)).toEqual(expected);
     });
+
+    test('devanagari substring', () => {
+        const str = "Comp. — मति a. 1 possessed of presence of mind";
+        const subStr = "मति";
+        const expected = [8];
+        expect(find(str, subStr)).toEqual(expected);
+    });
+
+    test('devanagari string and substring', () => {
+        const str = "विधिरहो बलवानिति मे मतिः";
+        const subStr = "मतिः";
+        const expected = [20];
+        expect(find(str, subStr)).toEqual(expected);
+    });
+    
 });
