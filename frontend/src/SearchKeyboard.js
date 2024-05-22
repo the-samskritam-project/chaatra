@@ -50,28 +50,33 @@ function SearchKeyboard({ handleSearch }) {
   const [slp1LatinStr, setTypedString] = useState('');
   const [devanagariString, setDevanagariString] = useState('');
   const [activeKeys, setActiveKeys] = useState([]);
+  const [searchInFocus, setSearchInFocus] = useState(false);
   const [poppingKey, setPoppingKey] = useState('');
 
-  const handleInputChange = (e) => {
+  const handleInputChange = () => {
     if (isKeyboardDocked) {
       setIsKeyboardDocked(false);
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      setIsKeyboardDocked(true);
-      handleSearch(slp1LatinStr, devanagariString);
-    }
-  };
-
   const handleFocus = () => {
+    setSearchInFocus(true);
     setIsKeyboardDocked(false); 
   };
 
+  const handleBlur = () => {
+    setSearchInFocus(false);
+    setIsKeyboardDocked(true);
+  }
+
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === 'Backspace' && devanagariString.length > 0) {
+      if (event.key === 'Enter') {
+        setIsKeyboardDocked(true);
+        handleSearch(slp1LatinStr, devanagariString);
+
+        return;
+      } else if (event.key === 'Backspace' && devanagariString.length > 0) {
         setTypedString(slp1LatinStr.slice(0, -1));
         setActiveKeys(activeKeys.slice(0, -1));
         setDevanagariString(devanagariString.slice(0, -1));
@@ -91,7 +96,7 @@ function SearchKeyboard({ handleSearch }) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [slp1LatinStr, activeKeys]);
+  }, [searchInFocus, devanagariString, slp1LatinStr]);
 
   return (
     <div>
@@ -99,7 +104,7 @@ function SearchKeyboard({ handleSearch }) {
         devanagariString={devanagariString}
         onInputChange={handleInputChange}
         onFocus={handleFocus}
-        handleKeyPress={handleKeyPress}
+        onBlur={handleBlur}
       />
       <Keyboard
         isDocked={isKeyboardDocked}
