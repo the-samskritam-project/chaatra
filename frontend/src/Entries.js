@@ -2,6 +2,7 @@ import React from 'react';
 import './App.css';
 import './utils/subStringMatcher'
 import { find } from './utils/subStringMatcher';
+import { vowelSigns } from './utils/constants';
 
 const anusvara = 'ं';
 const visarga = 'ः';
@@ -19,8 +20,7 @@ function Entries({ entries, devSearchStr }) {
       result.push(text.substring(lastIndex, index));
       // Push highlighted text
       if (index + search.length < text.length - 1
-        && (chars[index + search.length] == anusvara
-          || chars[index + search.length] == visarga)) {
+        && vowelSigns[chars[index + search.length]]) {
         result.push(<b key={index}>{text.substr(index, search.length + 1)}</b>);
         lastIndex = index + search.length + 1;
       } else {
