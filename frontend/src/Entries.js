@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import './utils/subStringMatcher'
 import { find } from './utils/subStringMatcher';
-import { vowelSigns } from './utils/constants';
+import { virama, vowelSigns } from './utils/constants';
 
 function Entries({ entries, devSearchStr }) {
   const highlightText = (text, search) => {
@@ -17,7 +17,8 @@ function Entries({ entries, devSearchStr }) {
       result.push(text.substring(lastIndex, index));
       // Push highlighted text
       if (index + search.length < text.length - 1
-        && vowelSigns[chars[index + search.length]]) {
+        && (vowelSigns[chars[index + search.length]]
+          || vowelSigns[chars[index + search.length]] === virama)) {
         result.push(<b key={index}>{text.substr(index, search.length + 1)}</b>);
         lastIndex = index + search.length + 1;
       } else {
