@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import SearchBar from './Search'; // Assuming your search bar component
 import Keyboard from './Keyboard'; // Assuming your keyboard component
+import './utils/constants'
+import { vowelSigns } from './utils/constants';
 
 const vowels = [
   // Vowels
@@ -36,14 +38,6 @@ const consonants = [
   { key: 'z', devanagari: 'ष' }, { key: 's', devanagari: 'स' }, { key: 'h', devanagari: 'ह' },
 ];
 
-const vowelSigns = {
-  "आ": 'ा', "इ": 'ि', "ई": 'ी',
-  "उ": 'ु', "ऊ": 'ू', "ऋ": 'ृ',
-  "ॠ": 'ॄ', "ऌ": 'ॢ', "ॡ": 'ॣ',
-  "ए": 'े', "ऐ": 'ै', "ओ": 'ो',
-  "औ": 'ौ', "ं": 'ं', ":": 'ः',
-}
-
 function SearchKeyboard({ handleSearch }) {
   const [isKeyboardDocked, setIsKeyboardDocked] = useState(true);
   // SLP1 : https://en.wikipedia.org/wiki/SLP1
@@ -61,7 +55,7 @@ function SearchKeyboard({ handleSearch }) {
 
   const handleFocus = () => {
     setSearchInFocus(true);
-    setIsKeyboardDocked(false); 
+    setIsKeyboardDocked(false);
   };
 
   const handleBlur = () => {
@@ -90,6 +84,10 @@ function SearchKeyboard({ handleSearch }) {
           setTimeout(() => {
             setPoppingKey('');
           }, 300);
+        } else if (event.key === 'Spacebar' || event.key === ' ') {
+          console.log('Found space');
+          setDevanagariString(devanagariString + ' ');
+          setTypedString(slp1LatinStr + ' ');
         }
       }
     };
@@ -128,6 +126,12 @@ function toDevanagiriString(latinStr) {
     }
 
     var rune = chars[i]
+
+    if (rune === ' ') {
+      result.push(' ');
+      i = i + 1;
+      continue;
+    }
 
     var found = vowels.find(x => x.key === rune);
     if (found) {

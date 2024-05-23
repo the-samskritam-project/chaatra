@@ -56,5 +56,4 @@ describe('find function tests', () => {
         const expected = [20];
         expect(find(str, subStr)).toEqual(expected);
     });
-    
 });
