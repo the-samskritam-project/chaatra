@@ -4,9 +4,6 @@ import './utils/subStringMatcher'
 import { find } from './utils/subStringMatcher';
 import { vowelSigns } from './utils/constants';
 
-const anusvara = 'ं';
-const visarga = 'ः';
-
 function Entries({ entries, devSearchStr }) {
   const highlightText = (text, search) => {
     const chars = [...text];
