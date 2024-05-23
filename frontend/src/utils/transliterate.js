@@ -1,11 +1,10 @@
-import { vowels, consonants, vowelSigns } from "./constants";
+import { vowels, consonants, vowelSigns, virama } from "./constants";
 
 export function toDevanagiriString(latinStr) {
     const chars = [...latinStr];
     var result = [];
     const l = chars.length;
     var i = 0;
-    const halfConsonant = '्';
   
     for (; ;) {
       if (i == l) {
@@ -45,14 +44,14 @@ export function toDevanagiriString(latinStr) {
             nextChar = consonants.find(x => x.key === next);
             if (nextChar) {
               result.push(found.devanagari);
-              result.push(halfConsonant);
+              result.push(virama);
   
               i = i + 1;
               continue;
             }
           } else if (i == l - 1) {
             result.push(found.devanagari);
-            result.push(halfConsonant);
+            result.push(virama);
           }
         }
       }
