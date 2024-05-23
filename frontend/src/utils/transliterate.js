@@ -1,4 +1,4 @@
-import { vowels, consonants, vowelSigns, virama } from "./constants";
+import { vowels, consonants, vowelsToSigns, virama } from "./constants";
 
 export function toDevanagiriString(latinStr) {
     const chars = [...latinStr];
@@ -34,7 +34,7 @@ export function toDevanagiriString(latinStr) {
               result.push(found.devanagari);
   
               if (nextChar.devanagari != 'अ') {
-                result.push(vowelSigns[nextChar.devanagari]);
+                result.push(vowelsToSigns[nextChar.devanagari]);
               }
   
               i = i + 2;
