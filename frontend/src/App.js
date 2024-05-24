@@ -20,7 +20,7 @@ function App() {
   useEffect(() => {
     if (slp1SearchStr) {
       const fetchResults = async () => {
-        const url = `http://localhost:8081/search?slp1=${encodeURIComponent(slp1SearchStr)}&dev=${encodeURIComponent(devSearchStr)}`;
+        const url = `https://chaatra.co/api/search?slp1=${encodeURIComponent(slp1SearchStr)}&dev=${encodeURIComponent(devSearchStr)}`;
         const response = await fetch(url);
         const data = await response.json();
         setEntries(data);
