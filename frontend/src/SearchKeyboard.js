@@ -1,48 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import SearchBar from './Search'; // Assuming your search bar component
 import Keyboard from './Keyboard'; // Assuming your keyboard component
-
-const vowels = [
-  // Vowels
-  { key: 'a', devanagari: 'अ' },
-  { key: 'A', devanagari: 'आ' },
-  { key: 'i', devanagari: 'इ' },
-  { key: 'I', devanagari: 'ई' },
-  { key: 'u', devanagari: 'उ' },
-  { key: 'U', devanagari: 'ऊ' },
-  { key: 'f', devanagari: 'ऋ' },
-  { key: 'F', devanagari: 'ॠ' },
-  { key: 'x', devanagari: 'ऌ' },
-  { key: 'X', devanagari: 'ॡ' },
-  { key: 'e', devanagari: 'ए' },
-  { key: 'E', devanagari: 'ऐ' },
-  { key: 'o', devanagari: 'ओ' },
-  { key: 'O', devanagari: 'औ' },
-  { key: 'M', devanagari: 'ं' },
-  { key: 'H', devanagari: 'ः' },
-];
-
-const consonants = [
-  { key: 'k', devanagari: 'क' }, { key: 'K', devanagari: 'ख' }, { key: 'g', devanagari: 'ग' },
-  { key: 'G', devanagari: 'घ' }, { key: 'N', devanagari: 'ङ' }, { key: 'c', devanagari: 'च' },
-  { key: 'C', devanagari: 'छ' }, { key: 'j', devanagari: 'ज' }, { key: 'J', devanagari: 'झ' },
-  { key: 'Y', devanagari: 'ञ' }, { key: 'w', devanagari: 'ट' }, { key: 'W', devanagari: 'ठ' },
-  { key: 'q', devanagari: 'ड' }, { key: 'Q', devanagari: 'ढ' }, { key: 'R', devanagari: 'ण' },
-  { key: 't', devanagari: 'त' }, { key: 'T', devanagari: 'थ' }, { key: 'd', devanagari: 'द' },
-  { key: 'D', devanagari: 'ध' }, { key: 'n', devanagari: 'न' }, { key: 'p', devanagari: 'प' },
-  { key: 'P', devanagari: 'फ' }, { key: 'b', devanagari: 'ब' }, { key: 'B', devanagari: 'भ' },
-  { key: 'm', devanagari: 'म' }, { key: 'y', devanagari: 'य' }, { key: 'r', devanagari: 'र' },
-  { key: 'l', devanagari: 'ल' }, { key: 'v', devanagari: 'व' }, { key: 'S', devanagari: 'श' },
-  { key: 'z', devanagari: 'ष' }, { key: 's', devanagari: 'स' }, { key: 'h', devanagari: 'ह' },
-];
-
-const vowelSigns = {
-  "आ": 'ा', "इ": 'ि', "ई": 'ी',
-  "उ": 'ु', "ऊ": 'ू', "ऋ": 'ृ',
-  "ॠ": 'ॄ', "ऌ": 'ॢ', "ॡ": 'ॣ',
-  "ए": 'े', "ऐ": 'ै', "ओ": 'ो',
-  "औ": 'ौ', "ं": 'ं', ":": 'ः',
-}
+import { toDevanagiriString } from './utils/transliterate';
+import { vowels, consonants } from './utils/constants';
 
 function SearchKeyboard({ handleSearch }) {
   const [isKeyboardDocked, setIsKeyboardDocked] = useState(true);
@@ -50,28 +10,32 @@ function SearchKeyboard({ handleSearch }) {
   const [slp1LatinStr, setTypedString] = useState('');
   const [devanagariString, setDevanagariString] = useState('');
   const [activeKeys, setActiveKeys] = useState([]);
-  const [poppingKey, setPoppingKey] = useState('');
+  const [searchInFocus, setSearchInFocus] = useState(false);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = () => {
     if (isKeyboardDocked) {
       setIsKeyboardDocked(false);
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      setIsKeyboardDocked(true);
-      handleSearch(slp1LatinStr, devanagariString);
-    }
+  const handleFocus = () => {
+    setSearchInFocus(true);
+    setIsKeyboardDocked(false);
   };
 
-  const handleFocus = () => {
-    setIsKeyboardDocked(false); 
-  };
+  const handleBlur = () => {
+    setSearchInFocus(false);
+    setIsKeyboardDocked(true);
+  }
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === 'Backspace' && devanagariString.length > 0) {
+      if (event.key === 'Enter') {
+        setIsKeyboardDocked(true);
+        handleSearch(slp1LatinStr, devanagariString);
+
+        return;
+      } else if (event.key === 'Backspace' && devanagariString.length > 0) {
         setTypedString(slp1LatinStr.slice(0, -1));
         setActiveKeys(activeKeys.slice(0, -1));
         setDevanagariString(devanagariString.slice(0, -1));
@@ -80,18 +44,17 @@ function SearchKeyboard({ handleSearch }) {
         if (found) {
           setDevanagariString(toDevanagiriString(slp1LatinStr + found.key));
           setTypedString(slp1LatinStr + found.key);
-          setActiveKeys([...activeKeys, event.key]);
-          setPoppingKey(event.key);
-          setTimeout(() => {
-            setPoppingKey('');
-          }, 300);
+          setActiveKeys([...activeKeys, event.key]); 
+        } else if (event.key === 'Spacebar' || event.key === ' ') {
+          setDevanagariString(devanagariString + ' ');
+          setTypedString(slp1LatinStr + ' ');
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [slp1LatinStr, activeKeys]);
+  }, [searchInFocus, devanagariString, slp1LatinStr]);
 
   return (
     <div>
@@ -99,7 +62,7 @@ function SearchKeyboard({ handleSearch }) {
         devanagariString={devanagariString}
         onInputChange={handleInputChange}
         onFocus={handleFocus}
-        handleKeyPress={handleKeyPress}
+        onBlur={handleBlur}
       />
       <Keyboard
         isDocked={isKeyboardDocked}
@@ -108,64 +71,6 @@ function SearchKeyboard({ handleSearch }) {
       />
     </div>
   );
-}
-
-function toDevanagiriString(latinStr) {
-  const chars = [...latinStr];
-  var result = [];
-  const l = chars.length;
-  var i = 0;
-  const halfConsonant = '्';
-
-  for (; ;) {
-    if (i == l) {
-      break;
-    }
-
-    var rune = chars[i]
-
-    var found = vowels.find(x => x.key === rune);
-    if (found) {
-      result.push(found.devanagari);
-      i = i + 1;
-      continue;
-    } else {
-      found = consonants.find(x => x.key === rune);
-      if (found) {
-        if (i + 1 < l) {
-          const next = chars[i + 1];
-          var nextChar = vowels.find(x => x.key === next);
-          if (nextChar) {
-            result.push(found.devanagari);
-
-            if (nextChar.devanagari != 'अ') {
-              result.push(vowelSigns[nextChar.devanagari]);
-            }
-
-            i = i + 2;
-            continue;
-          }
-
-          nextChar = consonants.find(x => x.key === next);
-          if (nextChar) {
-            result.push(found.devanagari);
-            result.push(halfConsonant);
-
-            i = i + 1;
-            continue;
-          }
-        } else if (i == l - 1) {
-          result.push(found.devanagari);
-          result.push(halfConsonant);
-        }
-      }
-    }
-
-    i++;
-  }
-
-  const res = result.join('');
-  return res;
 }
 
 export default SearchKeyboard;

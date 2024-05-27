@@ -16,7 +16,7 @@ var es *elasticsearch.Client
 func initEs() {
 	cfg := elasticsearch.Config{
 		Addresses: []string{
-			"http://localhost:9200", // Your Elasticsearch address
+			"http://host.docker.internal:9200", // Your Elasticsearch address
 		},
 	}
 	var err error
