@@ -84,7 +84,7 @@ func parse(t *trie) {
 		d = &dictionary
 	}
 
-	//indexEntries(dictionary)
+	indexEntries(dictionary)
 
 	log.Println("Processed records :", count)
 }

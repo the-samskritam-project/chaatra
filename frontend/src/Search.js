@@ -1,6 +1,4 @@
-function SearchBar({ devanagariString, onInputChange, onFocus, handleKeyPress }) {
-    console.log(devanagariString);
-
+function SearchBar({ devanagariString, onInputChange, onFocus, handleBlur }) {
     return (
         <div className="search-bar">
             <input
@@ -10,7 +8,7 @@ function SearchBar({ devanagariString, onInputChange, onFocus, handleKeyPress })
                 value={devanagariString}
                 onChange={onInputChange}
                 onFocus={onFocus}
-                onKeyDown={handleKeyPress}
+                onBlur={handleBlur}
             />
             <button className="search-button">Search</button>
         </div>
