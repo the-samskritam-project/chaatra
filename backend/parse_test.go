@@ -22,7 +22,7 @@ func TestParse(t *testing.T) {
 	l1 := theAlphabet["t"]
 	l2 := theAlphabet["a"]
 
-	results := trie.getWordsForPrefix([]*letter{&l1, &l2})
+	results := trie.getWordsForPrefixStrict([]*letter{&l1, &l2})
 
 	for _, res := range results {
 		var lat string

@@ -7,11 +7,3 @@ type Entry struct {
 }
 
 type dictionary map[string]*Entry
-
-func (d *dictionary) add(e *Entry) {
-	word := e.DevanagariWord
-
-	if _, ok := (*d)[word]; !ok {
-		(*d)[word] = e
-	}
-}
