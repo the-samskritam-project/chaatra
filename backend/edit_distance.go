@@ -43,10 +43,6 @@ func GetEditDistance(s string, t string) int {
 		}
 	}
 
-	/*for i := 0; i <= l1; i++ {
-		log.Println(mat[i])
-	}*/
-
 	return mat[l1][l2]
 }
 
