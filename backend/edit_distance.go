@@ -22,9 +22,6 @@ func GetEditDistance(s string, t string) int {
 
 	for i := 0; i <= l1; i++ {
 		mat[i] = make([]int, l2+1)
-	}
-
-	for i := 0; i <= l1; i++ {
 		mat[i][0] = i
 	}
 
@@ -32,32 +29,29 @@ func GetEditDistance(s string, t string) int {
 		mat[0][j] = j
 	}
 
-	for i := 1; i < l1+1; i++ {
-		for j := 1; j < l2+1; j++ {
-			topIndex := i - 1
-			leftIndex := j - 1
-
-			top := mat[topIndex][j]
-			left := mat[i][leftIndex]
-			topLeft := mat[topIndex][leftIndex]
+	for i := 1; i <= l1; i++ {
+		for j := 1; j <= l2; j++ {
+			top := mat[i-1][j]
+			left := mat[i][j-1]
+			topLeft := mat[i-1][j-1]
 
 			if s[i-1] == t[j-1] {
-				mat[i][j] = getMin(top, left, topLeft)
+				mat[i][j] = topLeft
 			} else {
-				mat[i][j] = getMin(top, left, topLeft) + 1
+				mat[i][j] = getMin(top+1, left+1, topLeft+1)
 			}
 		}
 	}
 
-	return mat[l1-1][l2-1]
+	/*for i := 0; i <= l1; i++ {
+		log.Println(mat[i])
+	}*/
+
+	return mat[l1][l2]
 }
 
 func getMin(x, y, z int) int {
 	m := min(min(x, y), z)
-
-	if m == -1 {
-		return 0
-	}
 
 	return m
 }

@@ -21,7 +21,7 @@ func TestGetEditDistance(t *testing.T) {
 		{
 			s:   "samskritam",
 			t:   "sam",
-			exp: 8,
+			exp: 7,
 		},
 		{
 			s:   "samskritam",
