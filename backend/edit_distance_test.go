@@ -20,7 +20,7 @@ func TestGetEditDistance(t *testing.T) {
 		},
 		{
 			s:   "samskritam",
-			t:   "sa",
+			t:   "sam",
 			exp: 8,
 		},
 		{
@@ -28,9 +28,14 @@ func TestGetEditDistance(t *testing.T) {
 			t:   "",
 			exp: 10,
 		},
+		{
+			s:   "samskritam",
+			t:   "a",
+			exp: 9,
+		},
 	}
 
-	for _, testCase := range testCases {
+	for i, testCase := range testCases {
 		actual := GetEditDistance(testCase.s, testCase.t)
 
 		if testCase.exp != actual {
@@ -40,6 +45,14 @@ func TestGetEditDistance(t *testing.T) {
 				actual,
 				testCase.s,
 				testCase.t)
+		} else {
+			t.Logf(
+				`Testcase %d passed. Got %d for "%s" and "%s"`,
+				i,
+				actual,
+				testCase.s,
+				testCase.t,
+			)
 		}
 	}
 }
