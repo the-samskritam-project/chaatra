@@ -33,6 +33,16 @@ func TestGetEditDistance(t *testing.T) {
 			t:   "a",
 			exp: 9,
 		},
+		{
+			s:   "samskritam",
+			t:   "xyz",
+			exp: 10,
+		},
+		{
+			s:   "samskritam",
+			t:   "kta",
+			exp: 7,
+		},
 	}
 
 	for i, testCase := range testCases {
