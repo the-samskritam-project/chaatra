@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"testing"
@@ -12,7 +12,7 @@ func TestTrans(t *testing.T) {
 	}
 
 	for inp, exp := range testSet {
-		act := trans(inp)
+		act := Trans(inp)
 
 		if act != exp {
 			t.Errorf("Expected : %s, Actual : %s", exp, act)

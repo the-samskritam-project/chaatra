@@ -1,4 +1,4 @@
-package main
+package core
 
 type Entry struct {
 	DevanagariWord     string `json:"devanagariWord"`
@@ -6,4 +6,4 @@ type Entry struct {
 	EnglishMeaning     string `json:"englishMeaning"`
 }
 
-type dictionary map[string]*Entry
+type Dictionary map[string]*Entry

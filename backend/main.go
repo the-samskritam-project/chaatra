@@ -1,35 +1,40 @@
 package main
 
 import (
+	"chaatra/core"
+	"chaatra/persistence"
 	"log"
 	"net/http"
+
+	h "chaatra/http"
 
 	"github.com/rs/cors"
 )
 
-var t *trie
-
-var d *dictionary
+var d core.Dictionary
 
 func main() {
 	// initialize elastic search
-	initEs()
+	persistence.InitEs()
 
-	t = &trie{
-		root: &node{
-			letter: &letter{
-				devanagari: ' ',
+	core.T = &core.Trie{
+		Root: &core.Node{
+			Letter: &core.Letter{
+				Devanagari: ' ',
 			},
-			children: make(map[rune]*node),
+			Children: make(map[rune]*core.Node),
 		},
 	}
 
-	parse(t)
+	if d = core.Parse(core.T); d == nil {
+		core.D = d
+		persistence.IndexEntries(d)
+	}
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/search", searchHandler)
-	mux.HandleFunc("/complete", autoCompleteHandler)
+	mux.HandleFunc("/search", h.SearchHandler)
+	mux.HandleFunc("/complete", h.AutoCompleteHandler)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"}, // Allowing only http://localhost:3000
