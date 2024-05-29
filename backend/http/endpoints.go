@@ -1,12 +1,14 @@
-package main
+package http
 
 import (
+	"chaatra/core"
+	"chaatra/persistence"
 	"encoding/json"
 	"log"
 	"net/http"
 )
 
-func searchHandler(w http.ResponseWriter, r *http.Request) {
+func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	slp1Query := r.URL.Query().Get("slp1")
 	if slp1Query == "" {
 		http.Error(w, "Search query is required", http.StatusBadRequest)
@@ -15,20 +17,20 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("SLP1 query : ", slp1Query)
 
-	var letters []*letter
+	var letters []*core.Letter
 	for _, c := range slp1Query {
-		l := theAlphabet[string(c)]
+		l := core.TheAlphabet[string(c)]
 
 		letters = append(letters, &l)
 	}
 
-	words := t.getWordsForPrefixFuzzy(letters)
-	entries := make([]*Entry, 0)
+	words := core.T.GetWordsForPrefixFuzzy(letters)
+	entries := make([]*core.Entry, 0)
 
 	for _, res := range words {
-		devanagariWord := stringifyTokens(res)
+		devanagariWord := core.StringifyTokens(res)
 
-		if e, ok := (*d)[devanagariWord]; ok {
+		if e, ok := core.D[devanagariWord]; ok {
 			entries = append(entries, e)
 		}
 	}
@@ -36,7 +38,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	devanagariQuery := r.URL.Query().Get("dev")
 	if devanagariQuery != "" {
 		log.Println("SLP1 query : ", devanagariQuery)
-		esEntries, _ := searchEntry(devanagariQuery)
+		esEntries, _ := persistence.SearchEntry(devanagariQuery)
 		entries = append(entries, esEntries...)
 	}
 
@@ -47,7 +49,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(entries)
 }
 
-func autoCompleteHandler(w http.ResponseWriter, r *http.Request) {
+func AutoCompleteHandler(w http.ResponseWriter, r *http.Request) {
 	slp1Query := r.URL.Query().Get("slp1")
 	if slp1Query == "" {
 		http.Error(w, "Search query is required", http.StatusBadRequest)
@@ -56,27 +58,27 @@ func autoCompleteHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("SLP1 query : ", slp1Query)
 
-	var letters []*letter
+	var letters []*core.Letter
 	for _, c := range slp1Query {
-		l := theAlphabet[string(c)]
+		l := core.TheAlphabet[string(c)]
 
 		letters = append(letters, &l)
 	}
 
-	var words [][]*letter
+	var words [][]*core.Letter
 	mode := r.URL.Query().Get("mode")
 	if mode != "" && mode == "strict" {
-		words = t.getWordsForPrefixStrict(letters)
+		words = core.T.GetWordsForPrefixStrict(letters)
 	} else {
-		words = t.getWordsForPrefixFuzzy(letters)
+		words = core.T.GetWordsForPrefixFuzzy(letters)
 	}
 
-	entries := make([]*Entry, 0)
+	entries := make([]*core.Entry, 0)
 
 	for _, res := range words {
-		devanagariWord := stringifyTokens(res)
+		devanagariWord := core.StringifyTokens(res)
 
-		if e, ok := (*d)[devanagariWord]; ok {
+		if e, ok := core.D[devanagariWord]; ok {
 			entries = append(entries, e)
 		}
 	}
@@ -84,7 +86,7 @@ func autoCompleteHandler(w http.ResponseWriter, r *http.Request) {
 	devanagariQuery := r.URL.Query().Get("dev")
 	if devanagariQuery != "" {
 		log.Println("SLP1 query : ", devanagariQuery)
-		esEntries, _ := searchEntry(devanagariQuery)
+		esEntries, _ := persistence.SearchEntry(devanagariQuery)
 		entries = append(entries, esEntries...)
 	}
 

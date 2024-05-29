@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"bufio"
@@ -33,19 +33,19 @@ type Body struct {
 	Result string
 }
 
-// Function to parse each H1 entry
-func parse(t *trie) {
+// Function to Parse each H1 entry
+func Parse(t *Trie) Dictionary {
 	// Open the XML file
 	file, err := os.Open("./dictionary.xml")
 	if err != nil {
 		fmt.Println("Error opening file:", err)
-		return
+		return nil
 	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 
-	var dictionary = make(dictionary)
+	var dictionary = make(Dictionary)
 
 	count := 0
 
@@ -62,10 +62,10 @@ func parse(t *trie) {
 			}
 
 			// Assuming getTokens and stringifyTokens are implemented elsewhere
-			tokens := getTokens(h1.Head.Key1)
-			t.add(tokens)
+			tokens := GetTokens(h1.Head.Key1)
+			t.Add(tokens)
 
-			devanagariWord := stringifyTokens(tokens)
+			devanagariWord := StringifyTokens(tokens)
 
 			if _, ok := dictionary[devanagariWord]; !ok {
 				count++
@@ -80,11 +80,11 @@ func parse(t *trie) {
 
 	if err := scanner.Err(); err != nil {
 		fmt.Println("Error reading file:", err)
-	} else {
-		d = &dictionary
+
+		return nil
 	}
 
-	indexEntries(dictionary)
-
 	log.Println("Processed records :", count)
+
+	return dictionary
 }

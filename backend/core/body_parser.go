@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"encoding/xml"
@@ -89,7 +89,7 @@ func (b *Body) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 
 					var devanagiriStrings []string
 					for _, res := range splitResuts {
-						devanagiriStrings = append(devanagiriStrings, (stringifyTokens(getTokens(res))))
+						devanagiriStrings = append(devanagiriStrings, (StringifyTokens(GetTokens(res))))
 					}
 
 					result = fmt.Sprintf("%s%s", result, strings.Join(devanagiriStrings, " "))
