@@ -26,7 +26,7 @@ func main() {
 		},
 	}
 
-	if d = core.Parse(core.T); d == nil {
+	if d = core.Parse(core.T); d != nil {
 		core.D = d
 		persistence.IndexEntries(d)
 	}
