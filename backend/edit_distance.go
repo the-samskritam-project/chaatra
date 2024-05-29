@@ -1,7 +1,51 @@
 package main
 
+import "sort"
+
+type Distance struct {
+	str  string
+	dist int
+}
+
+type ByDist []Distance
+
+func (a ByDist) Len() int {
+	return len(a)
+}
+
+func (a ByDist) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+
+func (a ByDist) Less(i, j int) bool {
+	return a[i].dist < a[j].dist
+}
+
 func SortByCloseness(str string, candidates []string) []string {
-	return []string{}
+	distances := make([]Distance, len(candidates))
+
+	for i, candidate := range candidates {
+		dist := GetEditDistance(candidate, str)
+
+		distances[i] = Distance{
+			str:  candidate,
+			dist: dist,
+		}
+	}
+
+	sort.Sort(ByDist(distances))
+
+	var results []string
+
+	for i, r := range distances {
+		if i >= 5 {
+			break
+		}
+
+		results = append(results, r.str)
+	}
+
+	return results
 }
 
 func GetEditDistance(s string, t string) int {
