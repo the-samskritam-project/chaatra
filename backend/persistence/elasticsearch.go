@@ -1,7 +1,8 @@
-package main
+package persistence
 
 import (
 	"bytes"
+	"chaatra/core"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -13,7 +14,7 @@ import (
 
 var es *elasticsearch.Client
 
-func initEs() {
+func InitEs() {
 	cfg := elasticsearch.Config{
 		Addresses: []string{
 			"http://host.docker.internal:9200", // Your Elasticsearch address
@@ -26,7 +27,7 @@ func initEs() {
 	}
 }
 
-func indexEntries(entries dictionary) {
+func IndexEntries(entries core.Dictionary) {
 	var body strings.Builder
 
 	for _, entry := range entries {
@@ -59,7 +60,7 @@ func indexEntries(entries dictionary) {
 	}
 }
 
-func searchEntry(searchTerm string) ([]*Entry, error) {
+func SearchEntry(searchTerm string) ([]*core.Entry, error) {
 	// Define the query
 	var buf bytes.Buffer
 	query := map[string]interface{}{
@@ -100,11 +101,11 @@ func searchEntry(searchTerm string) ([]*Entry, error) {
 	}
 
 	hits := r["hits"].(map[string]interface{})["hits"].([]interface{})
-	entries := make([]*Entry, 0, len(hits))
+	entries := make([]*core.Entry, 0, len(hits))
 	for _, hit := range hits {
 		source := hit.(map[string]interface{})["_source"]
 		entryData, _ := json.Marshal(source)
-		var entry Entry
+		var entry core.Entry
 		if err := json.Unmarshal(entryData, &entry); err != nil {
 			return nil, err
 		}

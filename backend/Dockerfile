@@ -2,7 +2,7 @@
 FROM golang:1.22 as builder
 
 # Set the working directory inside the container
-WORKDIR /go/src/chaatra
+WORKDIR /go/src/chaatra/backend
 
 # Copy the local package files to the container's workspace
 COPY . .
@@ -13,7 +13,6 @@ RUN go mod download
 
 # Build your application statically
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o samskritam .
-RUN ls -l /go/src/chaatra/  # Verify the file exists
 
 # Use a minimal alpine image to run the server
 FROM alpine:latest  
@@ -22,10 +21,10 @@ FROM alpine:latest
 WORKDIR /root/
 
 # Import the compiled executable from the first stage
-COPY --from=builder /go/src/chaatra/samskritam /root/samskritam
+COPY --from=builder /go/src/chaatra/backend/samskritam /root/samskritam
 
 # Import the dictionary.xml file from the build context into the same directory as the binary
-COPY --from=builder /go/src/chaatra/dictionary.xml /root/dictionary.xml
+COPY --from=builder /go/src/chaatra/backend/core/dictionary.xml /root/dictionary.xml
 
 # Ensure executable permissions
 RUN chmod +x /root/samskritam

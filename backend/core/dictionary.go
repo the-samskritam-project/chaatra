@@ -1,4 +1,4 @@
-package main
+package core
 
 type Entry struct {
 	DevanagariWord     string `json:"devanagariWord"`
@@ -6,12 +6,4 @@ type Entry struct {
 	EnglishMeaning     string `json:"englishMeaning"`
 }
 
-type dictionary map[string]*Entry
-
-func (d *dictionary) add(e *Entry) {
-	word := e.DevanagariWord
-
-	if _, ok := (*d)[word]; !ok {
-		(*d)[word] = e
-	}
-}
+type Dictionary map[string]*Entry
