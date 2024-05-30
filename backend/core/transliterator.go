@@ -14,13 +14,6 @@ const halfConsonant = '्'
 
 const a rune = 'अ'
 
-type Letter struct {
-	// Check out the transliteration scheme : https://en.wikipedia.org/wiki/SLP1
-	Latin      rune
-	Devanagari rune
-	Typ        AlphabetType
-}
-
 var TheAlphabet = map[string]Letter{
 	// Vowels
 	"a": {Latin: 'a', Devanagari: 'अ', Typ: vowel}, "A": {Latin: 'A', Devanagari: 'आ', Typ: vowel}, "i": {Latin: 'i', Devanagari: 'इ', Typ: vowel},
@@ -52,7 +45,7 @@ var vowelSigns = map[string]rune{
 	"औ": 'ौ', "ं": 'ं', ":": 'ः',
 }
 
-func GetTokens(text string) []*Letter {
+func GetTokens(text string) Word {
 	i, l := 0, len(text)
 
 	tokens := make([]*Letter, 0)

@@ -65,7 +65,7 @@ func AutoCompleteHandler(w http.ResponseWriter, r *http.Request) {
 		letters = append(letters, &l)
 	}
 
-	var words [][]*core.Letter
+	var words []core.Word
 	mode := r.URL.Query().Get("mode")
 	if mode != "" && mode == "strict" {
 		words = core.T.GetWordsForPrefixStrict(letters)
