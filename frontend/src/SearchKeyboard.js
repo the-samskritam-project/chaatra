@@ -36,7 +36,7 @@ function SearchKeyboard({ handleSearch }) {
         handleSearch(slp1LatinStr, devanagariString);
 
         return;
-      } else if (event.key === 'Backspace' && devanagariString.length > 0) {
+      } else if (event.key === 'Backspace' && devanagariString.length >= 0) {
         setTypedString(slp1LatinStr.slice(0, -1));
         setActiveKeys(activeKeys.slice(0, -1));
         setDevanagariString(devanagariString.slice(0, -1));
