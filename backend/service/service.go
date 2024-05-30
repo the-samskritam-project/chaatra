@@ -1,29 +1,31 @@
 package service
 
-import "chaatra/core"
+import (
+	"chaatra/core"
+	"chaatra/helpers"
+)
 
 type LookupReq struct {
 	Slp1 string
 	Dev  string
 }
 
-func AutoComplete(req LookupReq) {
-	var letters []*core.Letter
+func AutoComplete(req LookupReq) []string {
+	var reqStr core.Word
 	for _, c := range req.Slp1 {
 		l := core.TheAlphabet[string(c)]
 
-		letters = append(letters, &l)
+		reqStr = append(reqStr, &l)
 	}
 
-	words := core.T.GetWordsForPrefixFuzzy(letters)
+	matches := core.T.GetWordsForPrefixFuzzy(reqStr)
 
-	entries := make([]*core.Entry, 0)
-
-	for _, res := range words {
-		devanagariWord := core.StringifyTokens(res)
-
-		if e, ok := core.D[devanagariWord]; ok {
-			entries = append(entries, e)
-		}
+	var candidates []string
+	for _, w := range matches {
+		candidates = append(candidates, w.Devanagari())
 	}
+
+	return helpers.SortByCloseness(
+		reqStr.Devanagari(),
+		candidates)
 }

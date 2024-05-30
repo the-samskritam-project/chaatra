@@ -10,10 +10,5 @@ type Letter struct {
 type Word []*Letter
 
 func (w Word) Devanagari() string {
-	var dev string
-	for _, l := range w {
-		dev = dev + string(l.Devanagari)
-	}
-
-	return dev
+	return StringifyTokens(w)
 }
