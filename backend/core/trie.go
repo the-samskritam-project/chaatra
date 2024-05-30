@@ -66,10 +66,10 @@ func (t *Trie) Add(word []*Letter) {
 	}
 }
 
-func (t *Trie) GetWordsForPrefixStrict(prefix []*Letter) [][]*Letter {
+func (t *Trie) GetWordsForPrefixStrict(prefix []*Letter) []Word {
 	iterator := t.Root
 	reached := 0
-	var results [][]*Letter
+	var results []Word
 
 	for _, l := range prefix {
 		if n, ok := iterator.Children[l.Latin]; !ok {
@@ -82,7 +82,7 @@ func (t *Trie) GetWordsForPrefixStrict(prefix []*Letter) [][]*Letter {
 	}
 
 	if reached != len(prefix) {
-		return [][]*Letter{}
+		return []Word{}
 	}
 
 	results = depthFirst(iterator, prefix)
@@ -90,10 +90,10 @@ func (t *Trie) GetWordsForPrefixStrict(prefix []*Letter) [][]*Letter {
 	return results
 }
 
-func (t *Trie) GetWordsForPrefixFuzzy(prefix []*Letter) [][]*Letter {
+func (t *Trie) GetWordsForPrefixFuzzy(prefix Word) []Word {
 	iterator := t.Root
 	reached := 0
-	var results [][]*Letter
+	var results []Word
 
 	var matched string
 	for _, l := range prefix {
@@ -112,8 +112,8 @@ func (t *Trie) GetWordsForPrefixFuzzy(prefix []*Letter) [][]*Letter {
 	return results
 }
 
-func depthFirst(n *Node, str []*Letter) [][]*Letter {
-	var results [][]*Letter
+func depthFirst(n *Node, str Word) []Word {
+	var results []Word
 
 	if len(n.Children) == 0 {
 		results = append(results, str)
@@ -122,7 +122,7 @@ func depthFirst(n *Node, str []*Letter) [][]*Letter {
 	}
 
 	for _, v := range n.Children {
-		newStr := append([]*Letter(nil), str...)
+		newStr := append(Word(nil), str...)
 		newStr = append(newStr, v.Letter)
 
 		results = append(results, depthFirst(v, newStr)...)
