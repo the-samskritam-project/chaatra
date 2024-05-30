@@ -1,4 +1,3 @@
-
 export function find(str, subStr) {
     if (!str || !subStr) {
         return [];

@@ -3,6 +3,7 @@ import SearchBar from './Search'; // Assuming your search bar component
 import Keyboard from './Keyboard'; // Assuming your keyboard component
 import { toDevanagiriString } from './utils/transliterate';
 import { vowels, consonants } from './utils/constants';
+import { getLastWord as getCurrentWord } from './utils/split';
 
 function SearchKeyboard({ handleSearch }) {
   const [isKeyboardDocked, setIsKeyboardDocked] = useState(true);
@@ -45,10 +46,11 @@ function SearchKeyboard({ handleSearch }) {
         if (found) {
           setDevanagariString(toDevanagiriString(slp1LatinStr + found.key));
           setTypedString(slp1LatinStr + found.key);
-          setActiveKeys([...activeKeys, event.key]); 
+          setActiveKeys([...activeKeys, event.key]);
         } else if (event.key === 'Spacebar' || event.key === ' ') {
           setDevanagariString(devanagariString + ' ');
           setTypedString(slp1LatinStr + ' ');
+          setActiveKeys([]);
         }
       }
     };
@@ -58,14 +60,18 @@ function SearchKeyboard({ handleSearch }) {
   }, [searchInFocus, devanagariString, slp1LatinStr]);
 
   useEffect(() => {
-    const fetchResults = async () => {
-      const url = `http://localhost:8081/complete?slp1=${encodeURIComponent(slp1LatinStr)}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      setCompletionResults(data);
-    };
+    const currentWord = getCurrentWord(slp1LatinStr);
 
-    fetchResults();
+    if (currentWord.length > 0) {
+      const fetchResults = async () => {
+        const url = `http://localhost:8081/complete?slp1=${encodeURIComponent(currentWord)}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        setCompletionResults(data);
+      }
+
+      fetchResults();
+    }
   }, [activeKeys]);
 
   return (
