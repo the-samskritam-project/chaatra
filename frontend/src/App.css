@@ -246,3 +246,23 @@
   color: #333;
   margin-bottom: 10px; /* Add space between the text and the keys */
 }
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; /* Center the suggestions horizontally */
+  margin-bottom: 10px; /* Space between suggestions and keys */
+}
+
+.suggestion-item {
+  margin: 0 5px; /* Spacing between suggestions */
+  padding: 5px 10px; /* Padding inside each suggestion */
+  background-color: #f0f0f0; /* Light grey background */
+  border-radius: 10px; /* Rounded corners for aesthetic appearance */
+  cursor: pointer; /* Indicates that the items are clickable */
+  transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+.suggestion-item:hover {
+  background-color: #e0e0e0; /* Slightly darker on hover */
+}

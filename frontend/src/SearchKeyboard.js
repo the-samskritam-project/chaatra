@@ -11,6 +11,7 @@ function SearchKeyboard({ handleSearch }) {
   const [devanagariString, setDevanagariString] = useState('');
   const [activeKeys, setActiveKeys] = useState([]);
   const [searchInFocus, setSearchInFocus] = useState(false);
+  const [completionResults, setCompletionResults] = useState([]);
 
   const handleInputChange = () => {
     if (isKeyboardDocked) {
@@ -56,6 +57,17 @@ function SearchKeyboard({ handleSearch }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [searchInFocus, devanagariString, slp1LatinStr]);
 
+  useEffect(() => {
+    const fetchResults = async () => {
+      const url = `http://localhost:8081/complete?slp1=${encodeURIComponent(slp1LatinStr)}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      setCompletionResults(data);
+    };
+
+    fetchResults();
+  }, [activeKeys]);
+
   return (
     <div>
       <SearchBar
@@ -68,6 +80,7 @@ function SearchKeyboard({ handleSearch }) {
         isDocked={isKeyboardDocked}
         activeKeys={activeKeys}
         alphabet={vowels.concat(consonants)}
+        completionResults={completionResults}
       />
     </div>
   );
