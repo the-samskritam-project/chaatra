@@ -39,23 +39,6 @@ function App() {
     setCurrentPage(prev => (prev > 1 ? prev - 1 : prev));
   };
 
-  // Keyboard navigation for pagination
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.keyCode === 37) {  // Left arrow key
-        prevPage();
-      } else if (event.keyCode === 39) {  // Right arrow key
-        nextPage();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [totalPages]);
-
   return (
     <div className="main-container">
       <div class="heading">
