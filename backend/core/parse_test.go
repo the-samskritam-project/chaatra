@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"encoding/xml"
@@ -8,29 +8,29 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	trie := trie{
-		root: &node{
-			letter: &letter{
-				devanagari: ' ',
+	trie := Trie{
+		Root: &Node{
+			Letter: &Letter{
+				Devanagari: ' ',
 			},
-			children: make(map[rune]*node),
+			Children: make(map[rune]*Node),
 		},
 	}
 
-	parse(&trie)
+	Parse(&trie)
 
-	l1 := theAlphabet["t"]
-	l2 := theAlphabet["a"]
+	l1 := TheAlphabet["t"]
+	l2 := TheAlphabet["a"]
 
-	results := trie.getWordsForPrefix([]*letter{&l1, &l2})
+	results := trie.GetWordsForPrefixStrict([]*Letter{&l1, &l2})
 
 	for _, res := range results {
 		var lat string
 		for _, r := range res {
-			lat = fmt.Sprintf("%s%c", lat, r.latin)
+			lat = fmt.Sprintf("%s%c", lat, r.Latin)
 		}
 
-		log.Printf("%s : %s", lat, stringifyTokens(res))
+		log.Printf("%s : %s", lat, StringifyTokens(res))
 	}
 }
 
