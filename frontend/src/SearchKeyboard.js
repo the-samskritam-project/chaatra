@@ -8,7 +8,7 @@ import { getLastWord as getCurrentWord } from './utils/split';
 function SearchKeyboard({ handleSearch }) {
   const [isKeyboardDocked, setIsKeyboardDocked] = useState(true);
   // SLP1 : https://en.wikipedia.org/wiki/SLP1
-  const [slp1LatinStr, setTypedString] = useState('');
+  const [slp1LatinStr, setSlp1LatinStr] = useState('');
   const [devanagariString, setDevanagariString] = useState('');
   const [activeKeys, setActiveKeys] = useState([]);
   const [searchInFocus, setSearchInFocus] = useState(false);
@@ -38,18 +38,18 @@ function SearchKeyboard({ handleSearch }) {
 
         return;
       } else if (event.key === 'Backspace' && devanagariString.length >= 0) {
-        setTypedString(slp1LatinStr.slice(0, -1));
+        setSlp1LatinStr(slp1LatinStr.slice(0, -1));
         setActiveKeys(activeKeys.slice(0, -1));
         setDevanagariString(devanagariString.slice(0, -1));
       } else {
         const found = [...vowels, ...consonants].find(v => v.key === event.key);
         if (found) {
           setDevanagariString(toDevanagiriString(slp1LatinStr + found.key));
-          setTypedString(slp1LatinStr + found.key);
+          setSlp1LatinStr(slp1LatinStr + found.key);
           setActiveKeys([...activeKeys, event.key]);
         } else if (event.key === 'Spacebar' || event.key === ' ') {
           setDevanagariString(devanagariString + ' ');
-          setTypedString(slp1LatinStr + ' ');
+          setSlp1LatinStr(slp1LatinStr + ' ');
           setActiveKeys([]);
         }
       }
@@ -63,6 +63,11 @@ function SearchKeyboard({ handleSearch }) {
     const currentWord = getCurrentWord(slp1LatinStr);
 
     if (currentWord.length > 0) {
+      if (currentWord.charAt(currentWord.length-1) == ' ') {
+        setCompletionResults([]);
+        return;
+      }
+
       const fetchResults = async () => {
         const url = `http://localhost:8081/complete?slp1=${encodeURIComponent(currentWord)}`;
         const response = await fetch(url);
@@ -72,7 +77,7 @@ function SearchKeyboard({ handleSearch }) {
 
       fetchResults();
     }
-  }, [activeKeys]);
+  }, [slp1LatinStr]);
 
   return (
     <div>
