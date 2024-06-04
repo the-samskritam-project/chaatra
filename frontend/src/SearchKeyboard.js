@@ -51,6 +51,7 @@ function SearchKeyboard({ handleSearch }) {
           setDevanagariString(devanagariString + ' ');
           setSlp1LatinStr(slp1LatinStr + ' ');
           setActiveKeys([]);
+          setCompletionResults([]);
         }
       }
     };
@@ -60,11 +61,14 @@ function SearchKeyboard({ handleSearch }) {
   }, [searchInFocus, devanagariString, slp1LatinStr]);
 
   useEffect(() => {
+    if (activeKeys.length == 0) {
+      return
+    }
+
     const currentWord = getCurrentWord(slp1LatinStr);
 
     if (currentWord.length > 0) {
-      if (currentWord.charAt(currentWord.length-1) == ' ') {
-        setCompletionResults([]);
+      if (currentWord.charAt(currentWord.length - 1) == ' ') {
         return;
       }
 
