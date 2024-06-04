@@ -147,6 +147,7 @@
   /* Light background for normal state */
   transition: background-color 0.3s, transform 0.3s;
   cursor: pointer;
+  font-weight: 800;
 }
 
 /* Hover Effects for both Keyboard Keys and Pagination Buttons */
@@ -245,4 +246,28 @@
   font-weight: bold;
   color: #333;
   margin-bottom: 10px; /* Add space between the text and the keys */
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; /* Center the suggestions horizontally */
+  margin-bottom: 10px; /* Space between suggestions and keys */
+}
+
+.suggestion-item {
+  background-color: #007bff; /* Vivid blue background */
+  color: white; /* White text for high contrast */
+  padding: 8px 12px; /* Padding around the text */
+  border-radius: 4px; /* Rounded corners for a smoother look */
+  display: inline-block; /* Ensures padding and border-radius are applied */
+  margin-right: 10px; /* Adds spacing to the right of each span */
+  margin-bottom: 5px; /* Adds spacing below each span, useful for wrapped lines */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Adds shadow for depth */
+  font-weight: 600;
+}
+
+.suggestion-item:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Larger shadow on hover */
 }
