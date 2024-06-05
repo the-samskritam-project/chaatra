@@ -6,10 +6,10 @@ The goal of Chaatra is to provide tools for students and teachers of the Sanskri
 
 ## Goals
 
-- **High quality Sanskrit learning experience:** Centred around the needs of the student.
-- **Convenient access to Sanskrit literature:** With quality translations.
-- **Scalable language learning platform:** Easily extendable to other Indic languages.
-- **Connecting the community:** Bringing together Sanskrit scholars, learners, and teachers to build a sense of community and connectedness.
+- **High quality Sanskrit learning experience,** centred around the needs of the student.
+- **Convenient access to Sanskrit literature,** with quality translations.
+- **Scalable language learning platform,** which is extendable to other Indic languages.
+- **Burturing a community,** by bringing together Sanskrit scholars, learners, and teachers to build a sense of community and connectedness.
 
 ## What Needs to be Built
 
@@ -39,4 +39,6 @@ At the moment, this is a one-person operation, and there is a lot of work to be 
 ### Programmers 
 This is an open source project, and there is a ton of code to be written. If you are a developer, and are interested in Sanskrit or Indic languages, this is the project for you.
 
-If you are interested in contributing, please reach out to me.
+If you are interested in contributing, please reach out to [@sribalajig](https://github.com/sribalajig) / [Balaji Gopinath](https://www.linkedin.com/in/sri-balaji-gopinath/)
+
+
