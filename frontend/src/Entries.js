@@ -42,7 +42,10 @@ function Entries({ entries, devSearchStr }) {
           </div>
         ))
       ) : (
-        <p>No dictionary entries to show.</p>
+        <div className="entry">
+          <h3>{devSearchStr}</h3>
+          <p>No entries to show!</p>
+        </div>
       )}
     </div>
   );
