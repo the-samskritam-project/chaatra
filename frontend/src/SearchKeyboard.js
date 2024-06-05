@@ -61,8 +61,9 @@ function SearchKeyboard({ handleSearch }) {
   }, [searchInFocus, devanagariString, slp1LatinStr]);
 
   useEffect(() => {
-    if (activeKeys.length == 0) {
-      return
+    if (slp1LatinStr.length == 0) {
+      setCompletionResults([]);
+      return;
     }
 
     const currentWord = getCurrentWord(slp1LatinStr);
