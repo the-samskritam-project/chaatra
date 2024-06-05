@@ -9,7 +9,7 @@ The goal of Chaatra is to provide tools for students and teachers of the Sanskri
 - **High quality Sanskrit learning experience,** centred around the needs of the student.
 - **Convenient access to Sanskrit literature,** with quality translations.
 - **Scalable language learning platform,** which is extendable to other Indic languages.
-- **Burturing a community,** by bringing together Sanskrit scholars, learners, and teachers to build a sense of community and connectedness.
+- **Nurturing a community,** by bringing together Sanskrit scholars, learners, and teachers to build a sense of community and connectedness.
 
 ## What Needs to be Built
 
