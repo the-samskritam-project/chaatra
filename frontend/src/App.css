@@ -26,13 +26,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Centers children horizontally */
   width: 100%;
-  /* Ensures it takes full width of the viewport */
   max-width: 1200px;
-  /* Maximum width to prevent overly wide layouts */
   margin: auto;
-  /* Centers the container in the viewport */
   padding: 20px;
   height: auto;
 }
@@ -97,23 +93,19 @@
 }
 
 
+/* Entries container styling */
 .entries-container {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Centers children vertically */
-  justify-content: center;
-  /* Centers children horizontally for all screen sizes */
+  justify-content: center; /* Centers children horizontally and vertically */
   background-color: #f9f9f9;
-  /* Light grey background similar to other containers */
   padding: 20px;
   border-radius: 8px;
-  /* Consistent rounded corners */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  /* Subtle shadow for depth */
-  height: auto;
-  /* Automatically adjusts to the content height */
+  height: auto; /* Automatically adjusts to the content height */
+  box-sizing: border-box;
 }
 
 .entry {
@@ -270,4 +262,56 @@
 .suggestion-item:hover {
   background-color: #0056b3; /* Darker shade on hover */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Larger shadow on hover */
+}
+
+.react-tabs {
+  width: 100%;
+}
+
+/* Style the TabList to occupy the full width of the main container */
+.react-tabs__tab-list {
+  display: flex;
+  width: 100%;
+  justify-content: space-between; /* Distribute tabs evenly */
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  border-bottom: 2px solid #ccc; /* Optional: Add a border for visual separation */
+}
+
+/* Style each Tab to take an equal amount of space */
+.react-tabs__tab {
+  flex-grow: 1;
+  text-align: center;
+  padding: 10px;
+  cursor: pointer;
+  background: linear-gradient(45deg, #6a11cb 30%, #2575fc 90%);
+  color: white;
+  font-weight: bold;
+  border: 1px solid #ccc;
+  border-bottom: none; /* Remove bottom border to avoid double border */
+  transition: background 0.3s, transform 0.3s;
+  border-radius: 8px 8px 0 0;
+}
+
+.react-tabs__tab--selected {
+  background: white;
+  color: #007bff;
+  border-bottom: 2px solid #007bff; /* Optional: Highlight selected tab */
+  transform: translateY(-2px);
+}
+
+.react-tabs__tab:hover {
+  background: linear-gradient(45deg, #5a00cb 30%, #1575fc 90%);
+}
+
+/* Ensure the TabPanel takes the full width of the main container */
+.react-tabs__tab-panel {
+  width: 100%; /* Ensure the panel takes full width */
+  padding: 20px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-top: none; /* Remove top border to avoid double border */
+  background: #fff;
+  min-height: 300px; /* Set a minimum height for consistency */
 }
