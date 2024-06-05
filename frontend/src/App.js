@@ -1,13 +1,11 @@
 import './App.css';
 import Dictionary from './Dictionary';
+import Heading from './Heading';
 
 function App() {
   return (
     <div className="main-container">
-      <div class="heading">
-        <span class="devanagari">छात्रः</span>
-        <span class="english">A pupil, disciple.</span>
-      </div>
+      <Heading />
       <Dictionary />
     </div>
   );
