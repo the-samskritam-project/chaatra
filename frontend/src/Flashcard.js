@@ -23,15 +23,7 @@ const Flashcard = ({ flashcard }) => {
         </div>
       </div>
       {isModalOpen && (
-        <Modal onClose={handleCloseModal}>
-          <h2>{flashcard.title}</h2>
-          <p>{flashcard.content}</p>
-          <div className="tags">
-            {flashcard.tags.map((tag, index) => (
-              <span key={index} className="tag">{tag}</span>
-            ))}
-          </div>
-        </Modal>
+        <Modal onClose={handleCloseModal} flashcard={flashcard} />
       )}
     </div>
   );
