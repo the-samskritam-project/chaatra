@@ -22,18 +22,6 @@
     font-style: italic; /* Keeps the text italic */
 }
 
-
-.main-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 1200px;
-  margin: auto;
-  padding: 20px;
-  height: auto;
-}
-
 /* Container for the search bar */
 .search-bar {
   display: flex;
@@ -265,6 +253,19 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Larger shadow on hover */
 }
 
+/* Main container styling */
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+  height: auto;
+}
+
+/* Ensure react-tabs takes full width */
 .react-tabs {
   width: 100%;
 }
@@ -273,47 +274,53 @@
 .react-tabs__tab-list {
   display: flex;
   width: 100%;
-  justify-content: space-between; /* Distribute tabs evenly */
+  justify-content: space-around;
   padding: 0;
   margin: 0;
   list-style: none;
-  border-bottom: 2px solid #ccc; /* Optional: Add a border for visual separation */
+  background: #e6f2ff; /* Light blue background */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  overflow: hidden; /* Ensure rounded corners are visible */
 }
 
 /* Style each Tab to take an equal amount of space */
 .react-tabs__tab {
   flex-grow: 1;
   text-align: center;
-  padding: 10px;
+  padding: 15px 10px;
   cursor: pointer;
-  background: linear-gradient(45deg, #6a11cb 30%, #2575fc 90%);
-  color: white;
+  background: #e6f2ff; /* Light blue background */
+  color: #333;
   font-weight: bold;
-  border: 1px solid #ccc;
+  border: 1px solid #cce5ff; /* Very light border color */
   border-bottom: none; /* Remove bottom border to avoid double border */
   transition: background 0.3s, transform 0.3s;
-  border-radius: 8px 8px 0 0;
+  margin: 0 2px; /* Add space between tabs */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Lighter shadow */
+  border-radius: 8px 8px 0 0; /* Rounded top corners */
 }
 
 .react-tabs__tab--selected {
   background: white;
   color: #007bff;
-  border-bottom: 2px solid #007bff; /* Optional: Highlight selected tab */
+  border-bottom: 2px solid #007bff; /* Highlight selected tab */
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Slightly stronger shadow */
 }
 
 .react-tabs__tab:hover {
-  background: linear-gradient(45deg, #5a00cb 30%, #1575fc 90%);
+  background: #cce5ff; /* Light hover effect */
 }
 
 /* Ensure the TabPanel takes the full width of the main container */
 .react-tabs__tab-panel {
-  width: 100%; /* Ensure the panel takes full width */
+  width: 100%;
   padding: 20px;
   box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-top: none; /* Remove top border to avoid double border */
   background: #fff;
+  border-radius: 0 0 8px 8px; /* Rounded bottom corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Lighter shadow */
   min-height: 300px; /* Set a minimum height for consistency */
 }
 
@@ -324,7 +331,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 2%; /* Use relative padding */
+  padding: 2rem; /* Use relative padding */
   color: #555;
   height: 100%; /* Ensure it uses full available height */
   width: 100%; /* Ensure it uses full available width */
@@ -332,9 +339,21 @@
 
 /* Scale down the image using relative units */
 .empty-state img {
-  width: 100%; /* Adjust based on your needs */
-  max-width: 500px; /* Ensure it doesn't get too large */
+  max-width: 400px; /* Ensure it doesn't get too large */
   height: auto; /* Maintain aspect ratio */
   margin-bottom: 1rem; /* Adjust spacing as needed */
-  display: block; /* Ensure no additional space around the image */
 }
+
+/* Reduce margins around text elements */
+.empty-state h3 {
+  margin: 0.5rem 0; /* Use relative margin */
+  font-size: 1.5rem;
+}
+
+.empty-state p {
+  font-size: 1rem;
+  color: #777;
+  margin: 0; /* Remove additional margins */
+}
+
+
