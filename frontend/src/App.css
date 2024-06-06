@@ -5,6 +5,7 @@
 .heading {
     font-size: 24px; /* Base font size for the English text */
     color: #333; /* Sets the text color */
+    margin-bottom: 20px;
 }
 
 .devanagari {
@@ -314,4 +315,26 @@
   border-top: none; /* Remove top border to avoid double border */
   background: #fff;
   min-height: 300px; /* Set a minimum height for consistency */
+}
+
+/* Styling for the empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2%; /* Use relative padding */
+  color: #555;
+  height: 100%; /* Ensure it uses full available height */
+  width: 100%; /* Ensure it uses full available width */
+}
+
+/* Scale down the image using relative units */
+.empty-state img {
+  width: 100%; /* Adjust based on your needs */
+  max-width: 500px; /* Ensure it doesn't get too large */
+  height: auto; /* Maintain aspect ratio */
+  margin-bottom: 1rem; /* Adjust spacing as needed */
+  display: block; /* Ensure no additional space around the image */
 }
