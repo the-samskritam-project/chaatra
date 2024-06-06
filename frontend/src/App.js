@@ -7,14 +7,18 @@ import Flashcards from './Flashcards';
 
 const flashcardsData = [
   {
-    title: 'Flashcard 1',
-    content: 'This is the content of flashcard 1.',
-    tags: ['tag1', 'tag2']
-  },
-  {
-    title: 'Flashcard 2',
-    content: 'This is the content of flashcard 2.',
-    tags: ['tag3', 'tag4']
+    title: `परपतेद्द्यौः सनक्षत्रा पृथिवी श्कली भवेत |` + '\n' +
+    `शैत्यमग्निः इयान्न अहं त्यजेयं रघुनन्दनम् ||`,
+    content: `Transliteration (IAST):
+    prapateddyauḥ sanakṣatrā pṛthivī śakalī bhavet |
+    śaityam agniḥ iyān na ahaṃ tyajeyaṃ raghunandanam ||
+    
+    Translation:
+    Even if the sky falls along with the stars, and the Earth shatters into pieces,
+    And fire loses its heat, I will never abandon Raghunandana (Lord Rama).
+    
+    This verse expresses unwavering devotion and loyalty, highlighting that no matter how extreme the circumstances, the speaker's dedication to Lord Rama will remain steadfast.`,
+    tags: ['Ramayana']
   }
   // Add more flashcards as needed
 ];
