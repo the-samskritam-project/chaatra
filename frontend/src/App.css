@@ -280,6 +280,7 @@
   list-style: none;
   background: #e6f2ff; /* Light blue background */
   border-radius: 8px; /* Rounded corners */
+  border: 1px solid #cce5ff; /* Light blue border */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
   overflow: hidden; /* Ensure rounded corners are visible */
 }
@@ -317,7 +318,6 @@
 .react-tabs__tab-panel {
   width: 100%;
   padding: 20px;
-  box-sizing: border-box;
   background: #fff;
   border-radius: 0 0 8px 8px; /* Rounded bottom corners */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Lighter shadow */
