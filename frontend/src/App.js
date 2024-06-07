@@ -1,9 +1,10 @@
 import './App.css';
+import './Modal.css';
 import Dictionary from './Dictionary';
 import Heading from './Heading';
 import { Tabs, TabList, Tab, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
-import Flashcards from './Flashcards';
+import Flashcards from './components/flashcards/Flashcards';
 
 const flashcardsData = [
   {
