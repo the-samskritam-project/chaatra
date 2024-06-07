@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './Modal.css'; // Ensure you create and style the modal in this CSS file
 
 const Modal = ({ onClose, flashcard }) => {
   const [isFlipped, setIsFlipped] = useState(false);
