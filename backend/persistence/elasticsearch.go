@@ -60,7 +60,9 @@ func IndexEntries(entries core.Dictionary) {
 	}
 }
 
-func SearchEntry(searchTerm string) ([]*core.Entry, error) {
+func SearchDictionaryEntry(searchTerm string) ([]*core.Entry, error) {
+	log.Println("Search term is : ", searchTerm)
+
 	// Define the query
 	var buf bytes.Buffer
 	query := map[string]interface{}{
@@ -113,4 +115,66 @@ func SearchEntry(searchTerm string) ([]*core.Entry, error) {
 	}
 
 	return entries, nil
+}
+
+func SearchDhatu(query string) ([]core.Dhatu, error) {
+	ctx := context.Background()
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf(`{
+	  "query": {
+	    "match": {
+	      "englishMeaning": %s
+	    }
+	  }
+	}`, query))
+
+	// Perform the search request
+	res, err := es.Search(
+		es.Search.WithContext(ctx),
+		es.Search.WithIndex("dhatus"),
+		es.Search.WithBody(strings.NewReader(b.String())),
+		es.Search.WithTrackTotalHits(true),
+		es.Search.WithPretty(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error getting response: %w", err)
+	}
+	defer res.Body.Close()
+
+	// Check for errors in the search response
+	if res.IsError() {
+		var e map[string]interface{}
+		if err := json.NewDecoder(res.Body).Decode(&e); err != nil {
+			return nil, fmt.Errorf("error parsing the response body: %w", err)
+		} else {
+			// Return the error information
+			return nil, fmt.Errorf("[%s] %s: %s",
+				res.Status(),
+				e["error"].(map[string]interface{})["type"],
+				e["error"].(map[string]interface{})["reason"],
+			)
+		}
+	}
+
+	// Parse the search results
+	var r map[string]interface{}
+	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
+		return nil, fmt.Errorf("error parsing the response body: %w", err)
+	}
+
+	// Create an array to hold the search results
+	var dhatus []core.Dhatu
+
+	// Populate the array with the search results
+	for _, hit := range r["hits"].(map[string]interface{})["hits"].([]interface{}) {
+		var d core.Dhatu
+		source := hit.(map[string]interface{})["_source"]
+		sourceBytes, _ := json.Marshal(source)
+		if err := json.Unmarshal(sourceBytes, &d); err != nil {
+			return nil, fmt.Errorf("error unmarshaling source: %w", err)
+		}
+		dhatus = append(dhatus, d)
+	}
+
+	return dhatus, nil
 }

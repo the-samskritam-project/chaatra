@@ -1,12 +1,51 @@
 package main
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
+	"github.com/elastic/go-elasticsearch/v7"
 	"golang.org/x/net/html"
 )
+
+type dhatu struct {
+	Devanagari     string `json:"devanagari"`
+	EnglishMeaning string `json:"englishMeaning"`
+}
+
+func main() {
+	filePath := "dhatus.html"
+	divClass := "mw-parser-output"
+
+	doc, err := getHTMLContentFromFile(filePath)
+	if err != nil {
+		fmt.Println("Error reading HTML content from file:", err)
+		return
+	}
+
+	listItems := extractListItems(doc, divClass)
+	var dhatus []dhatu
+	for _, item := range listItems {
+		line := strings.Split(item, " ")
+		if len(line) > 2 {
+			root := strings.Split(strings.Join(strings.Split(strings.Join(line[3:], " "), " "), " "), " , ")
+
+			if len(root) == 2 {
+				dhatus = append(dhatus, dhatu{
+					Devanagari:     root[0],
+					EnglishMeaning: root[1],
+				})
+			}
+		}
+	}
+
+	writeToEs(dhatus)
+}
 
 // Function to get the HTML content from a local file
 func getHTMLContentFromFile(filePath string) (*html.Node, error) {
@@ -88,26 +127,53 @@ func getTextContent(n *html.Node) string {
 	return strings.TrimSpace(content)
 }
 
-func main() {
-	filePath := "dhatus.html"
-	divClass := "mw-parser-output"
-
-	doc, err := getHTMLContentFromFile(filePath)
+func writeToEs(dhatus []dhatu) {
+	es, err := elasticsearch.NewClient(elasticsearch.Config{
+		Addresses: []string{"http://localhost:9200"},
+	})
 	if err != nil {
-		fmt.Println("Error reading HTML content from file:", err)
-		return
+		log.Fatalf("Error creating the client: %s", err)
 	}
 
-	listItems := extractListItems(doc, divClass)
-	for _, item := range listItems {
-		line := strings.Split(item, " ")
-		if len(line) > 2 {
-			root := strings.Split(strings.Join(strings.Split(strings.Join(line[3:], " "), " "), " "), " , ")
+	ctx := context.Background()
+	indexName := "dhatus"
 
-			if len(root) == 2 {
-				fmt.Printf("%s : %s", root[0], root[1])
-				fmt.Println()
-			}
+	// Check if the index exists
+	res, err := es.Indices.Exists([]string{indexName})
+	if err != nil {
+		log.Fatalf("Error checking if index exists: %s", err)
+	}
+	if res.StatusCode == 404 {
+		// Create the index if it does not exist
+		res, err := es.Indices.Create(indexName)
+		if err != nil {
+			log.Fatalf("Error creating index: %s", err)
+		}
+		if res.IsError() {
+			log.Fatalf("Error response while creating index: %s", res.String())
 		}
 	}
+
+	// Index the dhatusArray
+	for _, dhatu := range dhatus {
+		data, err := json.Marshal(dhatu)
+		if err != nil {
+			log.Fatalf("Error marshaling dhatu: %s", err)
+		}
+
+		// Index the document
+		res, err := es.Index(
+			indexName,
+			bytes.NewReader(data),
+			es.Index.WithContext(ctx),
+		)
+		if err != nil {
+			log.Fatalf("Error indexing dhatu: %s", err)
+		}
+		if res.IsError() {
+			log.Fatalf("Error response while indexing dhatu: %s", res.String())
+		}
+	}
+
+	fmt.Println("Successfully indexed dhatus")
 }
