@@ -39,7 +39,7 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	devanagariQuery := r.URL.Query().Get("dev")
 	if devanagariQuery != "" {
 		log.Println("SLP1 query : ", devanagariQuery)
-		esEntries, _ := persistence.SearchEntry(devanagariQuery)
+		esEntries, _ := persistence.SearchDictionaryEntry(devanagariQuery)
 		entries = append(entries, esEntries...)
 	}
 
@@ -62,6 +62,28 @@ func AutoCompleteHandler(w http.ResponseWriter, r *http.Request) {
 	results := service.AutoComplete(service.LookupReq{
 		Slp1: slp1Query,
 	})
+
+	// Set the content type to application/json
+	w.Header().Set("Content-Type", "application/json")
+
+	// Encode results to JSON and write the response
+	json.NewEncoder(w).Encode(results)
+}
+
+func SearchDhatuHandler(w http.ResponseWriter, r *http.Request) {
+	englishWord := r.URL.Query().Get("englishWord")
+	if englishWord == "" {
+		http.Error(w, "Search query is required", http.StatusBadRequest)
+		return
+	}
+
+	results, err := persistence.SearchDhatu(englishWord)
+
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	// Set the content type to application/json
 	w.Header().Set("Content-Type", "application/json")

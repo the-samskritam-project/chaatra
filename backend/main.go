@@ -35,6 +35,7 @@ func main() {
 
 	mux.HandleFunc("/search", h.SearchHandler)
 	mux.HandleFunc("/complete", h.AutoCompleteHandler)
+	mux.HandleFunc("/dhatus", h.SearchDhatuHandler)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"}, // Allowing only http://localhost:3000
