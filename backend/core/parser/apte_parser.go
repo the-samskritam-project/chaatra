@@ -1,4 +1,4 @@
-package core
+package parser
 
 import (
 	"bufio"
@@ -10,7 +10,11 @@ import (
 )
 
 type DictionaryEntry struct {
-	Type string
+	Type     string
+	Meanings []string
+}
+
+type MetaInfo struct {
 }
 
 type Parser interface {
@@ -66,49 +70,6 @@ func (parser *ApteParser) ParseFullDictionary(filePath string) (
 	return entries, nil
 }
 
-type TokenType string
-
-const StartElement TokenType = "Start"
-const EndElement TokenType = "End"
-const CharData TokenType = "CharData"
-
-type DictionaryEntryToken struct {
-	Token   xml.Token
-	Typ     TokenType
-	Content string
-}
-
-type TokenStack struct {
-	Tokens []*DictionaryEntryToken
-}
-
-func NewStack() *TokenStack {
-	return &TokenStack{
-		Tokens: []*DictionaryEntryToken{},
-	}
-}
-
-func (s *TokenStack) IsEmpty() bool {
-	return len(s.Tokens) == 0
-}
-
-func (s *TokenStack) Push(t *DictionaryEntryToken) {
-	s.Tokens = append(s.Tokens, t)
-}
-
-func (s *TokenStack) Pop() *DictionaryEntryToken {
-	l := len(s.Tokens)
-	if l == 0 {
-		return nil
-	}
-
-	toPop := s.Tokens[l-1]
-
-	s.Tokens = s.Tokens[:l-1]
-
-	return toPop
-}
-
 func (parser *ApteParser) ParseEntry(content string) (
 	*DictionaryEntry,
 	error,
@@ -122,14 +83,29 @@ func (parser *ApteParser) ParseEntry(content string) (
 	}
 
 	stack := NewStack()
+	var entryTokens DictionaryEntryTokens
+
 	for token != nil {
 		switch tok := token.(type) {
 
 		case xml.StartElement:
-			stack.Push(&DictionaryEntryToken{
-				Typ:   StartElement,
-				Token: token,
-			})
+			for !stack.IsEmpty() {
+				tk := stack.Pop()
+
+				if tk.Typ == CharData {
+					entryTokens = append(entryTokens, tk)
+				}
+			}
+
+			start := &DictionaryEntryToken{
+				Typ:     StartElement,
+				Token:   token,
+				Content: tok.Name.Local,
+			}
+
+			entryTokens = append(entryTokens, start)
+
+			stack.Push(start)
 
 		case xml.CharData:
 			stack.Push(&DictionaryEntryToken{
@@ -147,22 +123,32 @@ func (parser *ApteParser) ParseEntry(content string) (
 				}
 
 				if tk.Typ == CharData {
-					log.Println(tk.Content)
+					entryTokens = append(entryTokens, tk)
 				}
 			}
 
-			for !stack.IsEmpty() {
-				tk := stack.Pop()
-
-				if tk.Typ == CharData {
-					log.Println(tk.Content)
-				}
+			end := &DictionaryEntryToken{
+				Typ:     EndElement,
+				Token:   token,
+				Content: tok.Name.Local,
 			}
 
+			entryTokens = append(entryTokens, end)
 		}
 
 		token, _ = decoder.Token()
 	}
+
+	for !stack.IsEmpty() {
+		tk := stack.Pop()
+
+		if tk.Typ == CharData {
+			entryTokens = append(entryTokens, tk)
+		}
+	}
+
+	log.Println(entryTokens.GetPartOfSpeech())
+	log.Println(entryTokens.GetMeanings())
 
 	return nil, nil
 }
