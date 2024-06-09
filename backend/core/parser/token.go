@@ -43,7 +43,12 @@ func (tokens DictionaryEntryTokens) GetMeanings() []string {
 		ind++
 	}
 
-	ind += 2
+	if ind == len(tokens) {
+		ind = 0
+	} else {
+		ind += 2
+	}
+
 	var meanings []string
 
 	for ind < len(tokens) {
