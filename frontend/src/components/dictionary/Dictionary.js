@@ -1,7 +1,7 @@
 import './App.css';
 import React, { useEffect, useState } from 'react';
 import Entries from './Entries';
-import SearchKeyboard from './SearchKeyboard';
+import SearchKeyboard from '../keyboard/SearchKeyboard';
 
 function Dictionary() {
     const [slp1SearchStr, setSlp1SearchStr] = useState('');

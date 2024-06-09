@@ -1,8 +1,9 @@
 import React from 'react';
 import './App.css';
-import './utils/subStringMatcher'
-import { find } from './utils/subStringMatcher';
-import { virama, signsToVowels } from './utils/constants';
+import '../../utils/subStringMatcher'
+import { find } from '../../utils/subStringMatcher';
+import { virama, signsToVowels } from '../../utils/constants';
+import emptyStateImage from './images/search.webp'; // Import the image
 
 function Entries({ entries, devSearchStr }) {
   const highlightText = (text, search) => {
@@ -33,7 +34,7 @@ function Entries({ entries, devSearchStr }) {
   };
 
   return (
-    <div className="entry">
+    <div>
       {entries.length > 0 ? (
         entries.map((entry, index) => (
           <div key={index} className="entry">
@@ -42,7 +43,9 @@ function Entries({ entries, devSearchStr }) {
           </div>
         ))
       ) : (
-        <p>No dictionary entries to show.</p>
+        <div className="empty-state">
+          <img src={emptyStateImage} alt="Search!" />
+        </div>
       )}
     </div>
   );

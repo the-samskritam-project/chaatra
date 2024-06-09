@@ -5,6 +5,7 @@
 .heading {
     font-size: 24px; /* Base font size for the English text */
     color: #333; /* Sets the text color */
+    margin-bottom: 20px;
 }
 
 .devanagari {
@@ -19,22 +20,6 @@
     font-weight: 400; /* Normal weight, making it not bold */
     color: #666; /* A lighter shade of grey for contrast */
     font-style: italic; /* Keeps the text italic */
-}
-
-
-.main-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  /* Centers children horizontally */
-  width: 100%;
-  /* Ensures it takes full width of the viewport */
-  max-width: 1200px;
-  /* Maximum width to prevent overly wide layouts */
-  margin: auto;
-  /* Centers the container in the viewport */
-  padding: 20px;
-  height: auto;
 }
 
 /* Container for the search bar */
@@ -97,23 +82,19 @@
 }
 
 
+/* Entries container styling */
 .entries-container {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Centers children vertically */
-  justify-content: center;
-  /* Centers children horizontally for all screen sizes */
+  justify-content: center; /* Centers children horizontally and vertically */
   background-color: #f9f9f9;
-  /* Light grey background similar to other containers */
   padding: 20px;
   border-radius: 8px;
-  /* Consistent rounded corners */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  /* Subtle shadow for depth */
-  height: auto;
-  /* Automatically adjusts to the content height */
+  height: auto; /* Automatically adjusts to the content height */
+  box-sizing: border-box;
 }
 
 .entry {
@@ -271,3 +252,108 @@
   background-color: #0056b3; /* Darker shade on hover */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Larger shadow on hover */
 }
+
+/* Main container styling */
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+  height: auto;
+}
+
+/* Ensure react-tabs takes full width */
+.react-tabs {
+  width: 100%;
+}
+
+/* Style the TabList to occupy the full width of the main container */
+.react-tabs__tab-list {
+  display: flex;
+  width: 100%;
+  justify-content: space-around;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  background: #e6f2ff; /* Light blue background */
+  border-radius: 8px; /* Rounded corners */
+  border: 1px solid #cce5ff; /* Light blue border */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  overflow: hidden; /* Ensure rounded corners are visible */
+}
+
+/* Style each Tab to take an equal amount of space */
+.react-tabs__tab {
+  flex-grow: 1;
+  text-align: center;
+  padding: 15px 10px;
+  cursor: pointer;
+  background: #e6f2ff; /* Light blue background */
+  color: #333;
+  font-weight: bold;
+  border: 1px solid #cce5ff; /* Very light border color */
+  border-bottom: none; /* Remove bottom border to avoid double border */
+  transition: background 0.3s, transform 0.3s;
+  margin: 0 2px; /* Add space between tabs */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Lighter shadow */
+  border-radius: 8px 8px 0 0; /* Rounded top corners */
+}
+
+.react-tabs__tab--selected {
+  background: white;
+  color: #007bff;
+  border-bottom: 2px solid #007bff; /* Highlight selected tab */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Slightly stronger shadow */
+}
+
+.react-tabs__tab:hover {
+  background: #cce5ff; /* Light hover effect */
+}
+
+/* Ensure the TabPanel takes the full width of the main container */
+.react-tabs__tab-panel {
+  width: 100%;
+  padding: 20px;
+  background: #fff;
+  border-radius: 0 0 8px 8px; /* Rounded bottom corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Lighter shadow */
+  min-height: 300px; /* Set a minimum height for consistency */
+}
+
+/* Styling for the empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem; /* Use relative padding */
+  color: #555;
+  height: 100%; /* Ensure it uses full available height */
+  width: 100%; /* Ensure it uses full available width */
+}
+
+/* Scale down the image using relative units */
+.empty-state img {
+  max-width: 400px; /* Ensure it doesn't get too large */
+  height: auto; /* Maintain aspect ratio */
+  margin-bottom: 1rem; /* Adjust spacing as needed */
+}
+
+/* Reduce margins around text elements */
+.empty-state h3 {
+  margin: 0.5rem 0; /* Use relative margin */
+  font-size: 1.5rem;
+}
+
+.empty-state p {
+  font-size: 1rem;
+  color: #777;
+  margin: 0; /* Remove additional margins */
+}
+
+
