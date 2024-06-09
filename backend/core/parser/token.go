@@ -2,7 +2,6 @@ package parser
 
 import (
 	"encoding/xml"
-	"log"
 )
 
 type TokenType string
@@ -48,7 +47,6 @@ func (tokens DictionaryEntryTokens) GetMeanings() []string {
 	var meanings []string
 
 	for ind < len(tokens) {
-		log.Println(ind)
 		j := ind
 
 		for j < len(tokens) {

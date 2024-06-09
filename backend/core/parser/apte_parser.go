@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/xml"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 )
@@ -147,8 +146,11 @@ func (parser *ApteParser) ParseEntry(content string) (
 		}
 	}
 
-	log.Println(entryTokens.GetPartOfSpeech())
-	log.Println(entryTokens.GetMeanings())
+	partOfSpeech := entryTokens.GetPartOfSpeech()
+	meanings := entryTokens.GetMeanings()
 
-	return nil, nil
+	return &DictionaryEntry{
+		Type:     partOfSpeech,
+		Meanings: meanings,
+	}, nil
 }
