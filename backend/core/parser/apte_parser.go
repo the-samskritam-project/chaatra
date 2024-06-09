@@ -4,16 +4,15 @@ import (
 	"bufio"
 	"encoding/xml"
 	"fmt"
+	"log"
 	"os"
+	"regexp"
 	"strings"
 )
 
 type DictionaryEntry struct {
 	Type     string
 	Meanings []string
-}
-
-type MetaInfo struct {
 }
 
 type Parser interface {
@@ -44,21 +43,16 @@ func (parser *ApteParser) ParseFullDictionary(filePath string) (
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		reader := strings.NewReader(line)
-		decoder := xml.NewDecoder(reader)
+		if strings.Contains(line, "<H1>") {
+			re := regexp.MustCompile(`<body>(.*?)</body>`)
+			match := re.FindStringSubmatch(line)
 
-		for {
-			_, err := decoder.Token()
-			if err != nil {
-				return nil, fmt.Errorf("error parsing token : %s", err.Error())
-			}
-
-			entryToken, err := parser.ParseEntry("token")
+			entry, err := parser.ParseEntry(match[0])
 			if err != nil {
 				return nil, err
 			}
 
-			entries = append(entries, entryToken)
+			log.Println(entry)
 		}
 	}
 

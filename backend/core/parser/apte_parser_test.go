@@ -22,3 +22,12 @@ func TestApteParseEntry(t *testing.T) {
 		}
 	}
 }
+
+func TestApteParserFullXML(t *testing.T) {
+	parser := NewParser()
+
+	_, err := parser.ParseFullDictionary(`../test_dictionary.xml`)
+	if err != nil {
+		t.Fatalf("Expected no error, but got : %s", err.Error())
+	}
+}
