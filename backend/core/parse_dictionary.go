@@ -61,7 +61,6 @@ func Parse(t *Trie) Dictionary {
 				continue
 			}
 
-			// Assuming getTokens and stringifyTokens are implemented elsewhere
 			tokens := GetTokens(h1.Head.Key1)
 			t.Add(tokens)
 

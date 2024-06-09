@@ -1,14 +1,31 @@
 import './App.css';
+import './Modal.css';
 import Dictionary from './Dictionary';
+import Heading from './Heading';
+import { Tabs, TabList, Tab, TabPanel } from 'react-tabs';
+import 'react-tabs/style/react-tabs.css';
+import Flashcards from './components/flashcards/Flashcards';
 
 function App() {
   return (
     <div className="main-container">
-      <div class="heading">
-        <span class="devanagari">छात्रः</span>
-        <span class="english">A pupil, disciple.</span>
-      </div>
-      <Dictionary />
+      <Heading />
+
+      <Tabs>       
+        <TabList>
+          <Tab>Dictionary</Tab>
+          <Tab>Flash cards</Tab>
+        </TabList>
+
+        <TabPanel>
+          <Dictionary />
+        </TabPanel>
+
+        <TabPanel>
+          <Flashcards />
+        </TabPanel>
+
+      </Tabs>
     </div>
   );
 }
