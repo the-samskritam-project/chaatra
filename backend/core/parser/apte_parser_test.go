@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+	"log"
 	"testing"
 )
 
@@ -26,8 +28,18 @@ func TestApteParseEntry(t *testing.T) {
 func TestApteParserFullXML(t *testing.T) {
 	parser := NewParser()
 
-	_, err := parser.ParseFullDictionary(`../test_dictionary.xml`)
+	entries, err := parser.ParseFullDictionary(`../test_dictionary.xml`)
 	if err != nil {
 		t.Fatalf("Expected no error, but got : %s", err.Error())
+	}
+
+	for _, entry := range entries {
+		ent := entry.Type
+
+		for _, meaning := range entry.Meanings {
+			ent = fmt.Sprintf("%s%s", ent, meaning)
+		}
+
+		log.Println(ent)
 	}
 }

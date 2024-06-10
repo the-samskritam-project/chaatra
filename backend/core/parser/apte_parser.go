@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/xml"
 	"fmt"
-	"log"
 	"os"
 	"regexp"
 	"strings"
@@ -52,7 +51,7 @@ func (parser *ApteParser) ParseFullDictionary(filePath string) (
 				return nil, err
 			}
 
-			log.Println(entry)
+			entries = append(entries, entry)
 		}
 	}
 
