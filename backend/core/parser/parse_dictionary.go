@@ -1,7 +1,8 @@
-package core
+package parser
 
 import (
 	"bufio"
+	"chaatra/core/trans"
 	"encoding/xml"
 	"fmt"
 	"log"
@@ -33,8 +34,10 @@ type Body struct {
 	Result string
 }
 
+var D Dictionary
+
 // Function to Parse each H1 entry
-func Parse(t *Trie) Dictionary {
+func Parse(t *trans.Trie) Dictionary {
 	// Open the XML file
 	file, err := os.Open("./dictionary.xml")
 	if err != nil {
@@ -61,10 +64,10 @@ func Parse(t *Trie) Dictionary {
 				continue
 			}
 
-			tokens := GetTokens(h1.Head.Key1)
+			tokens := trans.GetTokens(h1.Head.Key1)
 			t.Add(tokens)
 
-			devanagariWord := StringifyTokens(tokens)
+			devanagariWord := trans.StringifyTokens(tokens)
 
 			if _, ok := dictionary[devanagariWord]; !ok {
 				count++

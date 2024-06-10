@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"chaatra/core"
+	"chaatra/core/trans"
 	"encoding/xml"
 	"strings"
 	"unicode"
@@ -104,7 +104,7 @@ func getSanskritText(str string) string {
 				result += splitByX(subStr, Dash)
 			} else {
 				subStr = strings.TrimSpace(subStr)
-				result += core.Trans(subStr)
+				result += trans.Trans(subStr)
 			}
 
 			if i != len(splitByComma)-1 {
@@ -114,7 +114,7 @@ func getSanskritText(str string) string {
 	} else if strings.Contains(str, Space) {
 		result += splitByX(str, Space)
 	} else {
-		result = core.Trans(str)
+		result = trans.Trans(str)
 	}
 
 	return result
@@ -127,7 +127,7 @@ func splitByX(str, byX string) string {
 
 	var result string
 	for i, subStr := range subStrs {
-		result += core.Trans(subStr)
+		result += trans.Trans(subStr)
 
 		if i < len(subStrs)-1 {
 			result += byX

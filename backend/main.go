@@ -1,7 +1,8 @@
 package main
 
 import (
-	"chaatra/core"
+	"chaatra/core/parser"
+	"chaatra/core/trans"
 	"chaatra/persistence"
 	"log"
 	"net/http"
@@ -11,23 +12,23 @@ import (
 	"github.com/rs/cors"
 )
 
-var d core.Dictionary
+var d parser.Dictionary
 
 func main() {
 	// initialize elastic search
 	persistence.InitEs()
 
-	core.T = &core.Trie{
-		Root: &core.Node{
-			Letter: &core.Letter{
-				Devanagari: ' ',
+	trans.T = &trans.Trie{
+		Root: &trans.Node{
+			Letter: &trans.Letter{
+				Devanagari: '*',
 			},
-			Children: make(map[rune]*core.Node),
+			Children: make(map[rune]*trans.Node),
 		},
 	}
 
-	if d = core.Parse(core.T); d != nil {
-		core.D = d
+	if d = parser.Parse(trans.T); d != nil {
+		parser.D = d
 		persistence.IndexEntries(d)
 	}
 

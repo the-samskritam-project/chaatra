@@ -1,7 +1,8 @@
 package http
 
 import (
-	"chaatra/core"
+	"chaatra/core/parser"
+	"chaatra/core/trans"
 	"chaatra/persistence"
 	"chaatra/service"
 	"encoding/json"
@@ -18,20 +19,20 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("SLP1 query : ", slp1Query)
 
-	var letters []*core.Letter
+	var letters []*trans.Letter
 	for _, c := range slp1Query {
-		l := core.TheAlphabet[string(c)]
+		l := trans.TheAlphabet[string(c)]
 
 		letters = append(letters, &l)
 	}
 
-	words := core.T.GetWordsForPrefixFuzzy(letters)
-	entries := make([]*core.Entry, 0)
+	words := trans.T.GetWordsForPrefixFuzzy(letters)
+	entries := make([]*parser.Entry, 0)
 
 	for _, res := range words {
-		devanagariWord := core.StringifyTokens(res)
+		devanagariWord := trans.StringifyTokens(res)
 
-		if e, ok := core.D[devanagariWord]; ok {
+		if e, ok := parser.D[devanagariWord]; ok {
 			entries = append(entries, e)
 		}
 	}

@@ -1,4 +1,4 @@
-package core
+package parser
 
 type Entry struct {
 	DevanagariWord     string `json:"devanagariWord"`

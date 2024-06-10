@@ -28,7 +28,7 @@ func TestApteParseEntry(t *testing.T) {
 func TestApteParserFullXML(t *testing.T) {
 	parser := NewParser()
 
-	entries, err := parser.ParseFullDictionary(`../test_dictionary.xml`)
+	entries, err := parser.ParseFullDictionary(`./test_dictionary.xml`)
 	if err != nil {
 		t.Fatalf("Expected no error, but got : %s", err.Error())
 	}

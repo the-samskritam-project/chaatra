@@ -1,4 +1,4 @@
-package core
+package trans
 
 type Letter struct {
 	// Check out the transliteration scheme : https://en.wikipedia.org/wiki/SLP1
