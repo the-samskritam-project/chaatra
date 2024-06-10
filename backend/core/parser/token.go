@@ -103,6 +103,7 @@ func getSanskritText(str string) string {
 			if strings.Contains(subStr, Dash) {
 				result += splitByX(subStr, Dash)
 			} else {
+				subStr = strings.TrimSpace(subStr)
 				result += core.Trans(subStr)
 			}
 
