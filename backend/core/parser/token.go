@@ -1,7 +1,10 @@
 package parser
 
 import (
+	"chaatra/core"
 	"encoding/xml"
+	"strings"
+	"unicode"
 )
 
 type TokenType string
@@ -12,6 +15,11 @@ const CharData TokenType = "CharData"
 
 const PartOfSpeech = "ab"
 const MeaningMarker = "b"
+const SanskritText = "s"
+
+const Comma = ","
+const Dash = "-"
+const Space = " "
 
 type DictionaryEntryToken struct {
 	Token   xml.Token
@@ -62,17 +70,87 @@ func (tokens DictionaryEntryTokens) GetMeanings() []string {
 			j++
 		}
 
-		var meaning string
 		for i := ind; i < j; i++ {
-			if tokens[i].Typ == CharData {
-				meaning += tokens[i].Content
-			}
-		}
+			var meaning string
 
-		meanings = append(meanings, meaning)
+			if tokens[i].Typ == CharData {
+				if i-1 >= 0 && tokens[i-1].Typ == StartElement &&
+					tokens[i-1].Content == SanskritText {
+
+					meaning += getSanskritText(tokens[i].Content)
+				} else {
+					meaning += tokens[i].Content
+				}
+			}
+
+			meanings = append(meanings, reduceSpaces(meaning))
+		}
 
 		ind = j + 1
 	}
 
 	return meanings
+}
+
+func getSanskritText(str string) string {
+	str = strings.TrimSpace(str)
+
+	var result string
+	if strings.Contains(str, Comma) {
+		splitByComma := strings.Split(str, Comma)
+
+		for i, subStr := range splitByComma {
+			if strings.Contains(subStr, Dash) {
+				result += splitByX(subStr, Dash)
+			} else {
+				result += core.Trans(subStr)
+			}
+
+			if i != len(splitByComma)-1 {
+				result += Comma + Space
+			}
+		}
+	} else if strings.Contains(str, Space) {
+		result += splitByX(str, Space)
+	} else {
+		result = core.Trans(str)
+	}
+
+	return result
+}
+
+func splitByX(str, byX string) string {
+	str = strings.TrimSpace(str)
+
+	subStrs := strings.Split(str, byX)
+
+	var result string
+	for i, subStr := range subStrs {
+		result += core.Trans(subStr)
+
+		if i < len(subStrs)-1 {
+			result += byX
+		}
+	}
+
+	return result
+}
+
+func reduceSpaces(input string) string {
+	var b strings.Builder
+	space := false
+
+	for _, r := range input {
+		if unicode.IsSpace(r) {
+			if !space {
+				b.WriteRune(' ')
+				space = true
+			}
+		} else {
+			b.WriteRune(r)
+			space = false
+		}
+	}
+
+	return b.String()
 }
