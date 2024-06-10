@@ -1,12 +1,10 @@
-package core
+package trans
 
 import (
 	"unicode"
 )
 
 var T *Trie
-
-var D Dictionary
 
 type Children map[rune]*Node
 

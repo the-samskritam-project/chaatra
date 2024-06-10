@@ -1,7 +1,7 @@
 package service
 
 import (
-	"chaatra/core"
+	"chaatra/core/trans"
 	"chaatra/helpers"
 )
 
@@ -11,14 +11,14 @@ type LookupReq struct {
 }
 
 func AutoComplete(req LookupReq) []string {
-	var reqStr core.Word
+	var reqStr trans.Word
 	for _, c := range req.Slp1 {
-		l := core.TheAlphabet[string(c)]
+		l := trans.TheAlphabet[string(c)]
 
 		reqStr = append(reqStr, &l)
 	}
 
-	matches := core.T.GetWordsForPrefixFuzzy(reqStr)
+	matches := trans.T.GetWordsForPrefixFuzzy(reqStr)
 
 	var candidates []string
 	for _, w := range matches {
