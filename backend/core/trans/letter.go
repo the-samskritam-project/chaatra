@@ -12,3 +12,13 @@ type Word []*Letter
 func (w Word) Devanagari() string {
 	return StringifyTokens(w)
 }
+
+func (w Word) LatinSLP1() string {
+	var slp1 string
+
+	for _, l := range w {
+		slp1 += string(l.Latin)
+	}
+
+	return slp1
+}

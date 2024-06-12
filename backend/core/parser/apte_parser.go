@@ -10,6 +10,7 @@ import (
 )
 
 type DictionaryEntry struct {
+	Word     string
 	Type     string
 	Meanings []string
 }
@@ -43,12 +44,19 @@ func (parser *ApteParser) ParseFullDictionary(filePath string) (
 		line := scanner.Text()
 
 		if strings.Contains(line, "<H1>") {
-			re := regexp.MustCompile(`<body>(.*?)</body>`)
-			match := re.FindStringSubmatch(line)
+			entryBody := regexp.MustCompile(`<body>(.*?)</body>`)
+			match := entryBody.FindStringSubmatch(line)
 
 			entry, err := parser.ParseEntry(match[0])
 			if err != nil {
 				return nil, err
+			}
+
+			entryKey := regexp.MustCompile(`<key1>(.*?)</key1>`)
+			match = entryKey.FindStringSubmatch(line)
+
+			if len(match) > 1 {
+				entry.Word = match[1]
 			}
 
 			entries = append(entries, entry)
