@@ -1,56 +1,58 @@
 package trans
 
 import (
-	"fmt"
-	"log"
 	"testing"
 )
 
-func Test_TrieAdd(t *testing.T) {
-	trie := Trie{
-		Root: &Node{
-			Letter: &Letter{
-				Devanagari: ' ',
+func TestAdd(t *testing.T) {
+	var testCases = []struct {
+		words []string
+	}{
+		{
+			words: []string{
+				"lal", "lala", "lalat", "lalanaM",
+				"lalanA", "lalanikA", "lalaMtikA", "lalAkaH", "lalAwaM",
+				"lalAwakaM", "lalAwaMtapa", "lalAwikA", "lalAwUla",
+				"lalAma", "lalAmakaM", "lalAman", "lalita", "lalitA",
 			},
-			Children: make(map[rune]*Node),
 		},
 	}
 
-	tokens := GetTokens("svaDitiH")
-	trie.Add(tokens)
-
-	tokens = GetTokens("pariGawwanaM")
-	trie.Add(tokens)
-
-	tokens = GetTokens("kanaKala")
-	trie.Add(tokens)
-
-	tokens = GetTokens("kapiSA")
-	trie.Add(tokens)
-
-	tokens = GetTokens("kaliMga")
-	trie.Add(tokens)
-
-	tokens = GetTokens("kAMcI")
-	trie.Add(tokens)
-
-	tokens = GetTokens("kAmarUpa")
-	trie.Add(tokens)
-
-	tokens = GetTokens("ahaM")
-	trie.Add(tokens)
-
-	l1 := TheAlphabet["a"]
-
-	results := trie.GetWordsForPrefixStrict([]*Letter{&l1})
-
-	for _, res := range results {
-		var word string
-		for _, r := range res {
-			word = fmt.Sprintf("%s%c", word, r.Latin)
+	for _, testCase := range testCases {
+		trie := Trie{
+			Root: &Node{
+				Letter: &Letter{
+					Devanagari: ' ',
+				},
+				Children: make(map[rune]*Node),
+			},
 		}
 
-		log.Println(word)
+		contains := func(str string, words []Word) bool {
+			for _, word := range words {
+				if str == word.LatinSLP1() {
+					return true
+				}
+			}
+
+			return false
+		}
+
+		for _, word := range testCase.words {
+			tokens := GetTokens(word)
+			trie.Add(tokens)
+		}
+
+		for _, word := range testCase.words {
+			tokens := GetTokens(word)
+
+			found := trie.GetWordsForPrefixStrict(tokens)
+			if len(found) == 0 {
+				t.Errorf("Expected to find '%s' in the trie, but did the array was empty", word)
+			} else if !contains(word, found) {
+				t.Errorf("Expected to find '%s' in the trie, but the word was not found in the results", word)
+			}
+		}
 	}
 }
 

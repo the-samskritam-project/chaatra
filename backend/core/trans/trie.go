@@ -53,7 +53,7 @@ func (t *Trie) Add(word []*Letter) {
 		reached++
 	}
 
-	for i := reached - 1; i < len(word); i++ {
+	for i := reached; i < len(word); i++ {
 		n := &Node{
 			Letter:   word[i],
 			Children: make(map[rune]*Node),
@@ -84,6 +84,7 @@ func (t *Trie) GetWordsForPrefixStrict(prefix []*Letter) []Word {
 	}
 
 	results = depthFirst(iterator, prefix)
+	results = append(results, prefix)
 
 	return results
 }
