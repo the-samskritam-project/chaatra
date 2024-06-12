@@ -53,7 +53,7 @@ func (t *Trie) Add(word []*Letter) {
 		reached++
 	}
 
-	for i := reached; i < len(word); i++ {
+	for i := reached - 1; i < len(word); i++ {
 		n := &Node{
 			Letter:   word[i],
 			Children: make(map[rune]*Node),
