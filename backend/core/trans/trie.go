@@ -83,8 +83,8 @@ func (t *Trie) GetWordsForPrefixStrict(prefix []*Letter) []Word {
 		return []Word{}
 	}
 
-	results = depthFirst(iterator, prefix)
 	results = append(results, prefix)
+	results = append(results, depthFirst(iterator, prefix)...)
 
 	return results
 }
