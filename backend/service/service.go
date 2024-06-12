@@ -33,18 +33,24 @@ func AutoComplete(req LookupReq) []string {
 		candidates)
 }
 
-func ParseApteDictionary(path string) ([]*parser.DictionaryEntry, error) {
-	parser := parser.NewParser()
+func ParseApteDictionary(path string) (map[string]*parser.DictionaryEntry, error) {
+	parsr := parser.NewParser()
 
-	results, err := parser.ParseFullDictionary(path)
+	entries, err := parsr.ParseFullDictionary(path)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing the apte dictionary : %s", err.Error())
 	}
 
-	return results, nil
+	dictionary := make(map[string]*parser.DictionaryEntry, len(entries))
+
+	for _, entry := range entries {
+		dictionary[entry.Word] = entry
+	}
+
+	return dictionary, nil
 }
 
-func BuildTrie(entries []*parser.DictionaryEntry) *trans.Trie {
+func BuildTrie(entries map[string]*parser.DictionaryEntry) *trans.Trie {
 	trie := &trans.Trie{
 		Root: &trans.Node{
 			Letter: &trans.Letter{
@@ -55,8 +61,8 @@ func BuildTrie(entries []*parser.DictionaryEntry) *trans.Trie {
 	}
 
 	var processed int
-	for _, entry := range entries {
-		trie.Add(trans.GetTokens(entry.Word))
+	for entry := range entries {
+		trie.Add(trans.GetTokens(entry))
 		processed++
 	}
 
@@ -65,6 +71,6 @@ func BuildTrie(entries []*parser.DictionaryEntry) *trans.Trie {
 	return trie
 }
 
-func TransliterateAndLookup(trie *trans.Trie, slp1 string) []trans.Word {
+func LookupPrefixes(trie *trans.Trie, slp1 string) []trans.Word {
 	return trie.GetWordsForPrefixStrict(trans.GetTokens(slp1))
 }
