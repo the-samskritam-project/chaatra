@@ -2,21 +2,23 @@ package main
 
 import (
 	"bufio"
+	"chaatra/core/trans"
 	"chaatra/service"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 func main() {
-	results, err := service.ParseApteDictionary(`dictionary.xml`)
+	dictionary, err := service.ParseApteDictionary(`dictionary.xml`)
 	if err != nil {
 		log.Println(`error parsing the dicrionary : `, err.Error())
 
 		os.Exit(1)
 	}
 
-	t := service.BuildTrie(results)
+	t := service.BuildTrie(dictionary)
 
 	for {
 		fmt.Print("Enter your SLP1 string : ")
@@ -29,9 +31,16 @@ func main() {
 			break
 		}
 
-		matches := service.TransliterateAndLookup(t, input)
+		matches := service.LookupPrefixes(t, input)
 		for _, match := range matches {
-			fmt.Println(match.LatinSLP1(), match.Devanagari())
+			entry := dictionary[match.LatinSLP1()]
+			if entry != nil {
+				fmt.Println(trans.StringifyTokens(trans.GetTokens(entry.Word)))
+
+				fmt.Println(strings.Join(entry.Meanings, ""))
+
+				fmt.Println()
+			}
 		}
 	}
 }
