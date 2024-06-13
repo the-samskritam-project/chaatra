@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -20,7 +19,14 @@ func main() {
 
 	t := service.BuildTrie(dictionary)
 
+	demarcator := "-"
+	for i := 0; i < 8; i++ {
+		demarcator += demarcator
+	}
+
 	for {
+		fmt.Println(demarcator)
+
 		fmt.Print("Enter your SLP1 string : ")
 		scanner := bufio.NewScanner(os.Stdin)
 		scanner.Scan()
@@ -39,10 +45,14 @@ func main() {
 
 				fmt.Println(entry.Type)
 
-				fmt.Println(strings.Join(entry.Meanings, ""))
+				for _, meaning := range entry.Meanings {
+					fmt.Println(meaning)
+				}
 
-				fmt.Println()
+				fmt.Println(demarcator)
 			}
 		}
+
+		fmt.Println(demarcator)
 	}
 }
