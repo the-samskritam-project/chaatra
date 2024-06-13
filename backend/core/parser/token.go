@@ -43,19 +43,6 @@ func (tokens DictionaryEntryTokens) GetPartOfSpeech() string {
 
 func (tokens DictionaryEntryTokens) GetMeanings() []string {
 	var ind int
-	for _, tok := range tokens {
-		if tok.Typ == StartElement && tok.Content == PartOfSpeech {
-			break
-		}
-
-		ind++
-	}
-
-	if ind == len(tokens) {
-		ind = 0
-	} else {
-		ind += 2
-	}
 
 	var meanings []string
 
