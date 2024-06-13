@@ -1,6 +1,7 @@
-package core
+package parser
 
 import (
+	"chaatra/core/trans"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -89,7 +90,7 @@ func (b *Body) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 
 					var devanagiriStrings []string
 					for _, res := range splitResuts {
-						devanagiriStrings = append(devanagiriStrings, (StringifyTokens(GetTokens(res))))
+						devanagiriStrings = append(devanagiriStrings, (trans.StringifyTokens(trans.GetTokens(res))))
 					}
 
 					result = fmt.Sprintf("%s%s", result, strings.Join(devanagiriStrings, " "))

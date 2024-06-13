@@ -1,12 +1,10 @@
-package core
+package trans
 
 import (
 	"unicode"
 )
 
 var T *Trie
-
-var D Dictionary
 
 type Children map[rune]*Node
 
@@ -85,7 +83,13 @@ func (t *Trie) GetWordsForPrefixStrict(prefix []*Letter) []Word {
 		return []Word{}
 	}
 
-	results = depthFirst(iterator, prefix)
+	results = append(results, prefix)
+
+	if iterator.Children == nil || len(iterator.Children) == 0 {
+		return results
+	}
+
+	results = append(results, depthFirst(iterator, prefix)...)
 
 	return results
 }

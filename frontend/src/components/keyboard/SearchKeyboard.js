@@ -4,7 +4,6 @@ import Keyboard from './Keyboard'; // Assuming your keyboard component
 import { toDevanagiriString } from '../../utils/transliterate';
 import { vowels, consonants } from '../../utils/constants';
 import { getLastWord as getCurrentWord } from '../../utils/split';
-import { ' }
 
 function SearchKeyboard({ handleSearch }) {
   const [isKeyboardDocked, setIsKeyboardDocked] = useState(true);

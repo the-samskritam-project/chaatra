@@ -1,4 +1,4 @@
-package core
+package trans
 
 import (
 	"fmt"
@@ -104,6 +104,10 @@ func StringifyTokens(tokens []*Letter) string {
 		}
 
 		i++
+	}
+
+	if l := len(tokens); l > 0 && tokens[l-1].Typ == consonant {
+		result = append(result, halfConsonant)
 	}
 
 	return string(result)

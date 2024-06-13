@@ -2,7 +2,7 @@ package persistence
 
 import (
 	"bytes"
-	"chaatra/core"
+	"chaatra/core/parser"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -27,7 +27,7 @@ func InitEs() {
 	}
 }
 
-func IndexEntries(entries core.Dictionary) {
+func IndexEntries(entries parser.Dictionary) {
 	var body strings.Builder
 
 	for _, entry := range entries {
@@ -60,7 +60,7 @@ func IndexEntries(entries core.Dictionary) {
 	}
 }
 
-func SearchDictionaryEntry(searchTerm string) ([]*core.Entry, error) {
+func SearchDictionaryEntry(searchTerm string) ([]*parser.Entry, error) {
 	log.Println("Search term is : ", searchTerm)
 
 	// Define the query
@@ -103,11 +103,11 @@ func SearchDictionaryEntry(searchTerm string) ([]*core.Entry, error) {
 	}
 
 	hits := r["hits"].(map[string]interface{})["hits"].([]interface{})
-	entries := make([]*core.Entry, 0, len(hits))
+	entries := make([]*parser.Entry, 0, len(hits))
 	for _, hit := range hits {
 		source := hit.(map[string]interface{})["_source"]
 		entryData, _ := json.Marshal(source)
-		var entry core.Entry
+		var entry parser.Entry
 		if err := json.Unmarshal(entryData, &entry); err != nil {
 			return nil, err
 		}
@@ -117,7 +117,7 @@ func SearchDictionaryEntry(searchTerm string) ([]*core.Entry, error) {
 	return entries, nil
 }
 
-func SearchDhatu(query string) ([]core.Dhatu, error) {
+func SearchDhatu(query string) ([]parser.Dhatu, error) {
 	ctx := context.Background()
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf(`{
@@ -163,11 +163,11 @@ func SearchDhatu(query string) ([]core.Dhatu, error) {
 	}
 
 	// Create an array to hold the search results
-	var dhatus []core.Dhatu
+	var dhatus []parser.Dhatu
 
 	// Populate the array with the search results
 	for _, hit := range r["hits"].(map[string]interface{})["hits"].([]interface{}) {
-		var d core.Dhatu
+		var d parser.Dhatu
 		source := hit.(map[string]interface{})["_source"]
 		sourceBytes, _ := json.Marshal(source)
 		if err := json.Unmarshal(sourceBytes, &d); err != nil {

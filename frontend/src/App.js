@@ -1,6 +1,6 @@
 import './App.css';
 import './Modal.css';
-import Dictionary from './Dictionary';
+import Dictionary from './components/dictionary/Dictionary';
 import Heading from './Heading';
 import { Tabs, TabList, Tab, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
