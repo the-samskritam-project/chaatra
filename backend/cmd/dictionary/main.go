@@ -37,6 +37,8 @@ func main() {
 			if entry != nil {
 				fmt.Println(trans.StringifyTokens(trans.GetTokens(entry.Word)))
 
+				fmt.Println(entry.Type)
+
 				fmt.Println(strings.Join(entry.Meanings, ""))
 
 				fmt.Println()
