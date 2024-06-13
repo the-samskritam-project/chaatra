@@ -10,6 +10,9 @@ import (
 	"net/http"
 )
 
+var Dictionary map[string]*parser.DictionaryEntry
+var Trie *trans.Trie
+
 func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	slp1Query := r.URL.Query().Get("slp1")
 	if slp1Query == "" {
@@ -17,37 +20,17 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("SLP1 query : ", slp1Query)
-
-	var letters []*trans.Letter
-	for _, c := range slp1Query {
-		l := trans.TheAlphabet[string(c)]
-
-		letters = append(letters, &l)
-	}
-
-	words := trans.T.GetWordsForPrefixFuzzy(letters)
-	entries := make([]*parser.Entry, 0)
-
-	for _, res := range words {
-		devanagariWord := trans.StringifyTokens(res)
-
-		if e, ok := parser.D[devanagariWord]; ok {
-			entries = append(entries, e)
+	var entries []*parser.DictionaryEntry
+	matches := service.LookupPrefixes(Trie, slp1Query)
+	for _, match := range matches {
+		entry := Dictionary[match.LatinSLP1()]
+		if entry != nil {
+			entries = append(entries, entry)
 		}
 	}
 
-	devanagariQuery := r.URL.Query().Get("dev")
-	if devanagariQuery != "" {
-		log.Println("SLP1 query : ", devanagariQuery)
-		esEntries, _ := persistence.SearchDictionaryEntry(devanagariQuery)
-		entries = append(entries, esEntries...)
-	}
-
-	// Set the content type to application/json
 	w.Header().Set("Content-Type", "application/json")
 
-	// Encode results to JSON and write the response
 	json.NewEncoder(w).Encode(entries)
 }
 

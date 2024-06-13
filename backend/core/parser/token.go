@@ -50,26 +50,27 @@ func (tokens DictionaryEntryTokens) GetMeanings() []string {
 		j := ind
 
 		for j < len(tokens) {
-			if tokens[j].Typ == MeaningMarker {
+			if tokens[j].Typ == StartElement && tokens[j].Content == MeaningMarker {
 				break
 			}
 
 			j++
 		}
 
+		var meaning string
 		for i := ind; i < j; i++ {
-			var meaning string
-
 			if tokens[i].Typ == CharData {
-				if i-1 >= 0 && tokens[i-1].Typ == StartElement &&
+				if i-1 >= 0 &&
+					tokens[i-1].Typ == StartElement &&
 					tokens[i-1].Content == SanskritText {
-
 					meaning += getSanskritText(tokens[i].Content)
 				} else {
 					meaning += tokens[i].Content
 				}
 			}
+		}
 
+		if meaning != "" {
 			meanings = append(meanings, reduceSpaces(meaning))
 		}
 
