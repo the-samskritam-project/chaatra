@@ -1,35 +1,30 @@
 package main
 
 import (
-	"chaatra/core"
 	"chaatra/persistence"
+	"chaatra/service"
 	"log"
 	"net/http"
+	"os"
 
 	h "chaatra/http"
 
 	"github.com/rs/cors"
 )
 
-var d core.Dictionary
-
 func main() {
 	// initialize elastic search
 	persistence.InitEs()
 
-	core.T = &core.Trie{
-		Root: &core.Node{
-			Letter: &core.Letter{
-				Devanagari: ' ',
-			},
-			Children: make(map[rune]*core.Node),
-		},
+	var err error
+	h.Dictionary, err = service.ParseApteDictionary(`dictionary.xml`)
+	if err != nil {
+		log.Println(`error parsing the dicrionary : `, err.Error())
+
+		os.Exit(1)
 	}
 
-	if d = core.Parse(core.T); d != nil {
-		core.D = d
-		persistence.IndexEntries(d)
-	}
+	h.Trie = service.BuildTrie(h.Dictionary)
 
 	mux := http.NewServeMux()
 
@@ -48,7 +43,7 @@ func main() {
 	handler := c.Handler(mux)
 
 	log.Println("Starting server on port : 8081")
-	err := http.ListenAndServe(":8081", handler)
+	err = http.ListenAndServe(":8081", handler)
 	if err != nil {
 		log.Fatalf("Shutting down server : %s", err.Error())
 	} else {

@@ -24,7 +24,7 @@ WORKDIR /root/
 COPY --from=builder /go/src/chaatra/backend/samskritam /root/samskritam
 
 # Import the dictionary.xml file from the build context into the same directory as the binary
-COPY --from=builder /go/src/chaatra/backend/core/dictionary.xml /root/dictionary.xml
+COPY --from=builder /go/src/chaatra/backend/core/parser/dictionary.xml /root/dictionary.xml
 
 # Ensure executable permissions
 RUN chmod +x /root/samskritam
