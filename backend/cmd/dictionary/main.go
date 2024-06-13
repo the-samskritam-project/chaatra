@@ -52,7 +52,5 @@ func main() {
 				fmt.Println(demarcator)
 			}
 		}
-
-		fmt.Println(demarcator)
 	}
 }
