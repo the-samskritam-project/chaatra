@@ -3,6 +3,7 @@ import '../../utils/subStringMatcher'
 import { find } from '../../utils/subStringMatcher';
 import { virama, signsToVowels } from '../../utils/constants';
 import emptyStateImage from '../../images/search.webp'; // Import the image
+import { toDevanagiriString } from '../../utils/transliterate';
 
 function Entries({ entries, devSearchStr }) {
   const highlightText = (text, search) => {
@@ -37,8 +38,13 @@ function Entries({ entries, devSearchStr }) {
       {entries.length > 0 ? (
         entries.map((entry, index) => (
           <div key={index} className="entry">
-            <h3>{entry.devanagariWord}</h3>
-            <p>{highlightText(entry.englishMeaning, devSearchStr)}</p>
+            <h3>{toDevanagiriString(entry.Word)}</h3>
+            <p>{entry.Type}</p>
+            {entry.Meanings.map((meaning, meaningIndex) => (
+              <div key={meaningIndex} className="meaning">
+                <p>{highlightText(meaning, devSearchStr)}</p>
+              </div>
+            ))}
           </div>
         ))
       ) : (
