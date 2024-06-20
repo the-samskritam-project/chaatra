@@ -7,8 +7,8 @@
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
-  justify-content: center;
   z-index: 1000; /* Ensure it is above other content */
+  justify-content: center;
 }
 
 .modal-content {
@@ -20,7 +20,6 @@
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 
 .card {
@@ -31,7 +30,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: left;
 }
 
 .card-front, .card-back {
@@ -45,7 +44,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.6s;
@@ -60,6 +58,10 @@
   background: #f0f0f0;
   transform: rotateY(180deg);
   z-index: 1; /* Ensure it is below the front initially */
+  overflow-y: auto; /* Add scrollable behavior */
+  text-align: left; /* Align text to the left */
+  padding: 20px; /* Ensure padding is added for content */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
 .card.flipped .card-front {
@@ -93,4 +95,9 @@
   border-radius: 15px;
   margin-right: 5px;
   font-size: 0.9rem;
+}
+
+.meaning {
+  margin-bottom: 10px;
+  text-align: left; /* Align paragraphs to the left */
 }
