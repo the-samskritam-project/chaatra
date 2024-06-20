@@ -3,7 +3,6 @@ package service
 import (
 	"chaatra/core/parser"
 	"chaatra/core/trans"
-	"chaatra/helpers"
 	"fmt"
 	"log"
 )
@@ -13,24 +12,19 @@ type LookupReq struct {
 	Dev  string
 }
 
-func AutoComplete(req LookupReq) []string {
-	var reqStr trans.Word
-	for _, c := range req.Slp1 {
-		l := trans.TheAlphabet[string(c)]
+func AutoComplete(trie *trans.Trie, slp1 string) []string {
+	matches := trie.GetWordsForPrefixStrict(trans.GetTokens(slp1))
 
-		reqStr = append(reqStr, &l)
-	}
-
-	matches := trans.T.GetWordsForPrefixFuzzy(reqStr)
-
-	var candidates []string
+	candidates := make([]string, 0)
 	for _, w := range matches {
 		candidates = append(candidates, w.Devanagari())
 	}
 
-	return helpers.SortByCloseness(
-		reqStr.Devanagari(),
-		candidates)
+	if len(candidates) < 5 {
+		return candidates
+	}
+
+	return candidates[:5]
 }
 
 func ParseApteDictionary(path string) (map[string]*parser.DictionaryEntry, error) {
