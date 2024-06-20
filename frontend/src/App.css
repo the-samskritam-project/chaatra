@@ -374,3 +374,74 @@
   margin: 0; /* Remove additional margins */
 }
 
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: hidden;
+}
+
+.card {
+  width: 100%;
+  height: 100%;
+  perspective: 1000px;
+}
+
+.card-front, .card-back {
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.card-back {
+  max-height: 80%; /* Adjust based on your layout */
+  overflow-y: auto;
+}
+
+.meaning {
+  margin-bottom: 10px;
+  text-align: left; /* Align paragraphs to the left */
+}
+
+.flipped .card-front {
+  transform: rotateY(180deg);
+}
+
+.flipped .card-back {
+  transform: rotateY(0deg);
+}
+
+.card-front {
+  transform: rotateY(0deg);
+}
+
+.card-back {
+  transform: rotateY(-180deg);
+}
+
+.card {
+  transform-style: preserve-3d;
+  transition: transform 0.6s;
+}
