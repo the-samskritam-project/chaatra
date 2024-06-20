@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Modal from './Modal'; // Import the Modal component
+import { toDevanagiriString } from '../../utils/transliterate';
 
 const Flashcard = ({ flashcard }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -15,11 +16,9 @@ const Flashcard = ({ flashcard }) => {
   return (
     <div>
       <div onClick={handleOpenModal} className="flashcard-summary">
-        <h3>{flashcard.title}</h3>
+        <h3>{toDevanagiriString(flashcard.Word)}</h3>
         <div className="tags">
-          {flashcard.tags.map((tag, index) => (
-            <span key={index} className="tag">{tag}</span>
-          ))}
+          <span className="tag">{flashcard.Type}</span>
         </div>
       </div>
       {isModalOpen && (

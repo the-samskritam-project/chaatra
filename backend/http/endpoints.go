@@ -20,7 +20,7 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var entries []*parser.DictionaryEntry
+	entries := make([]*parser.DictionaryEntry, 0)
 	matches := service.LookupPrefixes(Trie, slp1Query)
 	for _, match := range matches {
 		entry := Dictionary[match.LatinSLP1()]
@@ -43,9 +43,7 @@ func AutoCompleteHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("SLP1 query : ", slp1Query)
 
-	results := service.AutoComplete(service.LookupReq{
-		Slp1: slp1Query,
-	})
+	results := service.AutoComplete(Trie, slp1Query)
 
 	// Set the content type to application/json
 	w.Header().Set("Content-Type", "application/json")
