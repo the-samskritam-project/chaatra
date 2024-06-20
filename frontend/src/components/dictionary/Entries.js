@@ -33,11 +33,21 @@ function Entries({ entries, devSearchStr }) {
     return result;
   };
 
+  const handleAddEntry = (entry) => {
+    // Logic to create a flashcard and store it in the browser's storage
+    const flashcards = JSON.parse(localStorage.getItem('flashcards')) || [];
+    flashcards.push(entry);
+    localStorage.setItem('flashcards', JSON.stringify(flashcards));
+  };
+  
   return (
     <div>
       {entries.length > 0 ? (
         entries.map((entry, index) => (
           <div key={index} className="entry">
+            <button className="add-button" onClick={() => handleAddEntry(entry)}>
+              Add
+            </button>
             <h3>{toDevanagiriString(entry.Word)}</h3>
             <p>{entry.Type}</p>
             {entry.Meanings.map((meaning, meaningIndex) => (

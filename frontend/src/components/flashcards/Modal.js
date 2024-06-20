@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toDevanagiriString } from '../../utils/transliterate';
 
 const Modal = ({ onClose, flashcard }) => {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -12,15 +13,17 @@ const Modal = ({ onClose, flashcard }) => {
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div className={`card ${isFlipped ? 'flipped' : ''}`} onClick={handleFlip}>
           <div className="card-front">
-            <h2>{flashcard.title}</h2>
+            <h2>{toDevanagiriString(flashcard.Word)}</h2>
             <div className="tags">
-              {flashcard.tags.map((tag, index) => (
-                <span key={index} className="tag">{tag}</span>
-              ))}
+              <span className="tag">{flashcard.Type}</span>
             </div>
           </div>
           <div className="card-back">
-            <p>{flashcard.content}</p>
+            {flashcard.Meanings.map((meaning, meaningIndex) => (
+              <div key={meaningIndex} className="meaning">
+                <p>{meaning}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
