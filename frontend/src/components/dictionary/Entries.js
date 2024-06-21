@@ -4,8 +4,11 @@ import { find } from '../../utils/subStringMatcher';
 import { virama, signsToVowels } from '../../utils/constants';
 import emptyStateImage from '../../images/search.webp'; // Import the image
 import { toDevanagiriString } from '../../utils/transliterate';
+import { useState } from 'react';
 
 function Entries({ entries, devSearchStr }) {
+  const [addedEntries, setAddedEntries] = useState([]);
+
   const highlightText = (text, search) => {
     const chars = [...text];
     const indices = find(text, search);
@@ -38,16 +41,36 @@ function Entries({ entries, devSearchStr }) {
     const flashcards = JSON.parse(localStorage.getItem('flashcards')) || [];
     flashcards.push(entry);
     localStorage.setItem('flashcards', JSON.stringify(flashcards));
+    setAddedEntries([...addedEntries, entry.Word]);
   };
-  
+
+  const flashCardExists = function (word) {
+    const flashCards = localStorage.getItem('flashcards');
+    if (!flashCards) {
+      return false
+    }
+
+    const cards = JSON.parse(flashCards)
+
+    return cards.find((card) => {
+      return card.Word == word;
+    });
+  }
+
   return (
     <div>
       {entries.length > 0 ? (
         entries.map((entry, index) => (
           <div key={index} className="entry">
-            <button className="add-button" onClick={() => handleAddEntry(entry)}>
-              Add
-            </button>
+            {flashCardExists(entry.Word) || addedEntries.includes(entry.Word) ? (
+              <button className="card-added">
+                Added
+              </button>
+            ) : (
+              <button className="add-button" onClick={() => handleAddEntry(entry)}>
+                Add
+              </button>
+            )}
             <h3>{toDevanagiriString(entry.Word)}</h3>
             <p>{entry.Type}</p>
             {entry.Meanings.map((meaning, meaningIndex) => (
