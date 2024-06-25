@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
+import FlashCardService from '../../services/FlashCardService';
 
 const AddModal = ({ setShowModal }) => {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
 
+  const flashCardService = new FlashCardService();
+
   const handleSave = () => {
-    const newFlashcard = { title, body };
-    let flashcards = JSON.parse(localStorage.getItem('flashcards')) || [];
-    flashcards.push(newFlashcard);
-    localStorage.setItem('flashcards', JSON.stringify(flashcards));
+    const tags = [];
+    flashCardService.createFlashCard({ title, body, tags });
     setShowModal(false);
-    window.location.reload(); // Refresh the page to show the new flashcard
+    window.location.reload();
   };
 
   const handleCancel = () => {

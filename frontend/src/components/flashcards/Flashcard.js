@@ -16,9 +16,9 @@ const Flashcard = ({ flashcard }) => {
   return (
     <div>
       <div onClick={handleOpenModal} className="flashcard-summary">
-        <h3>{toDevanagiriString(flashcard.Word)}</h3>
+        <h3>{toDevanagiriString(flashcard.title)}</h3>
         <div className="tags">
-          <span className="tag">{flashcard.Type}</span>
+          <span className="tag">{flashcard.tags}</span>
         </div>
       </div>
       {isModalOpen && (

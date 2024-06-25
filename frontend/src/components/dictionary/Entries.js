@@ -5,6 +5,7 @@ import { virama, signsToVowels } from '../../utils/constants';
 import emptyStateImage from '../../images/search.webp'; // Import the image
 import { toDevanagiriString } from '../../utils/transliterate';
 import { useState } from 'react';
+import FlashCardService from '../../services/FlashCardService';
 
 function Entries({ entries, devSearchStr }) {
   const [addedEntries, setAddedEntries] = useState([]);
@@ -36,25 +37,34 @@ function Entries({ entries, devSearchStr }) {
     return result;
   };
 
+  const flashCardService = new FlashCardService();
+
   const handleAddEntry = (entry) => {
-    // Logic to create a flashcard and store it in the browser's storage
-    const flashcards = JSON.parse(localStorage.getItem('flashcards')) || [];
-    flashcards.push(entry);
-    localStorage.setItem('flashcards', JSON.stringify(flashcards));
-    setAddedEntries([...addedEntries, entry.Word]);
+    const { Word, Type, Meanings } = entry;
+
+    const title = Word;
+    const body = Meanings.join('\n');
+    const tags = [Type];
+
+    const flashCard = {
+      title,
+      body,
+      tags,
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      flashCardService.createFlashCard(flashCard);
+      setAddedEntries([...addedEntries, entry.Word]);
+    } catch (error) {
+      console.error('Error creating flashcard:', error.message);
+    }
   };
 
   const flashCardExists = function (word) {
-    const flashCards = localStorage.getItem('flashcards');
-    if (!flashCards) {
-      return false
-    }
+    const entry = flashCardService.getFlashCardByTitle(word);
 
-    const cards = JSON.parse(flashCards)
-
-    return cards.find((card) => {
-      return card.Word == word;
-    });
+    return entry != null;
   }
 
   return (
