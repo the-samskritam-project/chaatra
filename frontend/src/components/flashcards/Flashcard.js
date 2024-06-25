@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Modal from './Modal'; // Import the Modal component
 import { toDevanagiriString } from '../../utils/transliterate';
 
-const Flashcard = ({ flashcard }) => {
+const Flashcard = ({ flashcard, onDelete }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
@@ -13,6 +13,11 @@ const Flashcard = ({ flashcard }) => {
     setIsModalOpen(false);
   };
 
+  const handleDelete = (e) => {
+    e.stopPropagation();
+    onDelete(flashcard.title); 
+  };
+
   return (
     <div>
       <div onClick={handleOpenModal} className="flashcard-summary">
@@ -20,6 +25,7 @@ const Flashcard = ({ flashcard }) => {
         <div className="tags">
           <span className="tag">{flashcard.tags}</span>
         </div>
+        <button onClick={handleDelete} className="delete-button">Delete</button>
       </div>
       {isModalOpen && (
         <Modal onClose={handleCloseModal} flashcard={flashcard} />

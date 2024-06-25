@@ -1,107 +1,136 @@
 .flashcards-container {
-    padding: 20px;
-  }
-  
-  .flashcards-header {
-    display: flex;
-    justify-content: flex-start;
-    margin-bottom: 10px;
-  }
-  
-  .flashcard-add-button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    border-radius: 5px;
-    margin-bottom: 20px; 
-  }
-  
-  .flashcard-add-button:hover {
-    background-color: #0056b3;
-  }
-  
-  .flashcards-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px; /* Adds space between flashcards */
-  }
-  
-  .add-flashcard-modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    width: 90%;
-    max-width: 500px;
-    box-sizing: border-box;
-  }
-  
-  .add-flashcard-modal-header {
-    margin-bottom: 15px;
-  }
-  
-  .add-flashcard-modal-body {
-    margin-bottom: 15px;
-  }
-  
-  .add-flashcard-modal-footer {
-    display: flex;
-    justify-content: flex-end;
-  }
-  
-  .add-flashcard-modal input {
-    width: 100%;
-    max-width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-  }
+  position: relative;
+  padding: 20px;
+}
 
-  .add-flashcard-modal textarea {
-    width: 100%;
-    max-width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-    height: 150px; /* Set a specific height for the textarea */
-  }
-  
-  .add-flashcard-modal button {
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    border-radius: 5px;
-  }
-  
-  .add-flashcard-modal .save-button {
-    background-color: #007bff;
-    color: white;
-    margin-right: 10px;
-  }
-  
-  .add-flashcard-modal .save-button:hover {
-    background-color: #0056b3;
-  }
-  
-  .add-flashcard-modal .cancel-button {
-    background-color: #ff4d4d;
-    color: white;
-  }
-  
-  .add-flashcard-modal .cancel-button:hover {
-    background-color: #e60000;
-  }
-  
+.flashcards-header {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+}
+
+.flashcard-add-button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.flashcard-add-button:hover {
+  background-color: #0056b3;
+}
+
+.flashcards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Adds space between flashcards */
+}
+
+.add-flashcard-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  box-sizing: border-box;
+}
+
+.add-flashcard-modal-header {
+  margin-bottom: 15px;
+}
+
+.add-flashcard-modal-body {
+  margin-bottom: 15px;
+}
+
+.add-flashcard-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.add-flashcard-modal input {
+  width: 100%;
+  max-width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.add-flashcard-modal textarea {
+  width: 100%;
+  max-width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+  height: 150px;
+  /* Set a specific height for the textarea */
+}
+
+.add-flashcard-modal button {
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 5px;
+}
+
+.add-flashcard-modal .save-button {
+  background-color: #007bff;
+  color: white;
+  margin-right: 10px;
+}
+
+.add-flashcard-modal .save-button:hover {
+  background-color: #0056b3;
+}
+
+.add-flashcard-modal .cancel-button {
+  background-color: #ff4d4d;
+  color: white;
+}
+
+.add-flashcard-modal .cancel-button:hover {
+  background-color: #e60000;
+}
+
+.flashcard-summary {
+  position: relative;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.delete-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #ff4d4d;
+  /* Red color for delete */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.delete-button:hover {
+  background-color: #ff1a1a;
+  /* Darker red on hover */
+}
