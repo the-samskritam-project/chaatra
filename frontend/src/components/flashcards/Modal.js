@@ -13,17 +13,15 @@ const Modal = ({ onClose, flashcard }) => {
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div className={`card ${isFlipped ? 'flipped' : ''}`} onClick={handleFlip}>
           <div className="card-front">
-            <h2>{toDevanagiriString(flashcard.Word)}</h2>
+            <h2>{toDevanagiriString(flashcard.title)}</h2>
             <div className="tags">
-              <span className="tag">{flashcard.Type}</span>
+              <span className="tag">{flashcard.tags}</span>
             </div>
           </div>
           <div className="card-back">
-            {flashcard.Meanings.map((meaning, meaningIndex) => (
-              <div key={meaningIndex} className="meaning">
-                <p>{meaning}</p>
+              <div className="meaning">
+                <p>{flashcard.body}</p>
               </div>
-            ))}
           </div>
         </div>
       </div>

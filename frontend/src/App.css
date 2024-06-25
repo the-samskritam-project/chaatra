@@ -135,6 +135,22 @@
   border-radius: 4px;
 }
 
+.card-added {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #cccccc; 
+  border: none;
+  color: black;
+  padding: 5px 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  cursor: not-allowed;
+  border-radius: 4px;
+}
+
 
 /* General Styles for Keyboard and Pagination Buttons */
 .key,
@@ -373,4 +389,3 @@
   color: #777;
   margin: 0; /* Remove additional margins */
 }
-
