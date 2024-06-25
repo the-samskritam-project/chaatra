@@ -2,6 +2,9 @@ import Flashcard from './Flashcard';
 import React, { useState, useEffect } from 'react';
 import './Flashcards.css'
 import AddModal from './AddModal';
+import FlashCardService from '../../services/FlashCardService';
+
+const flashCardService = new FlashCardService();
 
 const Flashcards = () => {
   const [flashcards, setFlashcards] = useState([]);
@@ -34,8 +37,11 @@ const Flashcards = () => {
 };
 
 const getFlashcards = () => {
-  const flashcards = JSON.parse(localStorage.getItem('flashcards')) || [];
-  return flashcards;
+  const cards  = flashCardService.getFlashCards();
+
+  console.log(cards);
+
+  return cards;
 };
 
 export default Flashcards;
