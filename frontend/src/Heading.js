@@ -3,9 +3,9 @@ import './App.css';
 
 function Heading() {
 	return (
-		<div class="heading">
-        <span class="devanagari">छात्रः</span>
-        <span class="english">A pupil, disciple.</span>
+		<div className="heading">
+        <span className="devanagari">छात्रः</span>
+        <span className="english">A pupil, disciple.</span>
       </div>
 	);
 }
