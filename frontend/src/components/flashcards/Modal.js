@@ -15,7 +15,11 @@ const Modal = ({ onClose, flashcard }) => {
           <div className="card-front">
             <h2>{toDevanagiriString(flashcard.title)}</h2>
             <div className="tags">
-              <span className="tag">{flashcard.tags}</span>
+            {
+              flashcard.tags.map((tag, index) => (
+                tag != '' ? (<span id="index" className="tag">{tag}</span>) : <></>
+              ))
+            }
             </div>
           </div>
           <div className="card-back">
