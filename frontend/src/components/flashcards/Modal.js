@@ -8,6 +8,8 @@ const Modal = ({ onClose, flashcard }) => {
     setIsFlipped(!isFlipped);
   };
 
+  console.log(flashcard);
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -15,17 +17,19 @@ const Modal = ({ onClose, flashcard }) => {
           <div className="card-front">
             <h2>{toDevanagiriString(flashcard.title)}</h2>
             <div className="tags">
-            {
-              flashcard.tags.map((tag, index) => (
-                tag != '' ? (<span id="index" className="tag">{tag}</span>) : <></>
-              ))
-            }
+              {
+                flashcard.tags.map((tag, index) => (
+                  tag != '' ? (<span id="index" className="tag">{tag}</span>) : <></>
+                ))
+              }
             </div>
           </div>
           <div className="card-back">
-              <div className="meaning">
-                <p>{flashcard.body}</p>
+            {flashcard.body.map((item, index) => (
+              <div key={index} className="meaning">
+                <p>{item}</p>
               </div>
+            ))}
           </div>
         </div>
       </div>
