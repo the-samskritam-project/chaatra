@@ -3,7 +3,7 @@ import Entries from './Entries';
 import SearchKeyboard from '../keyboard/SearchKeyboard';
 
 function Dictionary() {
-    const [slp1SearchStr, setSlp1SearchStr] = useState('');
+    const [slp1SearchStr, setSlp1SearchStr] = useState('CAtraH');
     const [devSearchStr, setDevSearchStr] = useState('');
     const [entries, setEntries] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -14,7 +14,6 @@ function Dictionary() {
         setSlp1SearchStr(slp1Str);
         setDevSearchStr(devanagariStr);
     };
-
 
     useEffect(() => {
         if (slp1SearchStr) {
