@@ -101,7 +101,6 @@
 .entry {
   position: relative;
   padding: 10px;
-  border: 1px solid #ccc;
   text-align: justify;
   width: 80%;
   /* Adjust if needed to match other UI elements' width */
@@ -110,14 +109,13 @@
   padding: 20px;
   background-color: white;
   /* Clean white background for readability */
-  border: 1px solid #ccc;
   /* Lighter border to match the light theme */
-  border-radius: 5px;
   /* Consistent rounded corners */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); /* Even deeper shadow */
   /* Lighter shadow than container for hierarchical effect */
   overflow: hidden;
   transition: max-height 0.3s ease;
+  border-radius: 8px;
 }
 
 .add-button {
