@@ -68,7 +68,7 @@ function Entries({ entries, devSearchStr }) {
   }
 
   return (
-    <div class='entries'>
+    <div className='entries'>
       {entries.length > 0 ? (
         entries.map((entry, index) => (
           <div key={index} className="entry">

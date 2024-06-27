@@ -9,10 +9,10 @@ const AddModal = ({ setShowModal }) => {
 
   const handleSave = () => {
     const tags = [];
-    const newBody = [...body];
-    flashCardService.createFlashCard({ title, newBody, tags });
+    const card = { title, tags };
+    card["body"] = [body];
+    flashCardService.createFlashCard(card);
     setShowModal(false);
-    window.location.reload();
   };
 
   const handleCancel = () => {
@@ -25,16 +25,16 @@ const AddModal = ({ setShowModal }) => {
         <h2>New Flashcard</h2>
       </div>
       <div className="modal-body">
-        <input 
-          type="text" 
-          placeholder="Title" 
-          value={title} 
-          onChange={(e) => setTitle(e.target.value)} 
+        <input
+          type="text"
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
         />
-        <textarea 
-          placeholder="Body" 
-          value={body} 
-          onChange={(e) => setBody(e.target.value)} 
+        <textarea
+          placeholder="Body"
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
         />
       </div>
       <div className="modal-footer">
