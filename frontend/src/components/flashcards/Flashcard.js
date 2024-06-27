@@ -23,7 +23,11 @@ const Flashcard = ({ flashcard, onDelete }) => {
       <div onClick={handleOpenModal} className="flashcard-summary">
         <h3>{toDevanagiriString(flashcard.title)}</h3>
         <div className="tags">
-          <span className="tag">{flashcard.tags}</span>
+            {
+              flashcard.tags.map((tag, index) => (
+                tag != '' ? (<span id="index" className="tag">{tag}</span>) : <></>
+              ))
+            }
         </div>
         <button onClick={handleDelete} className="delete-button">Delete</button>
       </div>
