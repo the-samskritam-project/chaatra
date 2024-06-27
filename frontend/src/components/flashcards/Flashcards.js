@@ -24,6 +24,11 @@ const Flashcards = () => {
     setFlashcards(flashcards => flashcards.filter(flashcard => flashcard.title !== title));
   };
 
+  const flashcardAdded = (card) => {
+    flashCardService.createFlashCard(card);
+    flashcards.push(card);
+  }
+
   return (
     <div className="flashcards-container">
       <div className="flashcards-header">
@@ -36,15 +41,13 @@ const Flashcards = () => {
           <Flashcard key={index} flashcard={flashcard} onDelete={handleDeleteFlashcard} />
         ))}
       </div>
-      {showModal && <AddModal setShowModal={setShowModal} />}
+      {showModal && <AddModal setShowModal={setShowModal} handleAddCard={flashcardAdded} />}
     </div>
   );
 };
 
 const getFlashcards = () => {
   const cards  = flashCardService.getFlashCards();
-
-  console.log(cards);
 
   return cards;
 };

@@ -8,8 +8,6 @@ const Modal = ({ onClose, flashcard }) => {
     setIsFlipped(!isFlipped);
   };
 
-  console.log(flashcard);
-
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>

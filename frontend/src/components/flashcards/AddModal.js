@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import FlashCardService from '../../services/FlashCardService';
 
-const AddModal = ({ setShowModal }) => {
+const AddModal = ({ setShowModal, handleAddCard}) => {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
-
-  const flashCardService = new FlashCardService();
 
   const handleSave = () => {
     const tags = [];
     const card = { title, tags };
     card["body"] = [body];
-    flashCardService.createFlashCard(card);
+    handleAddCard(card);
     setShowModal(false);
   };
 
