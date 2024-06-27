@@ -9,7 +9,8 @@ const AddModal = ({ setShowModal }) => {
 
   const handleSave = () => {
     const tags = [];
-    flashCardService.createFlashCard({ title, body, tags });
+    const newBody = [...body];
+    flashCardService.createFlashCard({ title, newBody, tags });
     setShowModal(false);
     window.location.reload();
   };
