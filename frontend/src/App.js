@@ -3,29 +3,34 @@ import './Modal.css';
 import Dictionary from './components/dictionary/Dictionary';
 import Heading from './Heading';
 import { Tabs, TabList, Tab, TabPanel } from 'react-tabs';
-import 'react-tabs/style/react-tabs.css';
+import './tabs.css';
 import Flashcards from './components/flashcards/Flashcards';
 
 function App() {
   return (
-    <div className="main-container">
+    <div>
       <Heading />
 
-      <Tabs>       
-        <TabList>
-          <Tab>Dictionary</Tab>
-          <Tab>Flash cards</Tab>
-        </TabList>
+      <div className="tabs-container">
+        <Tabs>
+          <div className="tab-list-container">
+            <TabList>
+              <Tab>Dictionary</Tab>
+              <Tab>Flash cards</Tab>
+            </TabList>
+          </div>
 
-        <TabPanel>
-          <Dictionary />
-        </TabPanel>
+          <div className="tab-panel-container">
+            <TabPanel>
+              <Dictionary />
+            </TabPanel>
 
-        <TabPanel>
-          <Flashcards />
-        </TabPanel>
-
-      </Tabs>
+            <TabPanel>
+              <Flashcards />
+            </TabPanel>
+          </div>
+        </Tabs>
+      </div>
     </div>
   );
 }
