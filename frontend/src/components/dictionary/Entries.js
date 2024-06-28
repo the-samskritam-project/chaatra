@@ -43,7 +43,7 @@ function Entries({ entries, devSearchStr }) {
     const { Word, Type, Meanings } = entry;
 
     const title = Word;
-    const body = Meanings.join('\n');
+    const body = Meanings;
     const tags = [Type];
 
     const flashCard = {
@@ -68,7 +68,7 @@ function Entries({ entries, devSearchStr }) {
   }
 
   return (
-    <div>
+    <div className='entries'>
       {entries.length > 0 ? (
         entries.map((entry, index) => (
           <div key={index} className="entry">

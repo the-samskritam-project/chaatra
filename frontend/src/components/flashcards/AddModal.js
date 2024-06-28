@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import FlashCardService from '../../services/FlashCardService';
 
-const AddModal = ({ setShowModal }) => {
+const AddModal = ({ setShowModal, handleAddCard}) => {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
 
-  const flashCardService = new FlashCardService();
-
   const handleSave = () => {
     const tags = [];
-    flashCardService.createFlashCard({ title, body, tags });
+    const card = { title, tags };
+    card["body"] = [body];
+    handleAddCard(card);
     setShowModal(false);
-    window.location.reload();
   };
 
   const handleCancel = () => {
@@ -24,16 +23,16 @@ const AddModal = ({ setShowModal }) => {
         <h2>New Flashcard</h2>
       </div>
       <div className="modal-body">
-        <input 
-          type="text" 
-          placeholder="Title" 
-          value={title} 
-          onChange={(e) => setTitle(e.target.value)} 
+        <input
+          type="text"
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
         />
-        <textarea 
-          placeholder="Body" 
-          value={body} 
-          onChange={(e) => setBody(e.target.value)} 
+        <textarea
+          placeholder="Body"
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
         />
       </div>
       <div className="modal-footer">
