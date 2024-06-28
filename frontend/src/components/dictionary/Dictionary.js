@@ -15,10 +15,17 @@ function Dictionary() {
         setDevSearchStr(devanagariStr);
     };
 
+    const [config, setConfig] = useState({});
+    useEffect(() => {
+        // Fetch configuration from the environment variable
+        const apiUrl = process.env.REACT_APP_API_BASE_URL;
+        setConfig({ apiUrl });
+    }, []);
+
     useEffect(() => {
         if (slp1SearchStr) {
             const fetchResults = async () => {
-                const url = `http://localhost:8081/search?slp1=${encodeURIComponent(slp1SearchStr)}&dev=${encodeURIComponent(devSearchStr)}`;
+                const url = `${config.apiUrl}/search?slp1=${encodeURIComponent(slp1SearchStr)}&dev=${encodeURIComponent(devSearchStr)}`;
                 const response = await fetch(url);
                 const data = await response.json();
                 setEntries(data);

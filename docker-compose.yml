@@ -11,6 +11,7 @@ services:
       - ./backend:/go/src/app
     environment:
       - GO_ENV=development
+      - PORT=8081
 
   frontend:
     build:
@@ -23,5 +24,6 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - REACT_APP_API_BASE_URL=http://localhost/api
     depends_on:
       - backend
