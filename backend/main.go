@@ -12,6 +12,9 @@ import (
 	"github.com/rs/cors"
 )
 
+const ENV_DEFAULT_PORT = "8081"
+const ENV_PORT_KEY = "PORT"
+
 func main() {
 	// initialize elastic search
 	persistence.InitEs()
@@ -42,8 +45,13 @@ func main() {
 
 	handler := c.Handler(mux)
 
-	log.Println("Starting server on port : 8081")
-	err = http.ListenAndServe(":8081", handler)
+	port := os.Getenv(ENV_PORT_KEY)
+	if port == "" {
+		port = ENV_DEFAULT_PORT
+	}
+
+	log.Println("Starting server on port : ", port)
+	err = http.ListenAndServe(":"+port, handler)
 	if err != nil {
 		log.Fatalf("Shutting down server : %s", err.Error())
 	} else {
