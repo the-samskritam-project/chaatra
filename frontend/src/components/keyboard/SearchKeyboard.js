@@ -60,6 +60,13 @@ function SearchKeyboard({ handleSearch }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [searchInFocus, devanagariString, slp1LatinStr]);
 
+  const [config, setConfig] = useState({});
+  useEffect(() => {
+      // Fetch configuration from the environment variable
+      const apiUrl = process.env.REACT_APP_API_BASE_URL;
+      setConfig({ apiUrl });
+  }, []);
+
   useEffect(() => {
     if (slp1LatinStr.length == 0) {
       setCompletionResults([]);
@@ -74,7 +81,7 @@ function SearchKeyboard({ handleSearch }) {
       }
 
       const fetchResults = async () => {
-        const url = `http://localhost:8081/complete?slp1=${encodeURIComponent(currentWord)}`;
+        const url = `${config.apiUrl}/complete?slp1=${encodeURIComponent(currentWord)}`;
         const response = await fetch(url);
         const data = await response.json();
         setCompletionResults(data);
