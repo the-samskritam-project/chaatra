@@ -9,6 +9,12 @@
   margin-bottom: 10px;
 }
 
+.flashcard-summary {
+  position: relative;
+  padding: 10px;
+  border-radius: 4px;
+}
+
 .flashcard-add-button {
   padding: 10px 20px;
   background-color: #007bff;
