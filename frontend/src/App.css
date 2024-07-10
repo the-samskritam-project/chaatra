@@ -2,13 +2,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Hind:wght@700&family=Roboto:wght@400&display=swap');  /* Updated to include normal weight for Roboto */
 
-.heading {
-  font-size: 24px; /* Base font size for the English text */
-  color: #333; /* Sets the text color */
-  margin-bottom: 20px;
-  text-align: center; /* Center the text within the div */
-  width: 100%; /* Ensure it takes the full width for proper alignment */
-}
+
 
 .devanagari {
     font-family: 'Hind', sans-serif; /* Sets the font family for Devanagari */
