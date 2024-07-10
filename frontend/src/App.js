@@ -9,16 +9,21 @@ import Flashcards from './components/flashcards/Flashcards';
 function App() {
   return (
     <div>
-      <Heading />
-
       <div className="tabs-container">
         <Tabs>
-          <div className="tab-list-container">
-            <TabList>
-              <Tab>Dictionary</Tab>
-              <Tab>Flash cards</Tab>
-            </TabList>
+          <div className="tabs-section">
+            <div className="heading">
+              <span className="devanagari">छात्रः</span>
+              <span className="english">A pupil, disciple.</span>
+            </div>
+            <div className="tabs-wrapper">
+              <TabList>
+                <Tab>Dictionary</Tab>
+                <Tab>Flash cards</Tab>
+              </TabList>
+            </div>
           </div>
+
 
           <div className="tab-panel-container">
             <TabPanel>
