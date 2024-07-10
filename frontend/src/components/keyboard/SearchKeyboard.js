@@ -95,9 +95,11 @@ function SearchKeyboard({ handleSearch }) {
     <div>
       <SearchBar
         devanagariString={devanagariString}
+        slp1LatinStr={slp1LatinStr}
         onInputChange={handleInputChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
+        handleSearch={handleSearch}
       />
       <Keyboard
         isDocked={isKeyboardDocked}
