@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "services": {
+    "backend": {
+      "path": "./backend",
+      "dockerfile": "./backend/Dockerfile",
+      "healthcheck": {
+        "port": 8081
+      },
+      "environment": {
+        "GO_ENV": "production",
+        "PORT": "8081"
+      }
+    },
+    "frontend": {
+      "path": "./frontend",
+      "dockerfile": "./frontend/Dockerfile",
+      "healthcheck": {
+        "port": 3000
+      },
+      "environment": {
+        "NODE_ENV": "production",
+        "REACT_APP_API_BASE_URL": "${{ RAILWAY.SERVICE.BACKEND.URL }}/api"
+      }
+    }
+  }
+}
