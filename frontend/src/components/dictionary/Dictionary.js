@@ -23,6 +23,7 @@ function Dictionary() {
     }, []);
 
     useEffect(() => {
+        console.log(slp1SearchStr);
         if (slp1SearchStr) {
             const fetchResults = async () => {
                 const url = `${config.apiUrl}/search?slp1=${encodeURIComponent(slp1SearchStr)}&dev=${encodeURIComponent(devSearchStr)}`;
@@ -43,6 +44,12 @@ function Dictionary() {
     const prevPage = () => {
         setCurrentPage(prev => (prev > 1 ? prev - 1 : prev));
     };
+
+    // set default search string
+    useEffect(() => {
+        setSlp1SearchStr('CAtraH');
+        setDevSearchStr('छात्रः');
+    }, []);
 
     return (
         <div className='entries-container'>

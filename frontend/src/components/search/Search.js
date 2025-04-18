@@ -1,4 +1,4 @@
-function SearchBar({ devanagariString, onInputChange, onFocus, handleBlur }) {
+function SearchBar({ devanagariString, slp1LatinStr, onInputChange, onFocus, handleBlur, handleSearch }) {
     return (
         <div className="search-bar">
             <input
@@ -10,7 +10,7 @@ function SearchBar({ devanagariString, onInputChange, onFocus, handleBlur }) {
                 onFocus={onFocus}
                 onBlur={handleBlur}
             />
-            <button className="search-button">Search</button>
+            <button className="search-button" onClick={() => {handleSearch(slp1LatinStr, devanagariString)}}>Search</button>
         </div>
     );
 }
