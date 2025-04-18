@@ -36,7 +36,7 @@ func main() {
 	mux.HandleFunc("/dhatus", h.SearchDhatuHandler)
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"}, // Allowing only http://localhost:3000
+		AllowedOrigins:   []string{"http://localhost:3000", "https://chaatra-frontend-production.up.railway.app"},
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization"}, // Assuming you might need Authorization
 		AllowCredentials: true,
