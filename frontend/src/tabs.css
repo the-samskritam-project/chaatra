@@ -30,14 +30,13 @@
     height: 100%;
   }
   
-  /* Style each Tab to take equal vertical space */
   .react-tabs__tab {
     text-align: center;
     padding: 15px 10px;
     cursor: pointer;
     color: #333;
     border-bottom: none; /* Remove bottom border to avoid double border */
-    transition: background 0.3s, transform 0.3s;
+    transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
     margin: 2px 0; /* Add space between tabs */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Lighter shadow */
   }
@@ -51,15 +50,17 @@
     font-weight: bold; /* Make the font bold */
   }
   
-  
   .react-tabs__tab:hover {
     background: #cce5ff; /* Light hover effect */
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08); /* Slightly stronger shadow on hover */
+    transform: translateY(-1px); /* Slight lift effect on hover */
   }
+  
   
   /* Ensure the TabPanel takes the full width of the main container */
   .tab-panel-container {
     flex-grow: 1;
-    width: 100%; /* Ensure it takes the full remaining width */
+    width: 75%; /* Occupies the remaining 70% of the container's width */
     padding: 20px;
     background: #fff;
     border-radius: 8px; /* Rounded corners */
@@ -71,3 +72,24 @@
     width: 100%;
   }
   
+  .tabs-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 25%; /* Adjusted width */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow around the section */
+    padding: 20px; /* Optional: Add padding for better appearance */
+    background-color: #fff; /* Optional: Add background color */
+    border-radius: 8px; /* Optional: Add rounded corners */
+  }
+  
+
+  .tabs-wrapper {
+    width: 100%; /* Full width of container */
+    justify-content: center; /* Center the tabs */
+  }
+
+  .heading {
+    text-align: center;
+    margin-bottom: 20px;
+  }

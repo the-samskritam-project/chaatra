@@ -2,13 +2,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Hind:wght@700&family=Roboto:wght@400&display=swap');  /* Updated to include normal weight for Roboto */
 
-.heading {
-  font-size: 24px; /* Base font size for the English text */
-  color: #333; /* Sets the text color */
-  margin-bottom: 20px;
-  text-align: center; /* Center the text within the div */
-  width: 100%; /* Ensure it takes the full width for proper alignment */
-}
+
 
 .devanagari {
     font-family: 'Hind', sans-serif; /* Sets the font family for Devanagari */
@@ -150,18 +144,17 @@
   border-radius: 4px;
 }
 
-
-/* General Styles for Keyboard and Pagination Buttons */
 .key,
 .pagination-button {
   margin: 5px;
-  padding: 10px;
-  border: 1px solid #bfbfbf;
-  background-color: #f7f7f7;
-  /* Light background for normal state */
-  transition: background-color 0.3s, transform 0.3s;
+  padding: 12px;
+  background-color: #f7f7f7; /* Light background for normal state */
+  transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s ease-in-out;
   cursor: pointer;
   font-weight: 800;
+  border: none; /* Remove border */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add shadow */
+  border-radius: 5px; /* Optional: Add rounded corners for a smoother look */
 }
 
 /* Hover Effects for both Keyboard Keys and Pagination Buttons */
@@ -207,21 +200,6 @@
   margin: auto;
 }
 
-/* Animation for key 'pop' effect */
-@keyframes pop {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.25);
-  }
-
-  100% {
-    transform: scale(1);
-  }
-}
-
 /* Layout and spacing for keyboard sections */
 .key-row {
   display: flex;
@@ -236,7 +214,7 @@
   position: fixed;
   visibility: visible;
   margin: 5px;
-  transition: background-color 0.3s, transform 0.3s;
+  transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s ease-in-out;
   cursor: pointer;
   z-index: 1000;  /* High z-index to ensure it's on top of other content */
   bottom: 0;  /* Align to the bottom of the viewport */
@@ -246,12 +224,20 @@
 
   background-color: #e6f7ff;  /* Light blue background for the keyboard */
   padding: 10px 0;  /* Add some padding */
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);  /* Subtle shadow for some depth */
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);  /* More pronounced shadow for greater depth */
   border-top: 1px solid #b3e0ff;  /* Optional: subtle border top for definition */
+  border-radius: 10px 10px 0 0;  /* Rounded top corners */
 }
+
 
 .keyboard.docked .key {
   visibility: hidden;
+}
+
+.keys-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap; /* Wrap buttons to the next line if necessary */
 }
 
 .devanagari-output {
