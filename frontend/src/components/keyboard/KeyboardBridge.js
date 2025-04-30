@@ -1,55 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import SearchBar from '../search/Search'; // Assuming your search bar component
-import Keyboard from './Keyboard'; // Assuming your keyboard component
+import SearchBar from '../search/Search';
+import Keyboard from './Keyboard';
 import { toDevanagiriString } from '../../utils/transliterate';
 import { vowels, consonants } from '../../utils/constants';
 import { getLastWord as getCurrentWord } from '../../utils/split';
 
-function KeyboardBridge({ handleSearch }) {
+function KeyboardBridge({ 
+  slp1LatinStr,
+  devanagariString,
+  onSlp1Change,
+  onDevanagariChange,
+  isFocused,
+  onFocus,
+  onBlur,
+  handleSearch
+}) {
   const [isKeyboardDocked, setIsKeyboardDocked] = useState(true);
-  // SLP1 : https://en.wikipedia.org/wiki/SLP1
-  const [slp1LatinStr, setSlp1LatinStr] = useState('');
-  const [devanagariString, setDevanagariString] = useState('');
   const [activeKeys, setActiveKeys] = useState([]);
-  const [searchInFocus, setSearchInFocus] = useState(false);
   const [completionResults, setCompletionResults] = useState([]);
 
-  const handleInputChange = () => {
-    if (isKeyboardDocked) {
+  useEffect(() => {
+    if (isFocused) {
       setIsKeyboardDocked(false);
+    } else {
+      setIsKeyboardDocked(true);
     }
-  };
-
-  const handleFocus = () => {
-    setSearchInFocus(true);
-    setIsKeyboardDocked(false);
-  };
-
-  const handleBlur = () => {
-    setSearchInFocus(false);
-    setIsKeyboardDocked(true);
-  }
+  }, [isFocused]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'Enter') {
         setIsKeyboardDocked(true);
         handleSearch(slp1LatinStr, devanagariString);
-
         return;
       } else if (event.key === 'Backspace' && devanagariString.length >= 0) {
-        setSlp1LatinStr(slp1LatinStr.slice(0, -1));
+        onSlp1Change(slp1LatinStr.slice(0, -1));
+        onDevanagariChange(devanagariString.slice(0, -1));
         setActiveKeys(activeKeys.slice(0, -1));
-        setDevanagariString(devanagariString.slice(0, -1));
       } else {
         const found = [...vowels, ...consonants].find(v => v.key === event.key);
         if (found) {
-          setDevanagariString(toDevanagiriString(slp1LatinStr + found.key));
-          setSlp1LatinStr(slp1LatinStr + found.key);
+          const newSlp1 = slp1LatinStr + found.key;
+          const newDevanagari = toDevanagiriString(newSlp1);
+          onSlp1Change(newSlp1);
+          onDevanagariChange(newDevanagari);
           setActiveKeys([...activeKeys, event.key]);
         } else if (event.key === 'Spacebar' || event.key === ' ') {
-          setDevanagariString(devanagariString + ' ');
-          setSlp1LatinStr(slp1LatinStr + ' ');
+          onSlp1Change(slp1LatinStr + ' ');
+          onDevanagariChange(devanagariString + ' ');
           setActiveKeys([]);
           setCompletionResults([]);
         }
@@ -58,13 +56,12 @@ function KeyboardBridge({ handleSearch }) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [searchInFocus, devanagariString, slp1LatinStr]);
+  }, [isFocused, devanagariString, slp1LatinStr]);
 
   const [config, setConfig] = useState({});
   useEffect(() => {
-      // Fetch configuration from the environment variable
-      const apiUrl = process.env.REACT_APP_API_BASE_URL;
-      setConfig({ apiUrl });
+    const apiUrl = process.env.REACT_APP_API_BASE_URL;
+    setConfig({ apiUrl });
   }, []);
 
   useEffect(() => {
@@ -96,9 +93,9 @@ function KeyboardBridge({ handleSearch }) {
       <SearchBar
         devanagariString={devanagariString}
         slp1LatinStr={slp1LatinStr}
-        onInputChange={handleInputChange}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
+        onInputChange={() => {}}
+        onFocus={onFocus}
+        onBlur={onBlur}
         handleSearch={handleSearch}
       />
       <Keyboard
@@ -111,4 +108,4 @@ function KeyboardBridge({ handleSearch }) {
   );
 }
 
-export default KeyboardBridge;
+export default KeyboardBridge; 
