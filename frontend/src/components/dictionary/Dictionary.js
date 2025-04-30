@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import Entries from './Entries';
-import SearchKeyboard from '../keyboard/SearchKeyboard';
+import KeyboardBridge from '../keyboard/KeyboardBridge';
 
 function Dictionary() {
     const [slp1SearchStr, setSlp1SearchStr] = useState('CAtraH');
     const [devSearchStr, setDevSearchStr] = useState('');
+    const [isFocused, setIsFocused] = useState(false);
     const [entries, setEntries] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [entriesPerPage] = useState(3); // Adjust number per page as needed
@@ -13,6 +14,14 @@ function Dictionary() {
     const handleSearch = (slp1Str, devanagariStr) => {
         setSlp1SearchStr(slp1Str);
         setDevSearchStr(devanagariStr);
+    };
+
+    const handleFocus = () => {
+        setIsFocused(true);
+    };
+
+    const handleBlur = () => {
+        setIsFocused(false);
     };
 
     const [config, setConfig] = useState({});
@@ -47,13 +56,22 @@ function Dictionary() {
 
     // set default search string
     useEffect(() => {
-        setSlp1SearchStr('CAtraH');
-        setDevSearchStr('छात्रः');
+        setSlp1SearchStr('sanAtana');
+        setDevSearchStr('सनातन');
     }, []);
 
     return (
         <div className='entries-container'>
-            <SearchKeyboard handleSearch={handleSearch} />
+            <KeyboardBridge
+                slp1LatinStr={slp1SearchStr}
+                devanagariString={devSearchStr}
+                onSlp1Change={setSlp1SearchStr}
+                onDevanagariChange={setDevSearchStr}
+                isFocused={isFocused}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                handleSearch={handleSearch}
+            />
             <Entries
                 entries={entries.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage)}
                 devSearchStr={devSearchStr}
