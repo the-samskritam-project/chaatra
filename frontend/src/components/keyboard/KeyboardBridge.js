@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import SearchBar from '../search/Search';
 import Keyboard from './Keyboard';
 import { toDevanagiriString } from '../../utils/transliterate';
 import { vowels, consonants } from '../../utils/constants';
@@ -89,22 +88,12 @@ function KeyboardBridge({
   }, [slp1LatinStr]);
 
   return (
-    <div>
-      <SearchBar
-        devanagariString={devanagariString}
-        slp1LatinStr={slp1LatinStr}
-        onInputChange={() => {}}
-        onFocus={onFocus}
-        onBlur={onBlur}
-        handleSearch={handleSearch}
-      />
-      <Keyboard
-        isDocked={isKeyboardDocked}
-        activeKeys={activeKeys}
-        alphabet={vowels.concat(consonants)}
-        completionResults={completionResults}
-      />
-    </div>
+    <Keyboard
+      isDocked={isKeyboardDocked}
+      activeKeys={activeKeys}
+      alphabet={vowels.concat(consonants)}
+      completionResults={completionResults}
+    />
   );
 }
 
