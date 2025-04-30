@@ -19,8 +19,6 @@ function KeyboardBridge({
   useEffect(() => {
     if (isFocused) {
       setIsKeyboardDocked(false);
-    } else {
-      setIsKeyboardDocked(true);
     }
   }, [isFocused]);
 
@@ -30,23 +28,26 @@ function KeyboardBridge({
         setIsKeyboardDocked(true);
         handleSearch(slp1LatinStr, devanagariString);
         return;
-      } else if (event.key === 'Backspace' && devanagariString.length >= 0) {
-        onSlp1Change(slp1LatinStr.slice(0, -1));
-        onDevanagariChange(devanagariString.slice(0, -1));
-        setActiveKeys(activeKeys.slice(0, -1));
       } else {
-        const found = [...vowels, ...consonants].find(v => v.key === event.key);
-        if (found) {
-          const newSlp1 = slp1LatinStr + found.key;
-          const newDevanagari = toDevanagiriString(newSlp1);
-          onSlp1Change(newSlp1);
-          onDevanagariChange(newDevanagari);
-          setActiveKeys([...activeKeys, event.key]);
-        } else if (event.key === 'Spacebar' || event.key === ' ') {
-          onSlp1Change(slp1LatinStr + ' ');
-          onDevanagariChange(devanagariString + ' ');
-          setActiveKeys([]);
-          setCompletionResults([]);
+        setIsKeyboardDocked(false);
+        if (event.key === 'Backspace' && devanagariString.length >= 0) {
+          onSlp1Change(slp1LatinStr.slice(0, -1));
+          onDevanagariChange(devanagariString.slice(0, -1));
+          setActiveKeys(activeKeys.slice(0, -1));
+        } else {
+          const found = [...vowels, ...consonants].find(v => v.key === event.key);
+          if (found) {
+            const newSlp1 = slp1LatinStr + found.key;
+            const newDevanagari = toDevanagiriString(newSlp1);
+            onSlp1Change(newSlp1);
+            onDevanagariChange(newDevanagari);
+            setActiveKeys([...activeKeys, event.key]);
+          } else if (event.key === 'Spacebar' || event.key === ' ') {
+            onSlp1Change(slp1LatinStr + ' ');
+            onDevanagariChange(devanagariString + ' ');
+            setActiveKeys([]);
+            setCompletionResults([]);
+          }
         }
       }
     };
