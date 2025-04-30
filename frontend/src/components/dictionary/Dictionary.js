@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import Entries from './Entries';
-import SearchKeyboard from '../keyboard/SearchKeyboard';
+import KeyboardBridge from '../keyboard/KeyboardBridge';
+import SearchBar from '../search/Search';
+import { toDevanagiriString } from '../../utils/transliterate';
 
 function Dictionary() {
     const [slp1SearchStr, setSlp1SearchStr] = useState('CAtraH');
     const [devSearchStr, setDevSearchStr] = useState('');
+    const [isFocused, setIsFocused] = useState(false);
     const [entries, setEntries] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [entriesPerPage] = useState(3); // Adjust number per page as needed
@@ -13,6 +16,26 @@ function Dictionary() {
     const handleSearch = (slp1Str, devanagariStr) => {
         setSlp1SearchStr(slp1Str);
         setDevSearchStr(devanagariStr);
+    };
+
+    const handleFocus = () => {
+        setIsFocused(true);
+    };
+
+    const handleBlur = () => {
+        setIsFocused(false);
+    };
+
+    const handleInput = ({ type, value }) => {
+        if (type === 'enter') {
+            handleSearch(slp1SearchStr, devSearchStr);
+        } else if (type === 'backspace') {
+            setSlp1SearchStr(value);
+            setDevSearchStr(toDevanagiriString(value));
+        } else if (type === 'key') {
+            setSlp1SearchStr(value);
+            setDevSearchStr(toDevanagiriString(value));
+        }
     };
 
     const [config, setConfig] = useState({});
@@ -35,7 +58,7 @@ function Dictionary() {
 
             fetchResults();
         }
-    }, [slp1SearchStr, devSearchStr]);
+    }, [slp1SearchStr, devSearchStr, config.apiUrl]);
 
     const nextPage = () => {
         setCurrentPage(prev => (prev < totalPages ? prev + 1 : prev));
@@ -53,7 +76,19 @@ function Dictionary() {
 
     return (
         <div className='entries-container'>
-            <SearchKeyboard handleSearch={handleSearch} />
+            <SearchBar
+                devanagariString={devSearchStr}
+                slp1LatinStr={slp1SearchStr}
+                onInputChange={() => {}}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                handleSearch={handleSearch}
+            />
+            <KeyboardBridge
+                isFocused={isFocused}
+                onInput={handleInput}
+                value={slp1SearchStr}
+            />
             <Entries
                 entries={entries.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage)}
                 devSearchStr={devSearchStr}
