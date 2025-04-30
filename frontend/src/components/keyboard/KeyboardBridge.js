@@ -10,8 +10,6 @@ function KeyboardBridge({
   onSlp1Change,
   onDevanagariChange,
   isFocused,
-  onFocus,
-  onBlur,
   handleSearch
 }) {
   const [isKeyboardDocked, setIsKeyboardDocked] = useState(true);
@@ -55,7 +53,7 @@ function KeyboardBridge({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isFocused, devanagariString, slp1LatinStr]);
+  }, [isFocused, devanagariString, slp1LatinStr, activeKeys, handleSearch, onDevanagariChange, onSlp1Change]);
 
   const [config, setConfig] = useState({});
   useEffect(() => {
@@ -85,7 +83,7 @@ function KeyboardBridge({
 
       fetchResults();
     }
-  }, [slp1LatinStr]);
+  }, [slp1LatinStr, config.apiUrl]);
 
   return (
     <Keyboard
