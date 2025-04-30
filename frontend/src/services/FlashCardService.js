@@ -15,7 +15,7 @@ class FlashCardService {
     }
   
     // Create a new flashcard
-    createFlashCard({ title, body, tags }) {
+    createFlashCard({ title, description, front, back, tags }) {
       const flashcards = this._getFlashCards();
       if (flashcards.some(fc => fc.title === title)) {
         throw new Error('Flashcard with this title already exists.');
@@ -23,7 +23,9 @@ class FlashCardService {
   
       const newFlashCard = {
         title,
-        body,
+        description,
+        front,
+        back,
         tags,
         createdAt: new Date().toISOString(),
       };
