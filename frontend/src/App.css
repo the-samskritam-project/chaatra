@@ -2,8 +2,6 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Hind:wght@700&family=Roboto:wght@400&display=swap');  /* Updated to include normal weight for Roboto */
 
-
-
 .devanagari {
     font-family: 'Hind', sans-serif; /* Sets the font family for Devanagari */
     font-weight: 700; /* Ensures the Devanagari part is bold */
@@ -77,7 +75,6 @@
   /* Slightly darker border on hover for depth */
 }
 
-
 /* Entries container styling */
 .entries-container {
   width: 100%;
@@ -144,7 +141,6 @@
   border-radius: 4px;
 }
 
-.key,
 .pagination-button {
   margin: 5px;
   padding: 12px;
@@ -157,8 +153,7 @@
   border-radius: 5px; /* Optional: Add rounded corners for a smoother look */
 }
 
-/* Hover Effects for both Keyboard Keys and Pagination Buttons */
-.key:hover,
+/* Hover Effects for Pagination Buttons */
 .pagination-button:hover {
   background-color: #0056b3;
   /* Darker blue on hover, matching the search bar's hover state */
@@ -176,137 +171,46 @@
   border-color: #ddd;
 }
 
-/* Specific Styles for Selected Keys and Disabled Buttons */
-.selected {
-  background-color: #007bff;
-  /* Blue background for selected state */
-  color: white;
-}
-
-.popping {
-  animation: pop 0.3s ease;
-}
-
-.undocked {
-  width: 100%;
-}
-
-.keyboard.docked {
-  display: none;
-}
-
-.undocked {
-  position: static;
-  margin: auto;
-}
-
-/* Layout and spacing for keyboard sections */
-.key-row {
-  display: flex;
-  justify-content: center;
-}
-
-.key-section {
-  margin-top: 10px;
-}
-
-.keyboard.undocked {
-  position: fixed;
-  visibility: visible;
-  margin: 5px;
-  transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s ease-in-out;
-  cursor: pointer;
-  z-index: 1000;  /* High z-index to ensure it's on top of other content */
-  bottom: 0;  /* Align to the bottom of the viewport */
-  left: 50%;  /* Start at half the width of the viewport */
-  transform: translateX(-50%);  /* Shift it left by half its own width to center it */
-  width: 60%;  /* Keyboard takes up 60% of the viewport width */
-
-  background-color: #e6f7ff;  /* Light blue background for the keyboard */
-  padding: 10px 0;  /* Add some padding */
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);  /* More pronounced shadow for greater depth */
-  border-top: 1px solid #b3e0ff;  /* Optional: subtle border top for definition */
-  border-radius: 10px 10px 0 0;  /* Rounded top corners */
-}
-
-
-.keyboard.docked .key {
-  visibility: hidden;
-}
-
-.keys-container {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap; /* Wrap buttons to the next line if necessary */
-}
-
-.devanagari-output {
-  display: block; /* Make the span a block to center it properly */
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 10px; /* Add space between the text and the keys */
-}
-
-.suggestions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center; /* Center the suggestions horizontally */
-  margin-bottom: 10px; /* Space between suggestions and keys */
-}
-
 .suggestion-item {
-  background-color: #007bff; /* Vivid blue background */
-  color: white; /* White text for high contrast */
-  padding: 8px 12px; /* Padding around the text */
-  border-radius: 4px; /* Rounded corners for a smoother look */
-  display: inline-block; /* Ensures padding and border-radius are applied */
-  margin-right: 10px; /* Adds spacing to the right of each span */
-  margin-bottom: 5px; /* Adds spacing below each span, useful for wrapped lines */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Adds shadow for depth */
-  font-weight: 600;
+  padding: 5px 10px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .suggestion-item:hover {
-  background-color: #0056b3; /* Darker shade on hover */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Larger shadow on hover */
+  background-color: #e0e0e0;
 }
 
-/* Styling for the empty state */
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 40px;
   text-align: center;
-  padding: 2rem; /* Use relative padding */
-  color: #555;
-  height: 100%; /* Ensure it uses full available height */
-  width: 100%; /* Ensure it uses full available width */
 }
 
-/* Scale down the image using relative units */
 .empty-state img {
-  max-width: 400px; /* Ensure it doesn't get too large */
-  height: auto; /* Maintain aspect ratio */
-  margin-bottom: 1rem; /* Adjust spacing as needed */
+  width: 200px;
+  height: 200px;
+  margin-bottom: 20px;
 }
 
-/* Reduce margins around text elements */
 .empty-state h3 {
-  margin: 0.5rem 0; /* Use relative margin */
-  font-size: 1.5rem;
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 10px;
 }
 
 .empty-state p {
-  font-size: 1rem;
-  color: #777;
-  margin: 0; /* Remove additional margins */
+  color: #666;
+  font-size: 16px;
 }
 
 .entries {
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
 }
