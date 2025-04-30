@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Entries from './Entries';
 import KeyboardBridge from '../keyboard/KeyboardBridge';
 import SearchBar from '../search/Search';
+import { toDevanagiriString } from '../../utils/transliterate';
 
 function Dictionary() {
     const [slp1SearchStr, setSlp1SearchStr] = useState('CAtraH');
@@ -25,6 +26,18 @@ function Dictionary() {
         setIsFocused(false);
     };
 
+    const handleInput = ({ type, value }) => {
+        if (type === 'enter') {
+            handleSearch(slp1SearchStr, devSearchStr);
+        } else if (type === 'backspace') {
+            setSlp1SearchStr(value);
+            setDevSearchStr(toDevanagiriString(value));
+        } else if (type === 'key') {
+            setSlp1SearchStr(value);
+            setDevSearchStr(toDevanagiriString(value));
+        }
+    };
+
     const [config, setConfig] = useState({});
     useEffect(() => {
         // Fetch configuration from the environment variable
@@ -45,7 +58,7 @@ function Dictionary() {
 
             fetchResults();
         }
-    }, [slp1SearchStr, devSearchStr]);
+    }, [slp1SearchStr, devSearchStr, config.apiUrl]);
 
     const nextPage = () => {
         setCurrentPage(prev => (prev < totalPages ? prev + 1 : prev));
@@ -72,14 +85,9 @@ function Dictionary() {
                 handleSearch={handleSearch}
             />
             <KeyboardBridge
-                slp1LatinStr={slp1SearchStr}
-                devanagariString={devSearchStr}
-                onSlp1Change={setSlp1SearchStr}
-                onDevanagariChange={setDevSearchStr}
                 isFocused={isFocused}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                handleSearch={handleSearch}
+                onInput={handleInput}
+                value={slp1SearchStr}
             />
             <Entries
                 entries={entries.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage)}
