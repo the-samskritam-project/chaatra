@@ -1,5 +1,5 @@
 // src/Keyboard.js
-import React, { useState } from 'react';
+import React from 'react';
 
 function Keyboard({ isDocked, activeKeys, alphabet, completionResults }) {
   return (
