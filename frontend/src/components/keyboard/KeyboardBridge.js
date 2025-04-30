@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Keyboard from './Keyboard';
 import { vowels, consonants } from '../../utils/constants';
 
@@ -44,7 +45,7 @@ function KeyboardBridge({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFocused, activeKeys, onInput, value]);
 
-  return (
+  const keyboardElement = (
     <Keyboard
       isDocked={isKeyboardDocked}
       activeKeys={activeKeys}
@@ -52,6 +53,8 @@ function KeyboardBridge({
       completionResults={[]}
     />
   );
+
+  return createPortal(keyboardElement, document.body);
 }
 
 export default KeyboardBridge; 
