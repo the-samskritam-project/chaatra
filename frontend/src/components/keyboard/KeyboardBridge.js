@@ -10,6 +10,38 @@ function KeyboardBridge({
 }) {
   const [isKeyboardDocked, setIsKeyboardDocked] = useState(true);
   const [activeKeys, setActiveKeys] = useState([]);
+  const [completionResults, setCompletionResults] = useState([]);
+  const [config, setConfig] = useState({});
+
+  useEffect(() => {
+    // Fetch configuration from the environment variable
+    const apiUrl = process.env.REACT_APP_API_BASE_URL;
+    setConfig({ apiUrl });
+  }, []);
+
+  useEffect(() => {
+    if (value.length === 0) {
+      setCompletionResults([]);
+      return;
+    }
+
+    const currentWord = value.split(' ').pop();
+
+    if (currentWord.length > 0) {
+      if (currentWord.charAt(currentWord.length - 1) === ' ') {
+        return;
+      }
+
+      const fetchResults = async () => {
+        const url = `${config.apiUrl}/complete?slp1=${encodeURIComponent(currentWord)}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        setCompletionResults(data);
+      };
+
+      fetchResults();
+    }
+  }, [value, config.apiUrl]);
 
   useEffect(() => {
     if (isFocused) {
@@ -50,7 +82,7 @@ function KeyboardBridge({
       isDocked={isKeyboardDocked}
       activeKeys={activeKeys}
       alphabet={vowels.concat(consonants)}
-      completionResults={[]}
+      completionResults={completionResults}
     />
   );
 
