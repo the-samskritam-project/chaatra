@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Entries from './Entries';
 import KeyboardBridge from '../keyboard/KeyboardBridge';
+import SearchBar from '../search/Search';
 
 function Dictionary() {
     const [slp1SearchStr, setSlp1SearchStr] = useState('CAtraH');
@@ -56,12 +57,20 @@ function Dictionary() {
 
     // set default search string
     useEffect(() => {
-        setSlp1SearchStr('sanAtana');
-        setDevSearchStr('सनातन');
+        setSlp1SearchStr('CAtraH');
+        setDevSearchStr('छात्रः');
     }, []);
 
     return (
         <div className='entries-container'>
+            <SearchBar
+                devanagariString={devSearchStr}
+                slp1LatinStr={slp1SearchStr}
+                onInputChange={() => {}}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                handleSearch={handleSearch}
+            />
             <KeyboardBridge
                 slp1LatinStr={slp1SearchStr}
                 devanagariString={devSearchStr}
