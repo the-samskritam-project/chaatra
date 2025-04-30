@@ -11,6 +11,7 @@ function Dictionary() {
     const [entries, setEntries] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [entriesPerPage] = useState(3); // Adjust number per page as needed
+    const [keyboardType, setKeyboardType] = useState('devanagari');
     const totalPages = Math.ceil(entries.length / entriesPerPage);
 
     const handleSearch = (slp1Str, devanagariStr) => {
@@ -36,6 +37,12 @@ function Dictionary() {
             setSlp1SearchStr(value);
             setDevSearchStr(toDevanagiriString(value));
         }
+    };
+
+    const handleDirectInput = (e) => {
+        const value = e.target.value;
+        setSlp1SearchStr(value);
+        setDevSearchStr(value);
     };
 
     const [config, setConfig] = useState({});
@@ -79,16 +86,20 @@ function Dictionary() {
             <SearchBar
                 devanagariString={devSearchStr}
                 slp1LatinStr={slp1SearchStr}
-                onInputChange={() => {}}
+                onInputChange={keyboardType === 'qwerty' ? handleDirectInput : () => {}}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
                 handleSearch={handleSearch}
+                keyboardType={keyboardType}
+                onKeyboardTypeChange={setKeyboardType}
             />
-            <KeyboardBridge
-                isFocused={isFocused}
-                onInput={handleInput}
-                value={slp1SearchStr}
-            />
+            {keyboardType === 'devanagari' && (
+                <KeyboardBridge
+                    isFocused={isFocused}
+                    onInput={handleInput}
+                    value={slp1SearchStr}
+                />
+            )}
             <Entries
                 entries={entries.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage)}
                 devSearchStr={devSearchStr}
