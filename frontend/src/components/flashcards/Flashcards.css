@@ -10,45 +10,121 @@
 }
 
 .flashcard-summary {
-  position: relative;
-  padding: 15px;
-  border: 1px solid #ddd;
+  background: white;
   border-radius: 8px;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .flashcard-summary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.flashcard-summary h3 {
-  margin: 0 0 8px 0;
+.flashcard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.flashcard-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
   color: #333;
+  cursor: text;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
 }
 
-.flashcard-summary .description {
+.flashcard-header h3:hover {
+  background-color: #f5f5f5;
+}
+
+.inline-edit {
+  width: 100%;
+  padding: 4px 8px;
+  border: 2px solid #007bff;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  font-family: inherit;
+  background: white;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.inline-edit:focus {
+  border-color: #0056b3;
+}
+
+.title-edit {
+  margin-right: 8px;
+}
+
+.description-edit {
+  font-size: 0.9rem;
+  margin: 8px 0;
+  width: calc(100% - 16px);
+}
+
+.description {
   color: #666;
-  font-size: 14px;
-  margin: 0 0 8px 0;
+  margin: 8px 0;
+  font-size: 0.9rem;
+  cursor: text;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
 }
 
-.flashcard-summary .tags {
+.description:hover {
+  background-color: #f5f5f5;
+}
+
+.description em {
+  color: #999;
+  font-style: italic;
+}
+
+.tags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 8px;
 }
 
-.flashcard-summary .tag {
-  background-color: #e0e0e0;
+.tag {
+  background: #e9ecef;
+  color: #495057;
   padding: 4px 8px;
   border-radius: 16px;
-  font-size: 12px;
-  color: #333;
+  font-size: 0.8rem;
+}
+
+.delete-button {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dc3545;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.delete-button:hover {
+  background-color: #ffebee;
+  transform: scale(1.1);
+}
+
+.delete-button:active {
+  transform: scale(0.95);
 }
 
 .flashcard-add-button {
@@ -211,25 +287,6 @@
   background-color: #da190b;
 }
 
-.delete-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: #f4a6a6;
-  color: black;
-  border: none;
-  border-radius: 4px;
-  padding: 5px 10px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.delete-button:hover {
-  background-color: #ff1a1a;
-  /* Darker red on hover */
-}
-
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -327,4 +384,103 @@
   margin: 0;
   line-height: 1.5;
   color: #333;
+}
+
+.new-card {
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  box-shadow: none;
+}
+
+.new-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.new-card .inline-edit {
+  background: white;
+  border: 1px solid #ced4da;
+}
+
+.new-card .inline-edit:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.new-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 0 8px;
+}
+
+.new-card-actions button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.new-card-actions .save-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.new-card-actions .save-button:hover {
+  background-color: #0056b3;
+}
+
+.new-card-actions .cancel-button {
+  background-color: white;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+}
+
+.new-card-actions .cancel-button:hover {
+  background-color: #f8f9fa;
+  border-color: #ced4da;
+}
+
+.new-card .inline-edit::placeholder {
+  font-style: italic;
+  color: #adb5bd;
+}
+
+.add-card-placeholder {
+  background: transparent;
+  border: 2px dashed #dee2e6;
+  box-shadow: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-card-placeholder:hover {
+  border-color: #007bff;
+  background-color: #f8f9fa;
+  transform: translateY(-2px);
+}
+
+.add-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #6c757d;
+  padding: 8px;
+  height: 100%;
+}
+
+.add-card-content svg {
+  color: #6c757d;
+  transition: color 0.2s ease;
+}
+
+.add-card-placeholder:hover .add-card-content {
+  color: #007bff;
+}
+
+.add-card-placeholder:hover .add-card-content svg {
+  color: #007bff;
 }
