@@ -10,57 +10,102 @@
 }
 
 .flashcard-summary {
-  position: relative;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  cursor: pointer;
-  transition: all 0.3s ease;
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
   margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .flashcard-summary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .flashcard-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
 .flashcard-header h3 {
   margin: 0;
+  font-size: 1.2rem;
   color: #333;
-  font-size: 18px;
-  font-weight: 600;
+  cursor: text;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
 }
 
-.flashcard-summary .description {
+.flashcard-header h3:hover {
+  background-color: #f5f5f5;
+}
+
+.inline-edit {
+  width: 100%;
+  padding: 4px 8px;
+  border: 2px solid #007bff;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  font-family: inherit;
+  background: white;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.inline-edit:focus {
+  border-color: #0056b3;
+}
+
+.title-edit {
+  margin-right: 8px;
+}
+
+.description {
   color: #666;
-  font-size: 14px;
-  margin: 0 0 12px 0;
-  line-height: 1.5;
+  margin: 8px 0;
+  font-size: 0.9rem;
 }
 
-.flashcard-summary .tags {
+.tags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
-.flashcard-summary .tag {
-  background-color: #e8f0fe;
-  color: #1a73e8;
-  padding: 4px 12px;
+.tag {
+  background: #e9ecef;
+  color: #495057;
+  padding: 4px 8px;
   border-radius: 16px;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.delete-button {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dc3545;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.delete-button:hover {
+  background-color: #ffebee;
+  transform: scale(1.1);
+}
+
+.delete-button:active {
+  transform: scale(0.95);
 }
 
 .flashcard-add-button {
@@ -221,37 +266,6 @@
 
 .cancel-button:hover {
   background-color: #da190b;
-}
-
-.delete-button {
-  position: static;
-  background-color: transparent;
-  color: #d32f2f;
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  padding: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.delete-button:hover {
-  background-color: #ffebee;
-  color: #b71c1c;
-}
-
-.delete-button svg {
-  width: 16px;
-  height: 16px;
-  transition: transform 0.2s ease;
-}
-
-.delete-button:hover svg {
-  transform: scale(1.1);
 }
 
 .modal-overlay {
