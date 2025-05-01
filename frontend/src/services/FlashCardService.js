@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 class FlashCardService {
     constructor(storageKey = 'chaatra_flashcards') {
       this.storageKey = storageKey;
@@ -22,6 +24,7 @@ class FlashCardService {
       }
   
       const newFlashCard = {
+        id: uuidv4(),
         title,
         description,
         front,
@@ -32,6 +35,7 @@ class FlashCardService {
   
       flashcards.push(newFlashCard);
       this._saveFlashCards(flashcards);
+      return newFlashCard;
     }
   
     // Get a paginated list of flashcards sorted alphabetically
@@ -45,17 +49,44 @@ class FlashCardService {
       return flashcards.slice(start, end);
     }
   
-    // Retrieve a flashcard by title
-    getFlashCardByTitle(title) {
+    // Retrieve a flashcard by ID
+    getFlashCardById(id) {
       const flashcards = this._getFlashCards();
-      return flashcards.find(fc => fc.title === title);
+      return flashcards.find(fc => fc.id === id);
     }
   
-    // Delete a flashcard by title
-    deleteFlashCard(title) {
+    // Delete a flashcard by ID
+    deleteFlashCard(id) {
       let flashcards = this._getFlashCards();
-      flashcards = flashcards.filter(fc => fc.title !== title);
+      flashcards = flashcards.filter(fc => fc.id !== id);
       this._saveFlashCards(flashcards);
+    }
+
+    // Update an existing flashcard
+    updateFlashCard(id, updatedFlashcard) {
+      let flashcards = this._getFlashCards();
+      
+      // Find the flashcard by its ID
+      const index = flashcards.findIndex(fc => fc.id === id);
+      if (index === -1) {
+        throw new Error('Flashcard not found');
+      }
+
+      // If title is being changed, check for duplicates
+      if (flashcards[index].title !== updatedFlashcard.title && 
+          flashcards.some(fc => fc.title === updatedFlashcard.title)) {
+        throw new Error('A flashcard with this title already exists');
+      }
+
+      // Preserve the original ID and creation date
+      updatedFlashcard.id = id;
+      updatedFlashcard.createdAt = flashcards[index].createdAt;
+      
+      // Update the flashcard
+      flashcards[index] = updatedFlashcard;
+      
+      this._saveFlashCards(flashcards);
+      return updatedFlashcard;
     }
   }
   
