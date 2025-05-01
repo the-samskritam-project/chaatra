@@ -15,7 +15,7 @@ const Flashcard = ({ flashcard, onDelete }) => {
 
   const handleDelete = (e) => {
     e.stopPropagation();
-    onDelete(flashcard.title); 
+    onDelete(flashcard.id); 
   };
 
   return (

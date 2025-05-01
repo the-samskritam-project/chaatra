@@ -19,14 +19,14 @@ const Flashcards = () => {
     setShowModal(true);
   };
 
-  const handleDeleteFlashcard = (title) => {
-    flashCardService.deleteFlashCard(title);
-    setFlashcards(flashcards => flashcards.filter(flashcard => flashcard.title !== title));
+  const handleDeleteFlashcard = (id) => {
+    flashCardService.deleteFlashCard(id);
+    setFlashcards(flashcards => flashcards.filter(flashcard => flashcard.id !== id));
   };
 
   const flashcardAdded = (card) => {
-    flashCardService.createFlashCard(card);
-    flashcards.push(card);
+    const newCard = flashCardService.createFlashCard(card);
+    setFlashcards(prevCards => [...prevCards, newCard]);
   }
 
   return (
@@ -38,7 +38,7 @@ const Flashcards = () => {
       </div>
       <div className="flashcards-list">
         {flashcards.map((flashcard, index) => (
-          <Flashcard key={index} flashcard={flashcard} onDelete={handleDeleteFlashcard} />
+          <Flashcard key={flashcard.id} flashcard={flashcard} onDelete={handleDeleteFlashcard} />
         ))}
       </div>
       {showModal && <AddModal setShowModal={setShowModal} handleAddCard={flashcardAdded} />}
@@ -47,8 +47,7 @@ const Flashcards = () => {
 };
 
 const getFlashcards = () => {
-  const cards  = flashCardService.getFlashCards();
-
+  const cards = flashCardService.getFlashCards();
   return cards;
 };
 
