@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import Modal from './Modal'; // Import the Modal component
-import { toDevanagiriString } from '../../utils/transliterate';
 import FlashCardService from '../../services/FlashCardService';
+import './Flashcards.css';
 
 const Flashcard = ({ flashcard, onDelete, onUpdate }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(flashcard.title);
   const [editedDescription, setEditedDescription] = useState(flashcard.description || '');
+  const [editedTags, setEditedTags] = useState(flashcard.tags || []);
+  const [tagInput, setTagInput] = useState('');
+  const [showTagInput, setShowTagInput] = useState(false);
   const flashCardService = new FlashCardService();
 
   const handleOpenModal = () => {
@@ -24,14 +26,8 @@ const Flashcard = ({ flashcard, onDelete, onUpdate }) => {
     onDelete(flashcard.id); 
   };
 
-  const handleTitleClick = (e) => {
-    e.stopPropagation();
-    setIsEditingTitle(true);
-  };
-
-  const handleDescriptionClick = (e) => {
-    e.stopPropagation();
-    setIsEditingDescription(true);
+  const handleTitleClick = () => {
+    setIsEditing(true);
   };
 
   const handleTitleChange = (e) => {
@@ -42,67 +38,68 @@ const Flashcard = ({ flashcard, onDelete, onUpdate }) => {
     setEditedDescription(e.target.value);
   };
 
-  const handleTitleBlur = () => {
-    setIsEditingTitle(false);
-    if (editedTitle !== flashcard.title) {
-      try {
-        const updatedFlashcard = { ...flashcard, title: editedTitle };
-        const result = flashCardService.updateFlashCard(flashcard.id, updatedFlashcard);
-        onUpdate(result);
-      } catch (error) {
-        setEditedTitle(flashcard.title);
-        console.error('Failed to update title:', error);
-      }
-    }
-  };
-
-  const handleDescriptionBlur = () => {
-    setIsEditingDescription(false);
-    if (editedDescription !== flashcard.description) {
-      try {
-        const updatedFlashcard = { ...flashcard, description: editedDescription };
-        const result = flashCardService.updateFlashCard(flashcard.id, updatedFlashcard);
-        onUpdate(result);
-      } catch (error) {
-        setEditedDescription(flashcard.description || '');
-        console.error('Failed to update description:', error);
-      }
-    }
-  };
-
-  const handleKeyDown = (e, type) => {
-    if (e.key === 'Enter') {
+  const handleTagInputKeyDown = (e) => {
+    if (e.key === 'Enter' && tagInput.trim()) {
       e.preventDefault();
-      if (type === 'title') {
-        handleTitleBlur();
-      } else {
-        handleDescriptionBlur();
-      }
+      const newTags = [...editedTags, tagInput.trim()];
+      setEditedTags(newTags);
+      setTagInput('');
+      setShowTagInput(false);
+      // Save immediately when adding a tag
+      const updatedFlashcard = {
+        ...flashcard,
+        tags: newTags
+      };
+      const result = flashCardService.updateFlashCard(flashcard.id, updatedFlashcard);
+      onUpdate(result);
     } else if (e.key === 'Escape') {
-      if (type === 'title') {
-        setEditedTitle(flashcard.title);
-        setIsEditingTitle(false);
-      } else {
-        setEditedDescription(flashcard.description || '');
-        setIsEditingDescription(false);
-      }
+      setTagInput('');
+      setShowTagInput(false);
     }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setEditedTags(editedTags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleSave = () => {
+    const updatedFlashcard = {
+      ...flashcard,
+      title: editedTitle,
+      description: editedDescription,
+      tags: editedTags
+    };
+    const result = flashCardService.updateFlashCard(flashcard.id, updatedFlashcard);
+    onUpdate(result);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditedTitle(flashcard.title);
+    setEditedDescription(flashcard.description || '');
+    setEditedTags(flashcard.tags || []);
+    setIsEditing(false);
   };
 
   return (
     <div>
       <div onClick={handleOpenModal} className="flashcard-summary">
         <div className="flashcard-header">
-          {isEditingTitle ? (
+          {isEditing ? (
             <input
               type="text"
               value={editedTitle}
               onChange={handleTitleChange}
-              onBlur={handleTitleBlur}
-              onKeyDown={(e) => handleKeyDown(e, 'title')}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSave();
+                } else if (e.key === 'Escape') {
+                  handleCancel();
+                }
+              }}
               className="inline-edit title-edit"
               autoFocus
-              onClick={(e) => e.stopPropagation()}
             />
           ) : (
             <h3 onClick={handleTitleClick}>{flashcard.title}</h3>
@@ -113,28 +110,101 @@ const Flashcard = ({ flashcard, onDelete, onUpdate }) => {
             </svg>
           </button>
         </div>
-        {isEditingDescription ? (
+        {isEditing ? (
           <input
             type="text"
             value={editedDescription}
             onChange={handleDescriptionChange}
-            onBlur={handleDescriptionBlur}
-            onKeyDown={(e) => handleKeyDown(e, 'description')}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSave();
+              } else if (e.key === 'Escape') {
+                handleCancel();
+              }
+            }}
             className="inline-edit description-edit"
-            placeholder="Add description..."
-            autoFocus
-            onClick={(e) => e.stopPropagation()}
           />
         ) : (
-          <p className="description" onClick={handleDescriptionClick}>
-            {flashcard.description || <em>Add description...</em>}
+          <p className="description">
+            {flashcard.description || <em>No description</em>}
           </p>
         )}
-        <div className="tags">
-          {flashcard.tags && flashcard.tags.map((tag, index) => (
-            tag ? <span key={index} className="tag">{tag}</span> : null
-          ))}
+        <div className="tags-container">
+          <div className="tags-list">
+            {editedTags.map((tag, index) => (
+              <span key={index} className="tag">
+                {tag}
+                <button
+                  className="tag-remove"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveTag(tag);
+                  }}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+          <div className="tag-input-container">
+            {showTagInput ? (
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagInputKeyDown}
+                className="tag-input"
+                placeholder="Add tags..."
+                onClick={(e) => e.stopPropagation()}
+                autoFocus
+              />
+            ) : (
+              <button 
+                className="tag-add-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowTagInput(true);
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 4V20M4 12H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+            )}
+            {showTagInput && (
+              <button 
+                className="tag-add-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (tagInput.trim()) {
+                    const newTags = [...editedTags, tagInput.trim()];
+                    setEditedTags(newTags);
+                    setTagInput('');
+                    setShowTagInput(false);
+                    // Save immediately when adding a tag
+                    const updatedFlashcard = {
+                      ...flashcard,
+                      tags: newTags
+                    };
+                    const result = flashCardService.updateFlashCard(flashcard.id, updatedFlashcard);
+                    onUpdate(result);
+                  }
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 4V20M4 12H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
+        {isEditing && (
+          <div className="new-card-actions">
+            <button onClick={handleSave} className="save-button">Save</button>
+            <button onClick={handleCancel} className="cancel-button">Cancel</button>
+          </div>
+        )}
       </div>
       {isModalOpen && (
         <Modal onClose={handleCloseModal} flashcard={flashcard} />
