@@ -368,8 +368,10 @@
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 20px;
 }
 
 .card-content p {
@@ -377,6 +379,24 @@
   font-size: 18px;
   line-height: 1.5;
   color: #333;
+}
+
+.face-text {
+  font-size: 0.9rem !important;
+  font-weight: 600;
+  color: #9ca3af;
+  letter-spacing: 0.5px;
+}
+
+.card-label {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #9ca3af;
+  letter-spacing: 0.5px;
 }
 
 .card h2 {
@@ -537,4 +557,46 @@
 
 .tag-add-button:active {
   transform: scale(0.95);
+}
+
+.editable {
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  min-height: 24px;
+}
+
+.editable:hover {
+  background-color: #f8f9fa;
+}
+
+.editable:empty::before {
+  content: attr(data-placeholder);
+  color: #adb5bd;
+  font-style: italic;
+}
+
+.card-edit {
+  width: 100%;
+  height: 100px;
+  padding: 8px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-size: 1rem;
+  line-height: 1.5;
+  resize: none;
+  background: white;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.card-edit::placeholder {
+  color: #adb5bd;
+  font-style: italic;
+}
+
+.card-edit:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }

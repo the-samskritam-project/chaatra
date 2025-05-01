@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from './Modal'; // Import the Modal component
 import FlashCardService from '../../services/FlashCardService';
 import './Flashcards.css';
@@ -11,7 +11,13 @@ const Flashcard = ({ flashcard, onDelete, onUpdate }) => {
   const [editedTags, setEditedTags] = useState(flashcard.tags || []);
   const [tagInput, setTagInput] = useState('');
   const [showTagInput, setShowTagInput] = useState(false);
+  const [currentFlashcard, setCurrentFlashcard] = useState(flashcard);
   const flashCardService = new FlashCardService();
+
+  // Update currentFlashcard when flashcard prop changes
+  useEffect(() => {
+    setCurrentFlashcard(flashcard);
+  }, [flashcard]);
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -47,10 +53,11 @@ const Flashcard = ({ flashcard, onDelete, onUpdate }) => {
       setShowTagInput(false);
       // Save immediately when adding a tag
       const updatedFlashcard = {
-        ...flashcard,
+        ...currentFlashcard,
         tags: newTags
       };
-      const result = flashCardService.updateFlashCard(flashcard.id, updatedFlashcard);
+      const result = flashCardService.updateFlashCard(currentFlashcard.id, updatedFlashcard);
+      setCurrentFlashcard(result);
       onUpdate(result);
     } else if (e.key === 'Escape') {
       setTagInput('');
@@ -64,21 +71,27 @@ const Flashcard = ({ flashcard, onDelete, onUpdate }) => {
 
   const handleSave = () => {
     const updatedFlashcard = {
-      ...flashcard,
+      ...currentFlashcard,
       title: editedTitle,
       description: editedDescription,
       tags: editedTags
     };
-    const result = flashCardService.updateFlashCard(flashcard.id, updatedFlashcard);
+    const result = flashCardService.updateFlashCard(currentFlashcard.id, updatedFlashcard);
+    setCurrentFlashcard(result);
     onUpdate(result);
     setIsEditing(false);
   };
 
   const handleCancel = () => {
-    setEditedTitle(flashcard.title);
-    setEditedDescription(flashcard.description || '');
-    setEditedTags(flashcard.tags || []);
+    setEditedTitle(currentFlashcard.title);
+    setEditedDescription(currentFlashcard.description || '');
+    setEditedTags(currentFlashcard.tags || []);
     setIsEditing(false);
+  };
+
+  const handleModalUpdate = (updatedFlashcard) => {
+    setCurrentFlashcard(updatedFlashcard);
+    onUpdate(updatedFlashcard);
   };
 
   return (
@@ -102,7 +115,7 @@ const Flashcard = ({ flashcard, onDelete, onUpdate }) => {
               autoFocus
             />
           ) : (
-            <h3 onClick={handleTitleClick}>{flashcard.title}</h3>
+            <h3 onClick={handleTitleClick}>{currentFlashcard.title}</h3>
           )}
           <button onClick={handleDelete} className="delete-button" title="Delete flashcard">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -127,7 +140,7 @@ const Flashcard = ({ flashcard, onDelete, onUpdate }) => {
           />
         ) : (
           <p className="description">
-            {flashcard.description || <em>No description</em>}
+            {currentFlashcard.description || <em>No description</em>}
           </p>
         )}
         <div className="tags-container">
@@ -184,10 +197,11 @@ const Flashcard = ({ flashcard, onDelete, onUpdate }) => {
                     setShowTagInput(false);
                     // Save immediately when adding a tag
                     const updatedFlashcard = {
-                      ...flashcard,
+                      ...currentFlashcard,
                       tags: newTags
                     };
-                    const result = flashCardService.updateFlashCard(flashcard.id, updatedFlashcard);
+                    const result = flashCardService.updateFlashCard(currentFlashcard.id, updatedFlashcard);
+                    setCurrentFlashcard(result);
                     onUpdate(result);
                   }
                 }}
@@ -207,7 +221,11 @@ const Flashcard = ({ flashcard, onDelete, onUpdate }) => {
         )}
       </div>
       {isModalOpen && (
-        <Modal onClose={handleCloseModal} flashcard={flashcard} />
+        <Modal 
+          onClose={handleCloseModal} 
+          flashcard={currentFlashcard} 
+          onUpdate={handleModalUpdate}
+        />
       )}
     </div>
   );
