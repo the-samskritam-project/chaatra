@@ -1,0 +1,128 @@
+.search-bar {
+  display: flex;
+  align-items: center;
+  margin: 20px;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease;
+  overflow: hidden;
+  padding: 4px;
+}
+
+.search-bar:focus-within {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #007bff;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  position: relative;
+  padding: 4px;
+}
+
+.search-input {
+  padding: 12px 16px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  outline: none;
+  width: 100%;
+  background-color: transparent;
+  color: #333;
+  font-family: 'Hind', sans-serif;
+  transition: all 0.3s ease;
+}
+
+.search-input::placeholder {
+  color: #999;
+  font-family: 'Roboto', sans-serif;
+}
+
+.search-input:focus {
+  background-color: #f8f9fa;
+}
+
+.keyboard-toggle {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  gap: 4px;
+  border-left: 1px solid #e0e0e0;
+  margin-left: 8px;
+}
+
+.keyboard-type-btn {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  margin: 0 2px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+}
+
+.keyboard-type-btn:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.keyboard-type-btn.active {
+  background-color: #007bff;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.keyboard-type-btn.active:hover {
+  background-color: #0056b3;
+}
+
+.devanagari-icon {
+  font-family: 'Hind', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.qwerty-icon {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.search-button {
+  padding: 12px 24px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
+  height: calc(100% - 8px);
+  margin: 0 4px;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.search-button:hover {
+  background-color: #0056b3;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.search-button:active {
+  transform: translateY(1px);
+} 
