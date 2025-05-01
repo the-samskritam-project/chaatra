@@ -11,13 +11,14 @@
 
 .flashcard-summary {
   position: relative;
-  padding: 15px;
+  padding: 20px;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: 12px;
   background-color: white;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-bottom: 16px;
 }
 
 .flashcard-summary:hover {
@@ -25,30 +26,41 @@
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
-.flashcard-summary h3 {
-  margin: 0 0 8px 0;
+.flashcard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.flashcard-header h3 {
+  margin: 0;
   color: #333;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .flashcard-summary .description {
   color: #666;
   font-size: 14px;
-  margin: 0 0 8px 0;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
 }
 
 .flashcard-summary .tags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 12px;
 }
 
 .flashcard-summary .tag {
-  background-color: #e0e0e0;
-  padding: 4px 8px;
+  background-color: #e8f0fe;
+  color: #1a73e8;
+  padding: 4px 12px;
   border-radius: 16px;
   font-size: 12px;
-  color: #333;
+  font-weight: 500;
 }
 
 .flashcard-add-button {
@@ -212,22 +224,21 @@
 }
 
 .delete-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+  position: static;
   background-color: #f4a6a6;
-  color: black;
+  color: #d32f2f;
   border: none;
-  border-radius: 4px;
-  padding: 5px 10px;
+  border-radius: 6px;
+  padding: 6px 12px;
   cursor: pointer;
   font-size: 12px;
-  font-weight: bold;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .delete-button:hover {
-  background-color: #ff1a1a;
-  /* Darker red on hover */
+  background-color: #ffcdd2;
+  color: #b71c1c;
 }
 
 .modal-overlay {
