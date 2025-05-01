@@ -42,54 +42,55 @@ function Entries({ entries, devSearchStr }) {
   const handleAddEntry = (entry) => {
     const { Word, Type, Meanings } = entry;
 
-    const title = Word;
-    const body = Meanings;
-    const tags = [Type];
-
     const flashCard = {
-      title,
-      body,
-      tags,
-      createdAt: new Date().toISOString(),
+      title: Word,
+      description: Meanings.join(', '),
+      front: Word,
+      back: Meanings.join(', '),
+      tags: [Type],
     };
 
     try {
-      flashCardService.createFlashCard(flashCard);
-      setAddedEntries([...addedEntries, entry.Word]);
+      const newFlashCard = flashCardService.createFlashCard(flashCard);
+      setAddedEntries([...addedEntries, newFlashCard.id]);
     } catch (error) {
       console.error('Error creating flashcard:', error.message);
     }
   };
 
   const flashCardExists = function (word) {
-    const entry = flashCardService.getFlashCardByTitle(word);
-
-    return entry != null;
+    const flashcards = flashCardService.getFlashCards();
+    return flashcards.some(fc => fc.title === word);
   }
 
   return (
     <div className='entries'>
       {entries.length > 0 ? (
-        entries.map((entry, index) => (
-          <div key={index} className="entry">
-            {flashCardExists(entry.Word) || addedEntries.includes(entry.Word) ? (
-              <button className="card-added">
-                Added
-              </button>
-            ) : (
-              <button className="add-button" onClick={() => handleAddEntry(entry)}>
-                Add
-              </button>
-            )}
-            <h3>{toDevanagiriString(entry.Word)}</h3>
-            <p>{entry.Type}</p>
-            {entry.Meanings.map((meaning, meaningIndex) => (
-              <div key={meaningIndex} className="meaning">
-                <p>{highlightText(meaning, devSearchStr)}</p>
-              </div>
-            ))}
-          </div>
-        ))
+        entries.map((entry, index) => {
+          const existingFlashcard = flashCardService.getFlashCards().find(fc => fc.title === entry.Word);
+          const isAdded = existingFlashcard ? addedEntries.includes(existingFlashcard.id) : false;
+          
+          return (
+            <div key={index} className="entry">
+              {flashCardExists(entry.Word) || isAdded ? (
+                <button className="card-added">
+                  Added
+                </button>
+              ) : (
+                <button className="add-button" onClick={() => handleAddEntry(entry)}>
+                  Add
+                </button>
+              )}
+              <h3>{toDevanagiriString(entry.Word)}</h3>
+              <p>{entry.Type}</p>
+              {entry.Meanings.map((meaning, meaningIndex) => (
+                <div key={meaningIndex} className="meaning">
+                  <p>{highlightText(meaning, devSearchStr)}</p>
+                </div>
+              ))}
+            </div>
+          );
+        })
       ) : (
         <div className="empty-state">
           <img src={emptyStateImage} alt="Search!" />
