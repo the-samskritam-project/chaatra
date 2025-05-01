@@ -13,6 +13,8 @@ const Flashcards = () => {
     description: '',
     tags: []
   });
+  const [tagInput, setTagInput] = useState('');
+  const [showTagInput, setShowTagInput] = useState(false);
 
   useEffect(() => {
     setFlashcards(getFlashcards());
@@ -68,6 +70,26 @@ const Flashcards = () => {
     }
   };
 
+  const handleTagInputKeyDown = (e) => {
+    if (e.key === 'Enter' && tagInput.trim()) {
+      e.preventDefault();
+      const newTags = [...newCard.tags, tagInput.trim()];
+      setNewCard(prev => ({ ...prev, tags: newTags }));
+      setTagInput('');
+      setShowTagInput(false);
+    } else if (e.key === 'Escape') {
+      setTagInput('');
+      setShowTagInput(false);
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setNewCard(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
+  };
+
   return (
     <div className="flashcards-container">
       <div className="flashcards-list">
@@ -92,6 +114,60 @@ const Flashcards = () => {
               className="inline-edit description-edit"
               placeholder="Description"
             />
+            <div className="tags-container">
+              <div className="tags-list">
+                {newCard.tags.map((tag, index) => (
+                  <span key={index} className="tag">
+                    {tag}
+                    <button
+                      className="tag-remove"
+                      onClick={() => handleRemoveTag(tag)}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <div className="tag-input-container">
+                {showTagInput ? (
+                  <input
+                    type="text"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={handleTagInputKeyDown}
+                    className="tag-input"
+                    placeholder="Add tags..."
+                    autoFocus
+                  />
+                ) : (
+                  <button 
+                    className="tag-add-button"
+                    onClick={() => setShowTagInput(true)}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 4V20M4 12H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                  </button>
+                )}
+                {showTagInput && (
+                  <button 
+                    className="tag-add-button"
+                    onClick={() => {
+                      if (tagInput.trim()) {
+                        const newTags = [...newCard.tags, tagInput.trim()];
+                        setNewCard(prev => ({ ...prev, tags: newTags }));
+                        setTagInput('');
+                        setShowTagInput(false);
+                      }
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 4V20M4 12H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
             <div className="new-card-actions">
               <button onClick={handleNewCardSave} className="save-button">Save</button>
               <button onClick={handleNewCardCancel} className="cancel-button">Cancel</button>

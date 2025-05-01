@@ -202,54 +202,68 @@
   resize: vertical;
 }
 
-.tags-input {
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 8px;
-}
-
-.tags-input input {
-  border: none;
-  outline: none;
-  width: 100%;
-  padding: 4px 0;
-  font-size: 14px;
-}
-
-.tags-input input:focus {
-  outline: none;
+.tags-container {
+  margin: 8px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
 .tags-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 4px;
 }
 
 .tag {
-  display: inline-flex;
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  display: flex;
   align-items: center;
-  background-color: #e0e0e0;
-  padding: 4px 8px;
-  border-radius: 16px;
-  font-size: 12px;
-  color: #333;
+  gap: 4px;
 }
 
 .tag-remove {
   background: none;
   border: none;
-  color: #666;
-  margin-left: 4px;
-  padding: 0 2px;
+  color: #6c757d;
   cursor: pointer;
-  font-size: 16px;
+  padding: 0;
+  font-size: 1rem;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tag-remove:hover {
-  color: #f44336;
+  color: #dc3545;
+}
+
+.tag-input {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.875rem;
+  color: #495057;
+  background: white;
+  min-width: 120px;
+  transition: border-color 0.2s;
+}
+
+.tag-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.tag-input::placeholder {
+  color: #adb5bd;
+  font-style: italic;
 }
 
 .modal-footer {
@@ -483,4 +497,44 @@
 
 .add-card-placeholder:hover .add-card-content svg {
   color: #007bff;
+}
+
+.placeholder-tag {
+  background-color: transparent;
+  border: 1px dashed #dee2e6;
+  color: #adb5bd;
+  font-style: italic;
+}
+
+.placeholder-tag:hover {
+  border-color: #007bff;
+  color: #007bff;
+}
+
+.tag-input-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tag-add-button {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.tag-add-button:hover {
+  color: #007bff;
+  background-color: #f8f9fa;
+}
+
+.tag-add-button:active {
+  transform: scale(0.95);
 }
