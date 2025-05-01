@@ -65,10 +65,29 @@
   margin-right: 8px;
 }
 
+.description-edit {
+  font-size: 0.9rem;
+  margin: 8px 0;
+  width: calc(100% - 16px);
+}
+
 .description {
   color: #666;
   margin: 8px 0;
   font-size: 0.9rem;
+  cursor: text;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.description:hover {
+  background-color: #f5f5f5;
+}
+
+.description em {
+  color: #999;
+  font-style: italic;
 }
 
 .tags {

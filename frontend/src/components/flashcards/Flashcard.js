@@ -6,7 +6,9 @@ import FlashCardService from '../../services/FlashCardService';
 const Flashcard = ({ flashcard, onDelete, onUpdate }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [editedTitle, setEditedTitle] = useState(flashcard.title);
+  const [editedDescription, setEditedDescription] = useState(flashcard.description || '');
   const flashCardService = new FlashCardService();
 
   const handleOpenModal = () => {
@@ -27,8 +29,17 @@ const Flashcard = ({ flashcard, onDelete, onUpdate }) => {
     setIsEditingTitle(true);
   };
 
+  const handleDescriptionClick = (e) => {
+    e.stopPropagation();
+    setIsEditingDescription(true);
+  };
+
   const handleTitleChange = (e) => {
     setEditedTitle(e.target.value);
+  };
+
+  const handleDescriptionChange = (e) => {
+    setEditedDescription(e.target.value);
   };
 
   const handleTitleBlur = () => {
@@ -37,22 +48,44 @@ const Flashcard = ({ flashcard, onDelete, onUpdate }) => {
       try {
         const updatedFlashcard = { ...flashcard, title: editedTitle };
         const result = flashCardService.updateFlashCard(flashcard.id, updatedFlashcard);
-        onUpdate(result); // Notify parent of the update
+        onUpdate(result);
       } catch (error) {
-        // If update fails, revert to original title
         setEditedTitle(flashcard.title);
         console.error('Failed to update title:', error);
       }
     }
   };
 
-  const handleKeyDown = (e) => {
+  const handleDescriptionBlur = () => {
+    setIsEditingDescription(false);
+    if (editedDescription !== flashcard.description) {
+      try {
+        const updatedFlashcard = { ...flashcard, description: editedDescription };
+        const result = flashCardService.updateFlashCard(flashcard.id, updatedFlashcard);
+        onUpdate(result);
+      } catch (error) {
+        setEditedDescription(flashcard.description || '');
+        console.error('Failed to update description:', error);
+      }
+    }
+  };
+
+  const handleKeyDown = (e, type) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleTitleBlur();
+      if (type === 'title') {
+        handleTitleBlur();
+      } else {
+        handleDescriptionBlur();
+      }
     } else if (e.key === 'Escape') {
-      setEditedTitle(flashcard.title);
-      setIsEditingTitle(false);
+      if (type === 'title') {
+        setEditedTitle(flashcard.title);
+        setIsEditingTitle(false);
+      } else {
+        setEditedDescription(flashcard.description || '');
+        setIsEditingDescription(false);
+      }
     }
   };
 
@@ -66,7 +99,7 @@ const Flashcard = ({ flashcard, onDelete, onUpdate }) => {
               value={editedTitle}
               onChange={handleTitleChange}
               onBlur={handleTitleBlur}
-              onKeyDown={handleKeyDown}
+              onKeyDown={(e) => handleKeyDown(e, 'title')}
               className="inline-edit title-edit"
               autoFocus
               onClick={(e) => e.stopPropagation()}
@@ -80,8 +113,22 @@ const Flashcard = ({ flashcard, onDelete, onUpdate }) => {
             </svg>
           </button>
         </div>
-        {flashcard.description && (
-          <p className="description">{flashcard.description}</p>
+        {isEditingDescription ? (
+          <input
+            type="text"
+            value={editedDescription}
+            onChange={handleDescriptionChange}
+            onBlur={handleDescriptionBlur}
+            onKeyDown={(e) => handleKeyDown(e, 'description')}
+            className="inline-edit description-edit"
+            placeholder="Add description..."
+            autoFocus
+            onClick={(e) => e.stopPropagation()}
+          />
+        ) : (
+          <p className="description" onClick={handleDescriptionClick}>
+            {flashcard.description || <em>Add description...</em>}
+          </p>
         )}
         <div className="tags">
           {flashcard.tags && flashcard.tags.map((tag, index) => (
