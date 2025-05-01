@@ -1,22 +1,30 @@
 import Flashcard from './Flashcard';
 import React, { useState, useEffect } from 'react';
 import './Flashcards.css'
-import AddModal from './AddModal';
 import FlashCardService from '../../services/FlashCardService';
 
 const flashCardService = new FlashCardService();
 
 const Flashcards = () => {
   const [flashcards, setFlashcards] = useState([]);
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newCard, setNewCard] = useState({
+    title: '',
+    description: '',
+    tags: []
+  });
 
   useEffect(() => {
     setFlashcards(getFlashcards());
   }, []);
 
-  const [showModal, setShowModal] = useState(false);
-
   const handleAddButtonClick = () => {
-    setShowModal(true);
+    setIsAddingNew(true);
+    setNewCard({
+      title: '',
+      description: '',
+      tags: []
+    });
   };
 
   const handleDeleteFlashcard = (id) => {
@@ -32,20 +40,65 @@ const Flashcards = () => {
     );
   };
 
-  const flashcardAdded = (card) => {
-    const newCard = flashCardService.createFlashCard(card);
-    setFlashcards(prevCards => [...prevCards, newCard]);
-  }
+  const handleNewCardChange = (field, value) => {
+    setNewCard(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleNewCardSave = () => {
+    if (newCard.title.trim()) {
+      const savedCard = flashCardService.createFlashCard(newCard);
+      setFlashcards(prevCards => [...prevCards, savedCard]);
+      setIsAddingNew(false);
+    }
+  };
+
+  const handleNewCardCancel = () => {
+    setIsAddingNew(false);
+  };
+
+  const handleNewCardKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleNewCardSave();
+    } else if (e.key === 'Escape') {
+      handleNewCardCancel();
+    }
+  };
 
   return (
     <div className="flashcards-container">
-      <div className="flashcards-header">
-        <button className="flashcard-add-button" onClick={handleAddButtonClick}>
-          Add
-        </button>
-      </div>
       <div className="flashcards-list">
-        {flashcards.map((flashcard, index) => (
+        {isAddingNew && (
+          <div className="flashcard-summary new-card">
+            <div className="flashcard-header">
+              <input
+                type="text"
+                value={newCard.title}
+                onChange={(e) => handleNewCardChange('title', e.target.value)}
+                onKeyDown={handleNewCardKeyDown}
+                className="inline-edit title-edit"
+                placeholder="Title"
+                autoFocus
+              />
+            </div>
+            <input
+              type="text"
+              value={newCard.description}
+              onChange={(e) => handleNewCardChange('description', e.target.value)}
+              onKeyDown={handleNewCardKeyDown}
+              className="inline-edit description-edit"
+              placeholder="Description"
+            />
+            <div className="new-card-actions">
+              <button onClick={handleNewCardSave} className="save-button">Save</button>
+              <button onClick={handleNewCardCancel} className="cancel-button">Cancel</button>
+            </div>
+          </div>
+        )}
+        {flashcards.map((flashcard) => (
           <Flashcard 
             key={flashcard.id} 
             flashcard={flashcard} 
@@ -53,8 +106,17 @@ const Flashcards = () => {
             onUpdate={handleUpdateFlashcard}
           />
         ))}
+        {!isAddingNew && (
+          <div className="flashcard-summary add-card-placeholder" onClick={handleAddButtonClick}>
+            <div className="add-card-content">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4V20M4 12H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              <span>Add</span>
+            </div>
+          </div>
+        )}
       </div>
-      {showModal && <AddModal setShowModal={setShowModal} handleAddCard={flashcardAdded} />}
     </div>
   );
 };
