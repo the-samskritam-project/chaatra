@@ -225,20 +225,33 @@
 
 .delete-button {
   position: static;
-  background-color: #f4a6a6;
+  background-color: transparent;
   color: #d32f2f;
   border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
 }
 
 .delete-button:hover {
-  background-color: #ffcdd2;
+  background-color: #ffebee;
   color: #b71c1c;
+}
+
+.delete-button svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s ease;
+}
+
+.delete-button:hover svg {
+  transform: scale(1.1);
 }
 
 .modal-overlay {
