@@ -385,3 +385,102 @@
   line-height: 1.5;
   color: #333;
 }
+
+.new-card {
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  box-shadow: none;
+}
+
+.new-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.new-card .inline-edit {
+  background: white;
+  border: 1px solid #ced4da;
+}
+
+.new-card .inline-edit:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.new-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 0 8px;
+}
+
+.new-card-actions button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.new-card-actions .save-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.new-card-actions .save-button:hover {
+  background-color: #0056b3;
+}
+
+.new-card-actions .cancel-button {
+  background-color: white;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+}
+
+.new-card-actions .cancel-button:hover {
+  background-color: #f8f9fa;
+  border-color: #ced4da;
+}
+
+.new-card .inline-edit::placeholder {
+  font-style: italic;
+  color: #adb5bd;
+}
+
+.add-card-placeholder {
+  background: transparent;
+  border: 2px dashed #dee2e6;
+  box-shadow: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-card-placeholder:hover {
+  border-color: #007bff;
+  background-color: #f8f9fa;
+  transform: translateY(-2px);
+}
+
+.add-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #6c757d;
+  padding: 8px;
+  height: 100%;
+}
+
+.add-card-content svg {
+  color: #6c757d;
+  transition: color 0.2s ease;
+}
+
+.add-card-placeholder:hover .add-card-content {
+  color: #007bff;
+}
+
+.add-card-placeholder:hover .add-card-content svg {
+  color: #007bff;
+}
