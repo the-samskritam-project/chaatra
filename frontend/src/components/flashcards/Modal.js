@@ -4,13 +4,11 @@ import FlashCardService from '../../services/FlashCardService';
 const flashCardService = new FlashCardService();
 
 const Modal = ({ onClose, flashcard, onUpdate }) => {
-  const [isFlipped, setIsFlipped] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState('');
   const [front, setFront] = useState(flashcard.front);
   const [back, setBack] = useState(flashcard.back);
-  const [editingFace, setEditingFace] = useState(null);
-  const currentFace = isFlipped ? 'Back' : 'Front';
+  const [currentFace, setCurrentFace] = useState('Front');
 
   // Update local state when flashcard prop changes
   useEffect(() => {
@@ -21,32 +19,27 @@ const Modal = ({ onClose, flashcard, onUpdate }) => {
   const handleFlip = (e) => {
     e.stopPropagation();
     if (isEditing) return;
-    setIsFlipped(!isFlipped);
+    setCurrentFace(currentFace === 'Front' ? 'Back' : 'Front');
   };
 
-  const handleEdit = (e, face) => {
+  const handleEdit = (e) => {
     e.stopPropagation();
     setIsEditing(true);
-    setEditingFace(face);
-    setEditedText(face === 'Front' ? front : back);
+    setEditedText(currentFace === 'Front' ? front : back);
   };
 
   const handleSave = () => {
-    // Create a new object with the current state
-    const updatedFlashcard = {
-      ...flashcard,
-      front: front,
-      back: back
-    };
-
-    // Update the appropriate side
-    if (editingFace === 'Front') {
-      updatedFlashcard.front = editedText;
+    if (currentFace === 'Front') {
       setFront(editedText);
     } else {
-      updatedFlashcard.back = editedText;
       setBack(editedText);
     }
+
+    const updatedFlashcard = {
+      ...flashcard,
+      front: currentFace === 'Front' ? editedText : front,
+      back: currentFace === 'Back' ? editedText : back
+    };
     
     try {
       const result = flashCardService.updateFlashCard(flashcard.id, updatedFlashcard);
@@ -54,7 +47,6 @@ const Modal = ({ onClose, flashcard, onUpdate }) => {
         onUpdate(result);
       }
       setIsEditing(false);
-      setEditingFace(null);
     } catch (error) {
       console.error('Failed to update flashcard:', error);
     }
@@ -66,27 +58,28 @@ const Modal = ({ onClose, flashcard, onUpdate }) => {
       handleSave();
     } else if (e.key === 'Escape') {
       setIsEditing(false);
-      setEditingFace(null);
     }
   };
 
-  const renderContent = (text, face) => {
-    if (isEditing && editingFace === face) {
+  const renderContent = () => {
+    const text = currentFace === 'Front' ? front : back;
+    
+    if (isEditing) {
       return (
         <textarea
           value={editedText}
           onChange={(e) => setEditedText(e.target.value)}
           onKeyDown={handleKeyDown}
           className="card-edit"
-          placeholder={`Enter ${face.toLowerCase()} text...`}
+          placeholder={`Enter ${currentFace.toLowerCase()} text...`}
           autoFocus
           onClick={(e) => e.stopPropagation()}
         />
       );
     }
     return (
-      <p className="editable" onClick={(e) => handleEdit(e, face)}>
-        {text || `Click to add ${face.toLowerCase()} text...`}
+      <p className="editable" onClick={handleEdit}>
+        {text || `Click to add ${currentFace.toLowerCase()} text...`}
       </p>
     );
   };
@@ -101,17 +94,17 @@ const Modal = ({ onClose, flashcard, onUpdate }) => {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className={`card ${isFlipped ? 'flipped' : ''}`}>
+        <div className={`card ${currentFace === 'Back' ? 'flipped' : ''}`}>
           <div className="card-inner">
             <div className="card-front" onClick={handleCardClick}>
               <div className="card-content">
-                {renderContent(front, 'Front')}
+                {renderContent()}
                 <p className="face-text">{currentFace}</p>
               </div>
             </div>
             <div className="card-back" onClick={handleCardClick}>
               <div className="card-content">
-                {renderContent(back, 'Back')}
+                {renderContent()}
                 <p className="face-text">{currentFace}</p>
               </div>
             </div>
