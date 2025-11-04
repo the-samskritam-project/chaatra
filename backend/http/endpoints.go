@@ -52,6 +52,20 @@ func AutoCompleteHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(results)
 }
 
+func TransliterateHandler(w http.ResponseWriter, r *http.Request) {
+	slp1Query := r.URL.Query().Get("slp1")
+	if slp1Query == "" {
+		http.Error(w, "Search query is required", http.StatusBadRequest)
+		return
+	}
+
+	result := trans.Trans(slp1Query)
+
+	json.NewEncoder(w).Encode(map[string]string{"slp1": slp1Query, "devanagari": result})
+
+	w.Header().Set("Content-Type", "application/json")
+}
+
 func SearchDhatuHandler(w http.ResponseWriter, r *http.Request) {
 	englishWord := r.URL.Query().Get("englishWord")
 	if englishWord == "" {
