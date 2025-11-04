@@ -5,6 +5,7 @@ import (
 	"chaatra/core/trans"
 	"fmt"
 	"log"
+	"strings"
 )
 
 type LookupReq struct {
@@ -67,4 +68,16 @@ func BuildTrie(entries map[string]*parser.DictionaryEntry) *trans.Trie {
 
 func LookupPrefixes(trie *trans.Trie, slp1 string) []trans.Word {
 	return trie.GetWordsForPrefixStrict(trans.GetTokens(slp1))
+}
+
+func Transliterate(slp1 string) string {
+	parts := strings.Split(slp1, " ")
+
+	result := make([]string, 0)
+
+	for _, part := range parts {
+		result = append(result, trans.Trans(part))
+	}
+
+	return strings.Join(result, " ")
 }

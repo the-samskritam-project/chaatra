@@ -59,7 +59,7 @@ func TransliterateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := trans.Trans(slp1Query)
+	result := service.Transliterate(slp1Query)
 
 	json.NewEncoder(w).Encode(map[string]string{"slp1": slp1Query, "devanagari": result})
 
