@@ -1,1 +1,4 @@
 samskritam
+chroma_db/
+.DS_Store
+.env

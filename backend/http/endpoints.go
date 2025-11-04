@@ -6,6 +6,7 @@ import (
 	"chaatra/persistence"
 	"chaatra/service"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -86,4 +87,31 @@ func SearchDhatuHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Encode results to JSON and write the response
 	json.NewEncoder(w).Encode(results)
+}
+
+// SearchChromaHandler handles semantic search using ChromaDB
+func SearchChromaHandler(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+	if query == "" {
+		http.Error(w, "Search query is required (use ?q=your_query)", http.StatusBadRequest)
+		return
+	}
+
+	nResults := 5
+	if n := r.URL.Query().Get("n"); n != "" {
+		fmt.Sscanf(n, "%d", &nResults)
+		if nResults < 1 || nResults > 50 {
+			nResults = 5
+		}
+	}
+
+	entries, err := persistence.SearchChromaDB(query, nResults)
+	if err != nil {
+		log.Printf("ChromaDB search error: %v", err)
+		http.Error(w, fmt.Sprintf("Search error: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(entries)
 }

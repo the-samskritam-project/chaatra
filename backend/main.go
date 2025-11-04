@@ -19,6 +19,15 @@ func main() {
 	// initialize elastic search
 	persistence.InitEs()
 
+	// Initialize ChromaDB if URL is provided (optional)
+	chromaURL := os.Getenv("CHROMA_URL")
+	if chromaURL != "" {
+		persistence.InitChroma(chromaURL)
+		log.Println("ChromaDB initialized at:", chromaURL)
+	} else {
+		log.Println("ChromaDB not initialized (set CHROMA_URL env var to enable)")
+	}
+
 	var err error
 	h.Dictionary, err = service.ParseApteDictionary(`dictionary.xml`)
 	if err != nil {
@@ -35,6 +44,7 @@ func main() {
 	mux.HandleFunc("/complete", h.AutoCompleteHandler)
 	mux.HandleFunc("/dhatus", h.SearchDhatuHandler)
 	mux.HandleFunc("/transliterate", h.TransliterateHandler)
+	mux.HandleFunc("/search-chroma", h.SearchChromaHandler)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "https://chaatra-frontend-production.up.railway.app"},
