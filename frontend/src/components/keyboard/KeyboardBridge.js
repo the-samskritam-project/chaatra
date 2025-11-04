@@ -32,6 +32,10 @@ function KeyboardBridge({
         return;
       }
 
+      if (!config.apiUrl) {
+        return;
+      }
+
       const fetchResults = async () => {
         const url = `${config.apiUrl}/complete?slp1=${encodeURIComponent(currentWord)}`;
         const response = await fetch(url);

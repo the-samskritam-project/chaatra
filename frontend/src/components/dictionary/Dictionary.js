@@ -48,13 +48,13 @@ function Dictionary() {
     const [config, setConfig] = useState({});
     useEffect(() => {
         // Fetch configuration from the environment variable
-        const apiUrl = process.env.REACT_APP_API_BASE_URL;
+        const apiUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8081';
         setConfig({ apiUrl });
     }, []);
 
     useEffect(() => {
         console.log(slp1SearchStr);
-        if (slp1SearchStr) {
+        if (slp1SearchStr && config.apiUrl) {
             const fetchResults = async () => {
                 const url = `${config.apiUrl}/search?slp1=${encodeURIComponent(slp1SearchStr)}&dev=${encodeURIComponent(devSearchStr)}`;
                 const response = await fetch(url);
