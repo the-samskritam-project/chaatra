@@ -45,6 +45,9 @@ COPY --from=builder /go/src/chaatra/backend/chroma_db/ /root/chroma_db/
 # Set up ChromaDB directory
 WORKDIR /root/chroma_db
 
+# Install PyTorch CPU-only first (prevents CUDA dependencies)
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
 # Install Python dependencies for ChromaDB
 RUN pip install --no-cache-dir chromadb flask flask-cors sentence-transformers
 
@@ -63,8 +66,8 @@ set -e\n\
 echo "Starting ChromaDB bridge service..."\n\
 cd /root/chroma_db\n\
 export CHROMA_DB_PATH=/root/chroma_db\n\
-export PORT=8001\n\
-python chromadb_bridge.py &\n\
+export BRIDGE_PORT=8001\n\
+PORT=$BRIDGE_PORT python chromadb_bridge.py &\n\
 \n\
 # Give bridge service time to initialize (model loading is already done during build)\n\
 echo "Waiting for bridge service to initialize..."\n\
@@ -75,7 +78,10 @@ echo "Starting Go server..."\n\
 cd /root\n\
 export CHROMA_URL=http://localhost:8000\n\
 export CHROMA_BRIDGE_URL=http://localhost:8001\n\
-export PORT=8081\n\
+# Use Railway PORT if set, otherwise default to 8081\n\
+if [ -z "$PORT" ]; then\n\
+  export PORT=8081\n\
+fi\n\
 exec /root/samskritam\n\
 ' > /root/start.sh && chmod +x /root/start.sh
 
