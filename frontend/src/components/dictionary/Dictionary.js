@@ -10,7 +10,7 @@ function Dictionary() {
     const [isFocused, setIsFocused] = useState(false);
     const [entries, setEntries] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [entriesPerPage] = useState(3); // Adjust number per page as needed
+    const [entriesPerPage] = useState(10); // Adjust number per page as needed
     const [keyboardType, setKeyboardType] = useState('devanagari');
     const totalPages = Math.ceil(entries.length / entriesPerPage);
 
@@ -53,19 +53,37 @@ function Dictionary() {
     }, []);
 
     useEffect(() => {
-        console.log(slp1SearchStr);
-        if (slp1SearchStr && config.apiUrl) {
-            const fetchResults = async () => {
-                const url = `${config.apiUrl}/search?slp1=${encodeURIComponent(slp1SearchStr)}&dev=${encodeURIComponent(devSearchStr)}`;
+        if (!config.apiUrl) return;
+        
+        const fetchResults = async () => {
+            let url;
+            let query;
+            
+            if (keyboardType === 'qwerty') {
+                // English search - use devSearchStr (direct input)
+                query = devSearchStr.trim();
+                if (!query) return;
+                url = `${config.apiUrl}/v2/search/english?q=${encodeURIComponent(query)}`;
+            } else {
+                // Sanskrit search - use slp1SearchStr
+                query = slp1SearchStr.trim();
+                if (!query) return;
+                url = `${config.apiUrl}/v2/search/sanskrit?q=${encodeURIComponent(query)}`;
+            }
+            
+            try {
                 const response = await fetch(url);
                 const data = await response.json();
                 setEntries(data);
                 setCurrentPage(1); // Reset to first page with new data
-            };
+            } catch (error) {
+                console.error('Search error:', error);
+                setEntries([]);
+            }
+        };
 
-            fetchResults();
-        }
-    }, [slp1SearchStr, devSearchStr, config.apiUrl]);
+        fetchResults();
+    }, [slp1SearchStr, devSearchStr, keyboardType, config.apiUrl]);
 
     const nextPage = () => {
         setCurrentPage(prev => (prev < totalPages ? prev + 1 : prev));
@@ -102,7 +120,6 @@ function Dictionary() {
             )}
             <Entries
                 entries={entries.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage)}
-                devSearchStr={devSearchStr}
             />
             <div className="pagination">
                 <button onClick={prevPage} disabled={currentPage === 1} className="pagination-button">←</button>

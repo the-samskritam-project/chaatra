@@ -124,3 +124,64 @@ func SearchChromaHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(entries)
 }
+
+// SearchV2EnglishHandler handles semantic search for English queries
+func SearchV2EnglishHandler(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+	if query == "" {
+		http.Error(w, "Search query is required (use ?q=your_query)", http.StatusBadRequest)
+		return
+	}
+
+	nResults := 5
+	if n := r.URL.Query().Get("n"); n != "" {
+		fmt.Sscanf(n, "%d", &nResults)
+		if nResults < 1 || nResults > 50 {
+			nResults = 5
+		}
+	}
+
+	entries, err := persistence.SearchChromaDB(query, nResults)
+	if err != nil {
+		log.Printf("ChromaDB search error: %v", err)
+		http.Error(w, fmt.Sprintf("Search error: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(entries)
+}
+
+// SearchV2SanskritHandler handles semantic search for Sanskrit queries (SLP1 format)
+func SearchV2SanskritHandler(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+	if query == "" {
+		http.Error(w, "Search query is required (use ?q=your_query)", http.StatusBadRequest)
+		return
+	}
+
+	nResults := 5
+	if n := r.URL.Query().Get("n"); n != "" {
+		fmt.Sscanf(n, "%d", &nResults)
+		if nResults < 1 || nResults > 50 {
+			nResults = 5
+		}
+	}
+
+	// Transliterate SLP1 to Devanagari and combine both formats for better matching
+	devanagari := trans.Trans(query)
+	enhancedQuery := query
+	if devanagari != "" {
+		enhancedQuery = fmt.Sprintf("%s — %s", query, devanagari)
+	}
+
+	entries, err := persistence.SearchChromaDB(enhancedQuery, nResults)
+	if err != nil {
+		log.Printf("ChromaDB search error: %v", err)
+		http.Error(w, fmt.Sprintf("Search error: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(entries)
+}

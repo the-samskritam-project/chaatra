@@ -45,6 +45,8 @@ func main() {
 	mux.HandleFunc("/dhatus", h.SearchDhatuHandler)
 	mux.HandleFunc("/transliterate", h.TransliterateHandler)
 	mux.HandleFunc("/search-chroma", h.SearchChromaHandler)
+	mux.HandleFunc("/v2/search/english", h.SearchV2EnglishHandler)
+	mux.HandleFunc("/v2/search/sanskrit", h.SearchV2SanskritHandler)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "https://chaatra-frontend-production.up.railway.app"},

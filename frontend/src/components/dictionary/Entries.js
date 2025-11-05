@@ -1,93 +1,60 @@
 import React from 'react';
-import '../../utils/subStringMatcher'
-import { find } from '../../utils/subStringMatcher';
-import { virama, signsToVowels } from '../../utils/constants';
 import emptyStateImage from '../../images/search.webp'; // Import the image
-import { toDevanagiriString } from '../../utils/transliterate';
-import { useState } from 'react';
-import FlashCardService from '../../services/FlashCardService';
 
-function Entries({ entries, devSearchStr }) {
-  const [addedEntries, setAddedEntries] = useState([]);
-
-  const highlightText = (text, search) => {
-    const chars = [...text];
-    const indices = find(text, search);
-    if (!indices.length) return text;
-
-    const result = [];
-    let lastIndex = 0;
-    indices.forEach((index) => {
-      // Push non-matching text
-      result.push(text.substring(lastIndex, index));
-      // Push highlighted text
-      if (index + search.length < text.length - 1
-        && (signsToVowels[chars[index + search.length]]
-          || chars[index + search.length] == virama)) {
-        result.push(<b key={index}>{text.substr(index, search.length + 1)}</b>);
-        lastIndex = index + search.length + 1;
-      } else {
-        result.push(<b key={index}>{text.substr(index, search.length)}</b>);
-        lastIndex = index + search.length;
-      }
-    });
-    // Add any remaining text after the last match
-    result.push(text.substr(lastIndex));
-
-    return result;
+function Entries({ entries }) {
+  // Parse devanagariWord string to extract Devanagari word
+  // Format: "transliteratedWord — devanagari — meaning"
+  const parseDevanagariWord = (devanagariWord) => {
+    if (!devanagariWord) return '';
+    const parts = devanagariWord.split(' — ');
+    // Return the Devanagari part (usually second part, or first if only one part)
+    if (parts.length >= 2) {
+      return parts[1].trim();
+    }
+    return parts[0].trim();
   };
 
-  const flashCardService = new FlashCardService();
-
-  const handleAddEntry = (entry) => {
-    const { Word, Type, Meanings } = entry;
-
-    const flashCard = {
-      title: Word,
-      description: Meanings.join(', '),
-      front: Word,
-      back: Meanings.join(', '),
-      tags: [Type],
-    };
-
+  // Parse examples from metadata.examples JSON string
+  const parseExamples = (examplesStr) => {
+    if (!examplesStr || examplesStr === '[]') return [];
     try {
-      const newFlashCard = flashCardService.createFlashCard(flashCard);
-      setAddedEntries([...addedEntries, newFlashCard.id]);
+      const examples = JSON.parse(examplesStr);
+      return Array.isArray(examples) ? examples : [];
     } catch (error) {
-      console.error('Error creating flashcard:', error.message);
+      console.error('Error parsing examples:', error);
+      return [];
     }
   };
-
-  const flashCardExists = function (word) {
-    const flashcards = flashCardService.getFlashCards();
-    return flashcards.some(fc => fc.title === word);
-  }
 
   return (
     <div className='entries'>
       {entries.length > 0 ? (
         entries.map((entry, index) => {
-          const existingFlashcard = flashCardService.getFlashCards().find(fc => fc.title === entry.Word);
-          const isAdded = existingFlashcard ? addedEntries.includes(existingFlashcard.id) : false;
+          const devanagariWord = parseDevanagariWord(entry.devanagariWord);
+          const englishMeaning = entry.englishMeaning || '';
+          const examples = parseExamples(entry.metadata?.examples);
           
           return (
             <div key={index} className="entry">
-              {flashCardExists(entry.Word) || isAdded ? (
-                <button className="card-added">
-                  Added
-                </button>
-              ) : (
-                <button className="add-button" onClick={() => handleAddEntry(entry)}>
-                  Add
-                </button>
-              )}
-              <h3>{toDevanagiriString(entry.Word)}</h3>
-              <p>{entry.Type}</p>
-              {entry.Meanings.map((meaning, meaningIndex) => (
-                <div key={meaningIndex} className="meaning">
-                  <p>{highlightText(meaning, devSearchStr)}</p>
+              <div className="entry-main">
+                <span className="devanagari-word">{devanagariWord}</span>
+                <span className="separator"> - </span>
+                <span className="english-meaning">{englishMeaning}</span>
+              </div>
+              {examples.length > 0 && (
+                <div className="examples">
+                  {examples.map((example, exampleIndex) => (
+                    <div key={exampleIndex} className="example">
+                      {example.sanskrit && (
+                        <span className="example-sanskrit">{example.sanskrit}</span>
+                      )}
+                      {example.source && (
+                        <span className="example-source"> ({example.source})</span>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
           );
         })

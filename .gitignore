@@ -10,3 +10,7 @@
 .env.local
 .env.*.local
 
+# VS Code
+.vscode/
+chaatra-full.code-workspace
+

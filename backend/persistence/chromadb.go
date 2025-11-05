@@ -124,6 +124,7 @@ func SearchChromaDB(queryText string, nResults int) ([]*parser.Entry, error) {
 			DevanagariWord:     result.Document,
 			TransliteratedWord: headword,
 			EnglishMeaning:     meaning,
+			Metadata:           metadata,
 		})
 	}
 
@@ -160,6 +161,7 @@ func convertChromaResponseToEntries(chromaResp ChromaDBResponse) ([]*parser.Entr
 				DevanagariWord:     devanagariWord,
 				TransliteratedWord: headword,
 				EnglishMeaning:     meaning,
+				Metadata:           metadata,
 			})
 		}
 	}
