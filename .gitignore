@@ -14,3 +14,13 @@
 .vscode/
 chaatra-full.code-workspace
 
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+.venv/

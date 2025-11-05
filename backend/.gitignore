@@ -1,4 +1,12 @@
+# Build artifacts
 samskritam
-chroma_db/
+
+# ChromaDB - ignore built database files, but keep source files
+chroma_db/*.sqlite3
+chroma_db/[0-9a-f]*-[0-9a-f]*-[0-9a-f]*-[0-9a-f]*-[0-9a-f]*/
+chroma_db/*.bin
+chroma_db/*.pickle
+
+# System files
 .DS_Store
 .env

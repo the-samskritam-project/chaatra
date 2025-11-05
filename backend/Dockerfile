@@ -1,5 +1,5 @@
 # Use an official Go runtime as a parent image
-FROM golang:1.22 as builder
+FROM golang:1.25 AS builder
 
 # Set the working directory inside the container
 WORKDIR /go/src/chaatra/backend
@@ -33,8 +33,9 @@ COPY --from=builder /go/src/chaatra/backend/samskritam /root/samskritam
 # Import the dictionary.xml file
 COPY --from=builder /go/src/chaatra/backend/core/parser/dictionary.xml /root/dictionary.xml
 
-# Copy ChromaDB directory and scripts
-COPY --from=builder /go/src/chaatra/backend/chroma_db /root/chroma_db
+# Copy ChromaDB bridge script only (database will be mounted as volume)
+RUN mkdir -p /root/chroma_db
+COPY --from=builder /go/src/chaatra/backend/chroma_db/chromadb_bridge.py /root/chroma_db/chromadb_bridge.py
 
 # Set up ChromaDB directory
 WORKDIR /root/chroma_db
@@ -45,9 +46,6 @@ RUN pip install --no-cache-dir chromadb flask flask-cors sentence-transformers
 # Pre-download the sentence transformer model during build
 # This avoids long startup delays when the container starts
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/paraphrase-multilingual-mpnet-base-v2')"
-
-# Make scripts executable
-RUN chmod +x /root/chroma_db/start_chromadb.sh /root/chroma_db/start_chromadb_bridge.sh
 
 # Ensure executable permissions for Go binary
 RUN chmod +x /root/samskritam
