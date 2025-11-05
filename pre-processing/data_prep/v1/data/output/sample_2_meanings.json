@@ -1,0 +1,182 @@
+[
+  {
+    "slp1Str": "mokzaH",
+    "sanskritString": "",
+    "meaning": "Liberation, release, escape, freedom; K. ; Me. 61 ; R. 17. 20 ; 17. 19.",
+    "id": "22e170f9-8d1e-4f5d-801d-3b379e2dcd77",
+    "sense": "sense_1",
+    "partOfSpeech": "",
+    "examples": [
+      {
+        "slp1": "sA'DunA tava",
+        "sanskrit": "",
+        "source": ""
+      },
+      {
+        "slp1": "baMDe mokze ca praBavati",
+        "sanskrit": "",
+        "source": "K."
+      },
+      {
+        "slp1": "labDamokzAH SukAdayaH",
+        "sanskrit": "",
+        "source": "R. 17. 20"
+      },
+      {
+        "slp1": "DuryARAM ca",
+        "sanskrit": "",
+        "source": ""
+      },
+      {
+        "slp1": "Duro mokzaM",
+        "sanskrit": "",
+        "source": "17. 19."
+      }
+    ]
+  },
+  {
+    "slp1Str": "mokzaH",
+    "sanskritString": "",
+    "meaning": "Rescue, deliverance, delivery.",
+    "id": "a0990336-30e4-432f-a7f2-94375032faf1",
+    "sense": "sense_2",
+    "partOfSpeech": "",
+    "examples": []
+  },
+  {
+    "slp1Str": "mokzaH",
+    "sanskritString": "",
+    "meaning": "Final emancipation, deliverance of the soul from recurring births or transmigration, the last of the four ends of human existence; see ; ; Bg. 5. 28 , 18. 30 ; R. 10. 84 ; Ms. 6. 35.",
+    "id": "37a402f5-1b7c-41df-a63e-2e77d2d56397",
+    "sense": "sense_3",
+    "partOfSpeech": "",
+    "examples": [
+      {
+        "slp1": "arTa",
+        "sanskrit": "",
+        "source": ""
+      },
+      {
+        "slp1": "DarmArTakAmamokzARAM yasyEko'pi na vidyate .",
+        "sanskrit": "",
+        "source": ""
+      },
+      {
+        "slp1": "ajAgalastanasyeva tasya janma nirarTakaM ..",
+        "sanskrit": "",
+        "source": "Bg. 5. 28"
+      }
+    ]
+  },
+  {
+    "slp1Str": "mokzaH",
+    "sanskritString": "",
+    "meaning": "Death.",
+    "id": "c7d7cb9a-5926-4206-8c24-aee419f731a4",
+    "sense": "sense_4",
+    "partOfSpeech": "",
+    "examples": []
+  },
+  {
+    "slp1Str": "mokzaH",
+    "sanskritString": "",
+    "meaning": "Falling down, dropping down, falling off; Ku. 3. 31.",
+    "id": "0d0cdd42-1cd9-4d84-ba75-6dd4ce0e5fe4",
+    "sense": "sense_5",
+    "partOfSpeech": "",
+    "examples": [
+      {
+        "slp1": "vanasTalIrmarmarapatramokzAH",
+        "sanskrit": "",
+        "source": "Ku. 3. 31."
+      }
+    ]
+  },
+  {
+    "slp1Str": "mokzaH",
+    "sanskritString": "",
+    "meaning": "Loosening, untying, unbinding; Me. 99.",
+    "id": "69e4a057-3251-4fba-a34c-31258e97f67d",
+    "sense": "sense_6",
+    "partOfSpeech": "",
+    "examples": [
+      {
+        "slp1": "veRimokzotsukAni",
+        "sanskrit": "",
+        "source": "Me. 99."
+      }
+    ]
+  },
+  {
+    "slp1Str": "mokzaH",
+    "sanskritString": "",
+    "meaning": "Shedding, causing to fall down or flow; .",
+    "id": "b6f36e96-e851-4cad-8a4a-0f691ad55c21",
+    "sense": "sense_7",
+    "partOfSpeech": "",
+    "examples": [
+      {
+        "slp1": "bAzpamokza, aSrumokza",
+        "sanskrit": "",
+        "source": ""
+      }
+    ]
+  },
+  {
+    "slp1Str": "mokzaH",
+    "sanskritString": "",
+    "meaning": "Shooting, casting, discharging; Ś. 3. 5.",
+    "id": "b7d5cccf-7cc6-4dcd-953a-2bc83c91cf69",
+    "sense": "sense_8",
+    "partOfSpeech": "",
+    "examples": [
+      {
+        "slp1": "bARamokzaH",
+        "sanskrit": "",
+        "source": "Ś. 3. 5."
+      }
+    ]
+  },
+  {
+    "slp1Str": "mokzaH",
+    "sanskritString": "",
+    "meaning": "Scattering, strewing.",
+    "id": "b21a0196-f04b-4c59-a6c2-7602be39be60",
+    "sense": "sense_9",
+    "partOfSpeech": "",
+    "examples": []
+  },
+  {
+    "slp1Str": "mokzaH",
+    "sanskritString": "",
+    "meaning": "Acquittance or discharge of an obligation (debt &c.).",
+    "id": "fcad39cb-8f0e-45ec-8aff-1eb8140c5062",
+    "sense": "sense_10",
+    "partOfSpeech": "",
+    "examples": []
+  },
+  {
+    "slp1Str": "mokzaH",
+    "sanskritString": "",
+    "meaning": "(In ( pb ) astr. ) The liberation of an eclipsed planet, the end of an eclipse.",
+    "id": "9a50fb5c-b5c4-4260-a290-611798e789f0",
+    "sense": "sense_11",
+    "partOfSpeech": "",
+    "examples": []
+  },
+  {
+    "slp1Str": "mokzaH",
+    "sanskritString": "",
+    "meaning": "N. of a tree ().",
+    "id": "2a5cc60a-5a6d-4078-92b8-2cac120f1bae",
+    "sense": "sense_12",
+    "partOfSpeech": "N.",
+    "examples": [
+      {
+        "slp1": "pAwali",
+        "sanskrit": "",
+        "source": ""
+      }
+    ]
+  }
+]

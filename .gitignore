@@ -24,3 +24,7 @@ __pycache__/
 # Virtual environments
 venv/
 .venv/
+
+# ChromaDB and large files
+pre-processing/search_playground/v1/chroma_db/
+pre-processing/search_playground/v1/index.pkl
