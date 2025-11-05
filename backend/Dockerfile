@@ -14,26 +14,70 @@ RUN go mod download
 # Build your application statically
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o samskritam .
 
-# Use a minimal alpine image to run the server
-FROM alpine:latest  
+# Use Python base image to run ChromaDB and bridge services
+FROM python:3.11-slim
 
 # Set the working directory
 WORKDIR /root/
 
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    bash \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
 # Import the compiled executable from the first stage
 COPY --from=builder /go/src/chaatra/backend/samskritam /root/samskritam
 
-# Import the dictionary.xml file from the build context into the same directory as the binary
+# Import the dictionary.xml file
 COPY --from=builder /go/src/chaatra/backend/core/parser/dictionary.xml /root/dictionary.xml
 
-# Ensure executable permissions
+# Copy ChromaDB directory and scripts
+COPY --from=builder /go/src/chaatra/backend/chroma_db /root/chroma_db
+
+# Set up ChromaDB directory
+WORKDIR /root/chroma_db
+
+# Install Python dependencies for ChromaDB
+RUN pip install --no-cache-dir chromadb flask flask-cors sentence-transformers
+
+# Pre-download the sentence transformer model during build
+# This avoids long startup delays when the container starts
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/paraphrase-multilingual-mpnet-base-v2')"
+
+# Make scripts executable
+RUN chmod +x /root/chroma_db/start_chromadb.sh /root/chroma_db/start_chromadb_bridge.sh
+
+# Ensure executable permissions for Go binary
 RUN chmod +x /root/samskritam
 
-# Install CA certificates if your app uses HTTPS
-RUN apk --no-cache add ca-certificates
+# Create startup script
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+# Start ChromaDB bridge service in background\n\
+echo "Starting ChromaDB bridge service..."\n\
+cd /root/chroma_db\n\
+export CHROMA_DB_PATH=/root/chroma_db\n\
+export PORT=8001\n\
+python chromadb_bridge.py &\n\
+\n\
+# Give bridge service time to initialize (model loading is already done during build)\n\
+echo "Waiting for bridge service to initialize..."\n\
+sleep 10\n\
+\n\
+# Start Go server\n\
+echo "Starting Go server..."\n\
+cd /root\n\
+export CHROMA_URL=http://localhost:8000\n\
+export CHROMA_BRIDGE_URL=http://localhost:8001\n\
+export PORT=8081\n\
+exec /root/samskritam\n\
+' > /root/start.sh && chmod +x /root/start.sh
 
-# Expose port 8080 to the outside world
-EXPOSE 8080
+# Expose ports
+EXPOSE 8001 8080 8081
 
-# Command to run the executable
-CMD ["/root/samskritam"]
+# Command to run the startup script
+CMD ["/root/start.sh"]
