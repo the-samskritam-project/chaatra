@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-chromadb:
-    runs-on: ubuntu-latest-4-cores  # Use 4-core runner for faster embedding generation
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
 
@@ -35,15 +35,25 @@ jobs:
         restore-keys: |
           huggingface-models-
 
+    - name: Download ChromaDB artifact (if available)
+      id: download-artifact
+      continue-on-error: true
+      uses: actions/download-artifact@v4
+      with:
+        name: chromadb-index-${{ steps.dict-hash.outputs.hash }}
+        path: backend/chroma_db/
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Check if ChromaDB needs building
       id: check-build
       run: |
         if [ -f "backend/chroma_db/chroma.sqlite3" ]; then
           echo "build=false" >> $GITHUB_OUTPUT
-          echo "ChromaDB cache found - skipping build"
+          echo "✅ ChromaDB found (from artifact or cache) - skipping build"
         else
           echo "build=true" >> $GITHUB_OUTPUT
-          echo "ChromaDB cache miss - will build"
+          echo "⚠️  ChromaDB not found - will build (this is slow)"
+          echo "💡 Tip: Build locally and upload via 'Upload ChromaDB Index' workflow for faster CI"
         fi
 
     - name: Set up Python
@@ -62,9 +72,9 @@ jobs:
       if: steps.check-build.outputs.build == 'true'
       env:
         TOKENIZERS_PARALLELISM: 'true'  # Enable parallel tokenization
-        OMP_NUM_THREADS: '4'  # Use all 4 cores for embedding generation
-        MKL_NUM_THREADS: '4'  # Intel MKL threads
-        NUMEXPR_NUM_THREADS: '4'  # NumExpr threads
+        OMP_NUM_THREADS: '2'  # Standard runner typically has 2 cores
+        MKL_NUM_THREADS: '2'  # Intel MKL threads
+        NUMEXPR_NUM_THREADS: '2'  # NumExpr threads
       run: |
         cd backend/chroma_db
         python build_chromadb.py
@@ -82,9 +92,9 @@ jobs:
     - name: Upload ChromaDB artifact
       uses: actions/upload-artifact@v4
       with:
-        name: chromadb-index
+        name: chromadb-index-${{ steps.dict-hash.outputs.hash }}
         path: backend/chromadb-artifact/
-        retention-days: 7
+        retention-days: 90
 
   build-and-push-backend:
     runs-on: ubuntu-latest
@@ -92,10 +102,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Download ChromaDB artifact
+    - name: Download ChromaDB artifact from build-chromadb job
       uses: actions/download-artifact@v4
       with:
-        name: chromadb-index
+        name: chromadb-index-${{ hashFiles('backend/chroma_db/parsed_dictionary.json') }}
         path: backend/chroma_db/
 
     - name: Log in to Docker Hub
