@@ -170,12 +170,8 @@ func SearchV2SanskritHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Transliterate SLP1 to Devanagari and combine both formats for better matching
 	devanagari := trans.Trans(query)
-	enhancedQuery := query
-	if devanagari != "" {
-		enhancedQuery = fmt.Sprintf("%s — %s", query, devanagari)
-	}
 
-	entries, err := persistence.SearchChromaDB(enhancedQuery, nResults)
+	entries, err := persistence.SearchChromaDB(devanagari, nResults)
 	if err != nil {
 		log.Printf("ChromaDB search error: %v", err)
 		http.Error(w, fmt.Sprintf("Search error: %s", err.Error()), http.StatusInternalServerError)
