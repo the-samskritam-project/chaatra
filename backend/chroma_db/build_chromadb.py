@@ -75,14 +75,15 @@ def build_index(items, model_name, out_path):
     
     texts = [it["text"] for it in items]
     print(f"Generating embeddings for {len(texts)} entries...")
-    # Use batch processing with optimal settings for parallel processing
-    # show_progress_bar=False to reduce overhead, batch_size optimized for memory
+    # Use smaller batch size for better CPU utilization and memory efficiency
+    # CPU processing works better with smaller batches (128-256)
     embeddings = model.encode(
         texts, 
         normalize_embeddings=True,
         show_progress_bar=True,
-        batch_size=1000,  # Optimized batch size for faster processing
-        convert_to_numpy=True
+        batch_size=256,  # Smaller batch size for better CPU parallelization
+        convert_to_numpy=True,
+        device='cpu'  # Explicitly use CPU
     )
     embeddings = embeddings.tolist()
     

@@ -7,9 +7,7 @@ on:
 
 jobs:
   build-chromadb:
-    # For faster builds, consider using GitHub Actions larger runners (requires billing setup):
-    # runs-on: ubuntu-latest-4-cores or ubuntu-latest-8-cores
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-4-cores  # Use 4-core runner for faster embedding generation
     steps:
     - uses: actions/checkout@v2
 
@@ -64,8 +62,9 @@ jobs:
       if: steps.check-build.outputs.build == 'true'
       env:
         TOKENIZERS_PARALLELISM: 'true'  # Enable parallel tokenization
-        # OMP_NUM_THREADS uses all available cores by default, but can be set explicitly
-        # For larger runners: OMP_NUM_THREADS: '4' or '8' depending on runner size
+        OMP_NUM_THREADS: '4'  # Use all 4 cores for embedding generation
+        MKL_NUM_THREADS: '4'  # Intel MKL threads
+        NUMEXPR_NUM_THREADS: '4'  # NumExpr threads
       run: |
         cd backend/chroma_db
         python build_chromadb.py
