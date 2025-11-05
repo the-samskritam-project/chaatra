@@ -6,10 +6,84 @@ on:
       - main
 
 jobs:
-  build-and-push-backend:
+  build-chromadb:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+
+    - name: Calculate dictionary hash
+      id: dict-hash
+      run: |
+        HASH=$(sha256sum backend/chroma_db/parsed_dictionary.json | cut -d' ' -f1)
+        echo "hash=$HASH" >> $GITHUB_OUTPUT
+        echo "Dictionary hash: $HASH"
+
+    - name: Cache ChromaDB
+      id: cache-chromadb
+      uses: actions/cache@v3
+      with:
+        path: backend/chroma_db
+        key: chromadb-${{ steps.dict-hash.outputs.hash }}
+        restore-keys: |
+          chromadb-
+
+    - name: Check if ChromaDB needs building
+      id: check-build
+      run: |
+        if [ -f "backend/chroma_db/chroma.sqlite3" ]; then
+          echo "build=false" >> $GITHUB_OUTPUT
+          echo "ChromaDB cache found - skipping build"
+        else
+          echo "build=true" >> $GITHUB_OUTPUT
+          echo "ChromaDB cache miss - will build"
+        fi
+
+    - name: Set up Python
+      if: steps.check-build.outputs.build == 'true'
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      if: steps.check-build.outputs.build == 'true'
+      run: |
+        cd backend/chroma_db
+        pip install --quiet chromadb sentence-transformers
+
+    - name: Build ChromaDB index
+      if: steps.check-build.outputs.build == 'true'
+      run: |
+        cd backend/chroma_db
+        python build_chromadb.py
+
+    - name: Prepare ChromaDB artifact (exclude source files)
+      run: |
+        cd backend/chroma_db
+        # Create a temporary directory with only built files
+        mkdir -p ../chromadb-artifact
+        # Copy all built files, excluding source files
+        find . -maxdepth 1 -type f \( -name "*.sqlite3" -o -name "*.bin" -o -name "*.pickle" \) -exec cp {} ../chromadb-artifact/ \;
+        # Copy UUID directories
+        find . -maxdepth 1 -type d -name "[0-9a-f]*-[0-9a-f]*-[0-9a-f]*-[0-9a-f]*-[0-9a-f]*" -exec cp -r {} ../chromadb-artifact/ \;
+
+    - name: Upload ChromaDB artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: chromadb-index
+        path: backend/chromadb-artifact/
+        retention-days: 7
+
+  build-and-push-backend:
+    runs-on: ubuntu-latest
+    needs: build-chromadb
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Download ChromaDB artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: chromadb-index
+        path: backend/chroma_db/
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v1

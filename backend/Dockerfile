@@ -33,9 +33,14 @@ COPY --from=builder /go/src/chaatra/backend/samskritam /root/samskritam
 # Import the dictionary.xml file
 COPY --from=builder /go/src/chaatra/backend/core/parser/dictionary.xml /root/dictionary.xml
 
-# Copy ChromaDB bridge script only (database will be mounted as volume)
+# Copy ChromaDB bridge script and built database files
 RUN mkdir -p /root/chroma_db
 COPY --from=builder /go/src/chaatra/backend/chroma_db/chromadb_bridge.py /root/chroma_db/chromadb_bridge.py
+
+# Copy built ChromaDB index files (from artifact download in CI, or empty locally)
+# These files will be included when built via GitHub Actions
+# Note: chromadb_bridge.py is already copied above, so copying the directory will merge additional files
+COPY --from=builder /go/src/chaatra/backend/chroma_db/ /root/chroma_db/
 
 # Set up ChromaDB directory
 WORKDIR /root/chroma_db
