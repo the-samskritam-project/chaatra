@@ -75,10 +75,17 @@ def build_index(items, model_name, out_path):
     
     texts = [it["text"] for it in items]
     print(f"Generating embeddings for {len(texts)} entries...")
-    embeddings = model.encode(texts, normalize_embeddings=True)
+    # Use batch processing with optimal settings for parallel processing
+    # show_progress_bar=False to reduce overhead, batch_size optimized for memory
+    embeddings = model.encode(
+        texts, 
+        normalize_embeddings=True,
+        show_progress_bar=True,
+        batch_size=1000,  # Optimized batch size for faster processing
+        convert_to_numpy=True
+    )
     embeddings = embeddings.tolist()
     
-    import json as json_lib
     metadatas = []
     for it in items:
         metadata = {
@@ -86,7 +93,7 @@ def build_index(items, model_name, out_path):
             "headword": it.get("headword", ""),
             "meaning": it.get("meaning", ""),
             "partOfSpeech": it.get("partOfSpeech", ""),
-            "examples": json_lib.dumps(it.get("examples", []))
+            "examples": json.dumps(it.get("examples", []))
         }
         metadatas.append(metadata)
     

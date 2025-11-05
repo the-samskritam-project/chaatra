@@ -7,6 +7,8 @@ on:
 
 jobs:
   build-chromadb:
+    # For faster builds, consider using GitHub Actions larger runners (requires billing setup):
+    # runs-on: ubuntu-latest-4-cores or ubuntu-latest-8-cores
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -27,6 +29,14 @@ jobs:
         restore-keys: |
           chromadb-
 
+    - name: Cache HuggingFace models
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/huggingface
+        key: huggingface-models-paraphrase-multilingual-mpnet-base-v2
+        restore-keys: |
+          huggingface-models-
+
     - name: Check if ChromaDB needs building
       id: check-build
       run: |
@@ -43,6 +53,7 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
+        cache: 'pip'
 
     - name: Install dependencies
       if: steps.check-build.outputs.build == 'true'
@@ -52,6 +63,10 @@ jobs:
 
     - name: Build ChromaDB index
       if: steps.check-build.outputs.build == 'true'
+      env:
+        TOKENIZERS_PARALLELISM: 'true'  # Enable parallel tokenization
+        # OMP_NUM_THREADS uses all available cores by default, but can be set explicitly
+        # For larger runners: OMP_NUM_THREADS: '4' or '8' depending on runner size
       run: |
         cd backend/chroma_db
         python build_chromadb.py
