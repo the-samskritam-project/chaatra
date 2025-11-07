@@ -52,38 +52,26 @@ function Dictionary() {
         setConfig({ apiUrl });
     }, []);
 
-    useEffect(() => {
-        if (!config.apiUrl) return;
-        
-        const fetchResults = async () => {
-            let url;
-            let query;
-            
-            if (keyboardType === 'qwerty') {
-                // English search - use devSearchStr (direct input)
-                query = devSearchStr.trim();
-                if (!query) return;
-                url = `${config.apiUrl}/v2/search/english?q=${encodeURIComponent(query)}`;
-            } else {
-                // Sanskrit search - use slp1SearchStr
-                query = slp1SearchStr.trim();
-                if (!query) return;
-                url = `${config.apiUrl}/v2/search/sanskrit?q=${encodeURIComponent(query)}`;
-            }
-            
-            try {
-                const response = await fetch(url);
+    // Handle dropdown item click - call /search endpoint
+    const handleDropdownItemClick = async (slp1Query) => {
+        if (!config.apiUrl || !slp1Query) return;
+
+        try {
+            const url = `${config.apiUrl}/search?slp1=${encodeURIComponent(slp1Query)}`;
+            const response = await fetch(url);
+            if (response.ok) {
                 const data = await response.json();
                 setEntries(data);
                 setCurrentPage(1); // Reset to first page with new data
-            } catch (error) {
-                console.error('Search error:', error);
+            } else {
+                console.error('Search error:', response.statusText);
                 setEntries([]);
             }
-        };
-
-        fetchResults();
-    }, [slp1SearchStr, devSearchStr, keyboardType, config.apiUrl]);
+        } catch (error) {
+            console.error('Search error:', error);
+            setEntries([]);
+        }
+    };
 
     const nextPage = () => {
         setCurrentPage(prev => (prev < totalPages ? prev + 1 : prev));
@@ -110,6 +98,8 @@ function Dictionary() {
                 handleSearch={handleSearch}
                 keyboardType={keyboardType}
                 onKeyboardTypeChange={setKeyboardType}
+                onDropdownItemClick={handleDropdownItemClick}
+                apiUrl={config.apiUrl}
             />
             {keyboardType === 'devanagari' && (
                 <KeyboardBridge
