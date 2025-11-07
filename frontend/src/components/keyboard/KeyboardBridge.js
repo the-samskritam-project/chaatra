@@ -22,6 +22,7 @@ function KeyboardBridge({
   useEffect(() => {
     if (value.length === 0) {
       setCompletionResults([]);
+      setActiveKeys([]);
       return;
     }
 
