@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './Search.css';
 import { toDevanagiriString } from '../../utils/transliterate'; // add this
 
-function SearchBar({ devanagariString, slp1LatinStr, onInputChange, onFocus, handleBlur, handleSearch, keyboardType, onKeyboardTypeChange, onDropdownItemClick, apiUrl }) {
+function SearchBar({ devanagariString, slp1LatinStr, onInputChange, onFocus, handleBlur, handleSearch, keyboardType, onKeyboardTypeChange, onDropdownItemClick, apiUrl, onClear }) {
     const [dropdownResults, setDropdownResults] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -142,11 +142,15 @@ function SearchBar({ devanagariString, slp1LatinStr, onInputChange, onFocus, han
         }
         setDropdownResults([]);
         setShowDropdown(false);
-        if (keyboardType === 'qwerty' && onInputChange) {
-            onInputChange({ target: { value: '' } });
-        }
-        if (handleSearch) {
-            handleSearch('', '');
+        if (typeof onClear === 'function') {
+            onClear();
+        } else {
+            if (keyboardType === 'qwerty' && onInputChange) {
+                onInputChange({ target: { value: '' } });
+            }
+            if (handleSearch) {
+                handleSearch('', '');
+            }
         }
         if (inputRef.current) {
             inputRef.current.focus();

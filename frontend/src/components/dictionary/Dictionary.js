@@ -45,6 +45,11 @@ function Dictionary() {
         setDevSearchStr(value);
     };
 
+    const handleClearInput = () => {
+        setSlp1SearchStr('');
+        setDevSearchStr('');
+    };
+
     const [config, setConfig] = useState({});
     useEffect(() => {
         // Fetch configuration from the environment variable
@@ -100,6 +105,7 @@ function Dictionary() {
                 onKeyboardTypeChange={setKeyboardType}
                 onDropdownItemClick={handleDropdownItemClick}
                 apiUrl={config.apiUrl}
+                onClear={handleClearInput}
             />
             {keyboardType === 'devanagari' && (
                 <KeyboardBridge
