@@ -136,6 +136,25 @@ function SearchBar({ devanagariString, slp1LatinStr, onInputChange, onFocus, han
         }, 200);
     };
 
+    const handleClearClick = () => {
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
+        setDropdownResults([]);
+        setShowDropdown(false);
+        if (keyboardType === 'qwerty' && onInputChange) {
+            onInputChange({ target: { value: '' } });
+        }
+        if (handleSearch) {
+            handleSearch('', '');
+        }
+        if (inputRef.current) {
+            inputRef.current.focus();
+        }
+    };
+
+    const showClearButton = Boolean(devanagariString && devanagariString.trim().length > 0);
+
     const getDropdownDevanagari = (item) => {
       if (item.devanagariWord) {
         const parts = item.devanagariWord.split(' — ');
@@ -163,6 +182,16 @@ function SearchBar({ devanagariString, slp1LatinStr, onInputChange, onFocus, han
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
                 />
+                {showClearButton && (
+                    <button
+                        type="button"
+                        className="clear-button"
+                        onClick={handleClearClick}
+                        aria-label="Clear search"
+                    >
+                        &times;
+                    </button>
+                )}
                 <div className="keyboard-toggle">
                     <button 
                         className={`keyboard-type-btn ${keyboardType === 'devanagari' ? 'active' : ''}`}
