@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Entries from './Entries';
 import KeyboardBridge from '../keyboard/KeyboardBridge';
 import SearchBar from '../search/Search';
@@ -13,6 +13,7 @@ function Dictionary() {
     const [entriesPerPage] = useState(10); // Adjust number per page as needed
     const [keyboardType, setKeyboardType] = useState('devanagari');
     const totalPages = Math.ceil(entries.length / entriesPerPage);
+    const keyboardRef = useRef(null);
 
     const handleSearch = (slp1Str, devanagariStr) => {
         setSlp1SearchStr(slp1Str);
@@ -48,6 +49,13 @@ function Dictionary() {
     const handleClearInput = () => {
         setSlp1SearchStr('');
         setDevSearchStr('');
+    };
+
+    const handleDropdownItemSelected = () => {
+        // Dismiss keyboard when a dropdown item is clicked
+        if (keyboardRef.current) {
+            keyboardRef.current.dismiss();
+        }
     };
 
     const [config, setConfig] = useState({});
@@ -106,9 +114,11 @@ function Dictionary() {
                 onDropdownItemClick={handleDropdownItemClick}
                 apiUrl={config.apiUrl}
                 onClear={handleClearInput}
+                onDropdownItemSelected={handleDropdownItemSelected}
             />
             {keyboardType === 'devanagari' && (
                 <KeyboardBridge
+                    ref={keyboardRef}
                     isFocused={isFocused}
                     onInput={handleInput}
                     value={slp1SearchStr}

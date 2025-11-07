@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { createPortal } from 'react-dom';
 import Keyboard from './Keyboard';
 import { vowels, consonants } from '../../utils/constants';
 
-function KeyboardBridge({ 
+const KeyboardBridge = forwardRef(({ 
   onInput,
   isFocused,
   value = ''
-}) {
+}, ref) => {
   const [isKeyboardDocked, setIsKeyboardDocked] = useState(true);
   const [activeKeys, setActiveKeys] = useState([]);
   const [completionResults, setCompletionResults] = useState([]);
@@ -49,10 +49,38 @@ function KeyboardBridge({
   }, [value, config.apiUrl]);
 
   useEffect(() => {
+    // Show keyboard whenever search bar is focused in devanagari mode
     if (isFocused) {
       setIsKeyboardDocked(false);
     }
   }, [isFocused]);
+
+  const handleDismiss = () => {
+    setIsKeyboardDocked(true);
+  };
+
+  // Expose dismiss method via ref
+  useImperativeHandle(ref, () => ({
+    dismiss: () => {
+      setIsKeyboardDocked(true);
+      setActiveKeys([]);
+    }
+  }));
+
+  const handleSuggestionClick = (suggestion) => {
+    // Replace the current word with the selected suggestion
+    const words = value.split(' ');
+    const currentWordIndex = words.length - 1;
+    words[currentWordIndex] = suggestion;
+    const newValue = words.join(' ');
+    
+    // Update the input value
+    onInput({ type: 'key', value: newValue });
+    
+    // Clear active keys and dismiss keyboard
+    setActiveKeys([]);
+    setIsKeyboardDocked(true);
+  };
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -88,10 +116,12 @@ function KeyboardBridge({
       activeKeys={activeKeys}
       alphabet={vowels.concat(consonants)}
       completionResults={completionResults}
+      onDismiss={handleDismiss}
+      onSuggestionClick={handleSuggestionClick}
     />
   );
 
   return createPortal(keyboardElement, document.body);
-}
+});
 
 export default KeyboardBridge; 

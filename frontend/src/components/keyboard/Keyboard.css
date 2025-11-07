@@ -27,6 +27,37 @@
   border-radius: 10px 10px 0 0;
 }
 
+.keyboard-dismiss {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 24px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.keyboard-dismiss:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+.keyboard-dismiss:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
 .keys-container {
   display: flex;
   justify-content: center;
