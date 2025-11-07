@@ -21,21 +21,13 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	results, err := persistence.SearchChromaDB(slp1Query, 5)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	entries := make([]*parser.DictionaryEntry, 0)
-	for _, result := range results {
-		matches := service.LookupPrefixes(Trie, result.TransliteratedWord)
+	matches := service.LookupPrefixes(Trie, slp1Query)
 
-		for _, match := range matches {
-			entry := Dictionary[match.LatinSLP1()]
-			if entry != nil {
-				entries = append(entries, entry)
-			}
+	for _, match := range matches {
+		entry := Dictionary[match.LatinSLP1()]
+		if entry != nil {
+			entries = append(entries, entry)
 		}
 	}
 
