@@ -8,6 +8,7 @@ import (
 	"os"
 
 	h "chaatra/http"
+	"github.com/joho/godotenv"
 
 	"github.com/rs/cors"
 )
@@ -16,6 +17,8 @@ const ENV_DEFAULT_PORT = "8081"
 const ENV_PORT_KEY = "PORT"
 
 func main() {
+	_ = godotenv.Load()
+
 	// initialize elastic search
 	persistence.InitEs()
 
