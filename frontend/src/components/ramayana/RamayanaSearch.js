@@ -11,6 +11,9 @@ function RamayanaSearch() {
   const [error, setError] = useState('');
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [contextData, setContextData] = useState(null);
+  const [summary, setSummary] = useState('');
+  const [summaryError, setSummaryError] = useState('');
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
   const [contextError, setContextError] = useState('');
   const [isContextLoading, setIsContextLoading] = useState(false);
   const handleResultClick = async (entry) => {
@@ -26,6 +29,9 @@ function RamayanaSearch() {
 
     setSelectedEntry(entry);
     setContextData(null);
+    setSummary('');
+    setSummaryError('');
+    setIsSummaryLoading(false);
     setContextError('');
     setIsContextLoading(true);
     try {
@@ -51,6 +57,9 @@ function RamayanaSearch() {
     setSelectedEntry(null);
     setContextData(null);
     setContextError('');
+    setSummary('');
+    setSummaryError('');
+    setIsSummaryLoading(false);
   };
 
   useEffect(() => {
@@ -83,6 +92,44 @@ function RamayanaSearch() {
       setResults([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSummarize = async () => {
+    if (!apiUrl || !contextData) return;
+
+    const payload = {
+      kanda: contextData.kanda,
+      sarga: contextData.sarga,
+      shloka: contextData.shloka,
+      window: contextData.window || 10,
+      prompt: '',
+    };
+
+    setSummary('');
+    setSummaryError('');
+    setIsSummaryLoading(true);
+
+    try {
+      const response = await fetch(`${apiUrl}/v2/ramayana/summarize`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Summary request failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setSummary(data.summary || '');
+    } catch (err) {
+      console.error('Ramayana summarize error:', err);
+      setSummaryError('Unable to generate summary.');
+    } finally {
+      setIsSummaryLoading(false);
     }
   };
 
@@ -125,6 +172,11 @@ function RamayanaSearch() {
         contextData={contextData}
         isLoading={isContextLoading}
         error={contextError}
+        onSummarize={handleSummarize}
+        isSummaryLoading={isSummaryLoading}
+        summary={summary}
+        summaryError={summaryError}
+        disableSummarize={!contextData}
       />
     </div>
   );

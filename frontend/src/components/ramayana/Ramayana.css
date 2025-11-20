@@ -108,10 +108,17 @@
 
 .ramayana-modal-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #eee;
+  gap: 1rem;
+}
+
+.ramayana-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .ramayana-modal-close {
@@ -119,6 +126,59 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
+}
+
+.ramayana-modal-actions .search-button {
+  min-width: 120px;
+  padding: 0.45rem 1.2rem;
+}
+
+.ramayana-modal-body {
+  display: flex;
+  gap: 1rem;
+  padding: 0;
+  height: 100%;
+}
+
+.ramayana-context-panel {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+.ramayana-modal-body.with-summary .ramayana-context-panel {
+  flex: 0 0 66%;
+}
+
+.ramayana-summary-panel {
+  flex: 0 0 34%;
+  border-left: 1px solid #f0f0f0;
+  padding: 1.25rem 1.75rem 1.25rem 1.25rem;
+  background: #fdfaf7;
+  overflow-y: auto;
+  max-height: 70vh;
+  box-sizing: border-box;
+}
+
+.ramayana-summary-card {
+  border: 1px solid #f0e6de;
+  border-radius: 10px;
+  padding: 1rem;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(93, 64, 55, 0.08);
+}
+
+.ramayana-summary-panel h3 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: #5d4037;
+}
+
+.ramayana-summary-text {
+  line-height: 1.6;
+  color: #3e2723;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .ramayana-modal-context {
@@ -130,6 +190,16 @@
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #f0f0f0;
+}
+
+.ramayana-context-selected {
+  background: linear-gradient(90deg, rgba(244, 231, 219, 0.4), rgba(255, 255, 255, 0));
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid #edc7aa;
+  border-bottom: none;
+  box-shadow: 0 6px 18px rgba(93, 64, 55, 0.15);
+  scroll-margin-top: 30px;
 }
 
 .ramayana-modal-context-heading {
@@ -154,5 +224,42 @@
 .ramayana-modal-empty {
   padding: 1rem 1.5rem;
   color: #555;
+}
+
+.ramayana-modal-loading.small {
+  padding: 0.5rem 0;
+}
+
+@media (max-width: 900px) {
+  .ramayana-modal {
+    width: 95%;
+  }
+
+  .ramayana-modal-body,
+  .ramayana-modal-body.with-summary {
+    flex-direction: column;
+  }
+
+  .ramayana-context-panel,
+  .ramayana-summary-panel {
+    flex: 1 1 auto;
+    max-height: none;
+  }
+
+  .ramayana-summary-panel {
+    border-left: none;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .ramayana-modal-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .ramayana-modal-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 

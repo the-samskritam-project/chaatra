@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -243,4 +244,53 @@ func RamayanaContextHandler(w http.ResponseWriter, r *http.Request) {
 		"window":  window,
 		"entries": contextEntries,
 	})
+}
+
+// RamayanaSummarizeHandler generates a summary using OpenAI based on context
+func RamayanaSummarizeHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req service.RamayanaSummarizeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.Kanda == "" || req.Sarga == 0 || req.Shloka == 0 {
+		http.Error(w, "kanda, sarga, and shloka are required", http.StatusBadRequest)
+		return
+	}
+
+	window := req.Window
+	if window <= 0 || window > 20 {
+		window = 10
+	}
+
+	context, err := persistence.GetRamayanaContext(req.Kanda, req.Sarga, req.Shloka, window)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to load context: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	apiKey := os.Getenv("OPENAI_API_KEY")
+	if apiKey == "" {
+		http.Error(w, "OpenAI API key not configured", http.StatusFailedDependency)
+		return
+	}
+
+	summary, err := service.CallOpenAISummary(apiKey, req, context)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Summary request failed: %v", err), http.StatusBadGateway)
+		return
+	}
+
+	resp := map[string]any{
+		"summary": summary,
+		"context": context,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
 }
