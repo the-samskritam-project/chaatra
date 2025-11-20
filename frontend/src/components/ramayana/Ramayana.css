@@ -1,0 +1,80 @@
+.ramayana-wrapper {
+  width: 100%;
+}
+
+.ramayana-search-bar {
+  width: 80%;
+  margin: 0 auto 20px;
+}
+
+.ramayana-search-bar .search-input {
+  flex: 1;
+}
+
+.ramayana-search-bar .search-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.ramayana-entries {
+  width: 100%;
+}
+
+.ramayana-entry {
+  width: 80%;
+}
+
+.ramayana-heading {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 0.4rem;
+}
+
+.ramayana-location {
+  display: flex;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #4e342e;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ramayana-sarga {
+  color: #8d6e63;
+  text-transform: none;
+}
+
+.ramayana-shloka {
+  margin-bottom: 0.4rem;
+  font-size: 1.1rem;
+}
+
+.ramayana-transliteration {
+  font-style: italic;
+  color: #6d4c41;
+  margin-bottom: 0.75rem;
+}
+
+.ramayana-section {
+  margin-top: 0.5rem;
+}
+
+.ramayana-section p {
+  margin: 0.25rem 0 0;
+  line-height: 1.5;
+}
+
+.ramayana-error {
+  color: #c62828;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.label {
+  font-weight: 600;
+  color: #5d4037;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+

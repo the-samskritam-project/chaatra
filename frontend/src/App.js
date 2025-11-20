@@ -1,10 +1,10 @@
 import './App.css';
 import './Modal.css';
 import Dictionary from './components/dictionary/Dictionary';
-import Heading from './Heading';
 import { Tabs, TabList, Tab, TabPanel } from 'react-tabs';
 import './tabs.css';
 import Flashcards from './components/flashcards/Flashcards';
+import RamayanaSearch from './components/ramayana/RamayanaSearch';
 
 function App() {
   return (
@@ -20,10 +20,10 @@ function App() {
               <TabList>
                 <Tab>Dictionary</Tab>
                 <Tab>Flash cards</Tab>
+                <Tab>Ramayana</Tab>
               </TabList>
             </div>
           </div>
-
 
           <div className="tab-panel-container">
             <TabPanel>
@@ -32,6 +32,10 @@ function App() {
 
             <TabPanel>
               <Flashcards />
+            </TabPanel>
+
+            <TabPanel>
+              <RamayanaSearch />
             </TabPanel>
           </div>
         </Tabs>

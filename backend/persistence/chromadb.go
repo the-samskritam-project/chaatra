@@ -19,8 +19,10 @@ var chromaBaseURL string
 type ChromaIndex string
 
 const (
-	ChromaIndexEnglish  ChromaIndex = "dictionary_en"
-	ChromaIndexSanskrit ChromaIndex = "dictionary_sk"
+	ChromaIndexEnglish   ChromaIndex = "dictionary_en"
+	ChromaIndexSanskrit  ChromaIndex = "dictionary_sk"
+	ChromaIndexRamayana  ChromaIndex = "ramayana_en"
+	ChromaIndexRamayanaS ChromaIndex = "ramayana_sk"
 )
 
 // ChromaDBResponse represents the response structure from ChromaDB

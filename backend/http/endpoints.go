@@ -172,3 +172,30 @@ func SearchV2SanskritHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(entries)
 }
+
+// SearchRamayanaHandler handles Ramayana semantic search (English queries)
+func SearchRamayanaHandler(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+	if query == "" {
+		http.Error(w, "Search query is required (use ?q=your_query)", http.StatusBadRequest)
+		return
+	}
+
+	nResults := 20
+	if n := r.URL.Query().Get("n"); n != "" {
+		fmt.Sscanf(n, "%d", &nResults)
+		if nResults < 1 || nResults > 50 {
+			nResults = 20
+		}
+	}
+
+	entries, err := persistence.SearchChromaDB(query, nResults, persistence.ChromaIndexRamayana)
+	if err != nil {
+		log.Printf("ChromaDB Ramayana search error: %v", err)
+		http.Error(w, fmt.Sprintf("Search error: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(entries)
+}
