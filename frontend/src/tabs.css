@@ -33,7 +33,7 @@
   .react-tabs__tab {
     text-align: center;
     padding: 15px 10px;
-    cursor: pointer;
+  cursor: pointer;
     color: #333;
     border-bottom: none; /* Remove bottom border to avoid double border */
     transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
@@ -56,6 +56,36 @@
     transform: translateY(-1px); /* Slight lift effect on hover */
   }
   
+.react-tabs__tab--disabled {
+  color: #888;
+  cursor: not-allowed;
+}
+
+.tab-coming-soon {
+  position: relative;
+}
+
+.tab-coming-soon::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.tab-coming-soon:hover::after {
+  opacity: 1;
+}
+
   
   /* Ensure the TabPanel takes the full width of the main container */
   .tab-panel-container {
@@ -71,6 +101,15 @@
   .react-tabs__tab-panel {
     width: 100%;
   }
+
+.tab-panel-disabled {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: #777;
+  font-style: italic;
+}
   
   .tabs-section {
     display: flex;
