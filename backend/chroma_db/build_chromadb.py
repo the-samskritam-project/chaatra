@@ -13,7 +13,10 @@ from sentence_transformers import SentenceTransformer
 # Configuration
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DICTIONARY_DATA_PATH = os.getenv("DATA_PATH", os.path.join(SCRIPT_DIR, "parsed_dictionary.json"))
-RAMAYANA_DATA_PATH = os.getenv("RAMAYANA_DATA_PATH", os.path.join(SCRIPT_DIR, "valmiki_ramayan_shlokas.json"))
+RAMAYANA_DATA_PATH = os.getenv(
+    "RAMAYANA_DATA_PATH",
+    os.path.join(SCRIPT_DIR, "valmiki_ramayan_shlokas_filtered.json")
+)
 CHROMA_DB_PATH = os.getenv("CHROMA_DB_PATH", SCRIPT_DIR)
 MODEL_NAME = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
 
