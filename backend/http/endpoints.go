@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 var Dictionary map[string]*parser.DictionaryEntry
@@ -198,4 +199,48 @@ func SearchRamayanaHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(entries)
+}
+
+// RamayanaContextHandler returns a window of Ramayana shlokas around a target verse
+func RamayanaContextHandler(w http.ResponseWriter, r *http.Request) {
+	kanda := r.URL.Query().Get("kanda")
+	sargaStr := r.URL.Query().Get("sarga")
+	shlokaStr := r.URL.Query().Get("shloka")
+	if kanda == "" || sargaStr == "" || shlokaStr == "" {
+		http.Error(w, "kanda, sarga, and shloka are required", http.StatusBadRequest)
+		return
+	}
+
+	sarga, err := strconv.Atoi(sargaStr)
+	if err != nil {
+		http.Error(w, "invalid sarga value", http.StatusBadRequest)
+		return
+	}
+	shloka, err := strconv.Atoi(shlokaStr)
+	if err != nil {
+		http.Error(w, "invalid shloka value", http.StatusBadRequest)
+		return
+	}
+
+	window := 10
+	if winStr := r.URL.Query().Get("window"); winStr != "" {
+		if val, err := strconv.Atoi(winStr); err == nil && val >= 0 && val <= 50 {
+			window = val
+		}
+	}
+
+	contextEntries, err := persistence.GetRamayanaContext(kanda, sarga, shloka, window)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"kanda":   kanda,
+		"sarga":   sarga,
+		"shloka":  shloka,
+		"window":  window,
+		"entries": contextEntries,
+	})
 }

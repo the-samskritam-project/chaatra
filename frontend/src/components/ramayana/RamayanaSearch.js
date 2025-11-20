@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import RamayanaResult from './RamayanaResult';
+import RamayanaModal from './RamayanaModal';
 import './Ramayana.css';
 
 function RamayanaSearch() {
@@ -8,6 +9,49 @@ function RamayanaSearch() {
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedEntry, setSelectedEntry] = useState(null);
+  const [contextData, setContextData] = useState(null);
+  const [contextError, setContextError] = useState('');
+  const [isContextLoading, setIsContextLoading] = useState(false);
+  const handleResultClick = async (entry) => {
+    if (!apiUrl) return;
+    const metadata = entry.metadata || {};
+    const { kanda, sarga, shloka } = metadata;
+    if (!kanda || !sarga || !shloka) {
+      setContextError('Missing metadata for context lookup.');
+      setContextData(null);
+      setSelectedEntry(entry);
+      return;
+    }
+
+    setSelectedEntry(entry);
+    setContextData(null);
+    setContextError('');
+    setIsContextLoading(true);
+    try {
+      const response = await fetch(
+        `${apiUrl}/v2/ramayana/context?kanda=${encodeURIComponent(
+          kanda
+        )}&sarga=${sarga}&shloka=${shloka}&window=10`
+      );
+      if (!response.ok) {
+        throw new Error(`Context request failed: ${response.statusText}`);
+      }
+      const data = await response.json();
+      setContextData(data);
+    } catch (err) {
+      console.error('Ramayana context error:', err);
+      setContextError('Unable to load context.');
+    } finally {
+      setIsContextLoading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setSelectedEntry(null);
+    setContextData(null);
+    setContextError('');
+  };
 
   useEffect(() => {
     const url = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8081';
@@ -66,9 +110,22 @@ function RamayanaSearch() {
           </div>
         )}
         {results.map((entry, index) => (
-          <RamayanaResult key={`${entry.metadata?.kanda || 'ramayana'}-${index}`} entry={entry} />
+          <RamayanaResult
+            key={`${entry.metadata?.kanda || 'ramayana'}-${index}`}
+            entry={entry}
+            onClick={() => handleResultClick(entry)}
+          />
         ))}
       </div>
+
+      <RamayanaModal
+        isOpen={Boolean(selectedEntry)}
+        onClose={closeModal}
+        entry={selectedEntry}
+        contextData={contextData}
+        isLoading={isContextLoading}
+        error={contextError}
+      />
     </div>
   );
 }

@@ -10,7 +10,7 @@ const parseDevanagariFromDocument = (document) => {
   return parts[0].trim();
 };
 
-function RamayanaResult({ entry }) {
+function RamayanaResult({ entry, onClick }) {
   const metadata = entry.metadata || {};
   const devanagari = parseDevanagariFromDocument(entry.devanagariWord);
   const transliteration = metadata.transliteration || entry.transliteratedWord || '';
@@ -23,7 +23,7 @@ function RamayanaResult({ entry }) {
   const shlokaText = metadata.sanskrit || devanagari;
 
   return (
-    <div className="entry ramayana-entry">
+    <div className="entry ramayana-entry" onClick={onClick}>
       <div className="entry-main ramayana-heading">
         <div className="ramayana-location">
           {kanda && <span className="ramayana-kanda">{kanda}</span>}
