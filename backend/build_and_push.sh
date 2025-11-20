@@ -13,17 +13,20 @@ DOCKER_USERNAME="${DOCKER_USERNAME:-balagi}"
 IMAGE_NAME="${IMAGE_NAME:-chaatra-backend}"
 FULL_IMAGE_NAME="${DOCKER_USERNAME}/${IMAGE_NAME}"
 
-# Check if ChromaDB is built
+# Build Ramayana English index (only)
 if [ ! -f "chroma_db/chroma.sqlite3" ]; then
-    echo "🔨 Building ChromaDB indexes locally..."
-    cd chroma_db
-    ./build_chromadb_index_en.sh
-    ./build_chromadb_index_sk.sh
-    cd ..
+    echo "🔨 Building Ramayana (English) ChromaDB index locally..."
+    (
+        cd chroma_db
+        ./build_ramayana_index_en.sh
+    )
+    echo ""
+else
+    echo "ℹ️  Existing ChromaDB dataset detected. Skipping Ramayana rebuild."
     echo ""
 fi
 
-echo "✅ ChromaDB is ready"
+echo "✅ ChromaDB (Ramayana EN) is ready"
 echo ""
 
 # Docker Hub authentication

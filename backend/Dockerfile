@@ -36,6 +36,7 @@ COPY --from=builder /go/src/chaatra/backend/core/parser/dictionary.xml /root/dic
 # Copy ChromaDB bridge script and built database files
 RUN mkdir -p /root/chroma_db
 COPY --from=builder /go/src/chaatra/backend/chroma_db/chromadb_bridge.py /root/chroma_db/chromadb_bridge.py
+COPY --from=builder /go/src/chaatra/backend/chroma_db/valmiki_ramayan_shlokas_filtered.json /root/chroma_db/valmiki_ramayan_shlokas_filtered.json
 
 # Copy built ChromaDB index files (from artifact download in CI, or empty locally)
 # These files will be included when built via GitHub Actions
