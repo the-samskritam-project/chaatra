@@ -1,6 +1,7 @@
 #!/bin/bash
 # Script to build and run the backend Docker container
-# ChromaDB database should be built locally first using chroma_db/build_chromadb_index.sh
+# Build both ChromaDB indexes first:
+#   cd chroma_db && ./build_chromadb_index_en.sh && ./build_chromadb_index_sk.sh
 
 set -e
 
@@ -14,7 +15,7 @@ PORT_8001="${PORT_8001:-8001}"
 # Check if ChromaDB database exists
 if [ ! -f "$SCRIPT_DIR/chroma_db/chroma.sqlite3" ]; then
     echo "Warning: ChromaDB database not found!"
-    echo "Please run: cd chroma_db && ./build_chromadb_index.sh"
+    echo "Please run: cd chroma_db && ./build_chromadb_index_en.sh && ./build_chromadb_index_sk.sh"
     echo "Continuing anyway..."
 fi
 

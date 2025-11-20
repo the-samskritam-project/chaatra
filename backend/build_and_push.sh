@@ -15,9 +15,10 @@ FULL_IMAGE_NAME="${DOCKER_USERNAME}/${IMAGE_NAME}"
 
 # Check if ChromaDB is built
 if [ ! -f "chroma_db/chroma.sqlite3" ]; then
-    echo "🔨 Building ChromaDB index locally..."
+    echo "🔨 Building ChromaDB indexes locally..."
     cd chroma_db
-    ./build_chromadb_index.sh
+    ./build_chromadb_index_en.sh
+    ./build_chromadb_index_sk.sh
     cd ..
     echo ""
 fi

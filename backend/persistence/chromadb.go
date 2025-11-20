@@ -16,6 +16,13 @@ import (
 var chromaClient *http.Client
 var chromaBaseURL string
 
+type ChromaIndex string
+
+const (
+	ChromaIndexEnglish  ChromaIndex = "dictionary_en"
+	ChromaIndexSanskrit ChromaIndex = "dictionary_sk"
+)
+
 // ChromaDBResponse represents the response structure from ChromaDB
 type ChromaDBResponse struct {
 	Ids       [][]string                 `json:"ids"`
@@ -48,9 +55,13 @@ func InitChroma(chromaURL string) {
 
 // SearchChromaDB searches ChromaDB using text query via Python bridge service
 // The bridge service generates embeddings and queries ChromaDB
-func SearchChromaDB(queryText string, nResults int) ([]*parser.Entry, error) {
+func SearchChromaDB(queryText string, nResults int, index ChromaIndex) ([]*parser.Entry, error) {
 	if chromaClient == nil {
 		return nil, fmt.Errorf("ChromaDB client not initialized. Call InitChroma() first")
+	}
+
+	if index == "" {
+		index = ChromaIndexEnglish
 	}
 
 	// Query the Python bridge service (usually on port 8001)
@@ -60,8 +71,9 @@ func SearchChromaDB(queryText string, nResults int) ([]*parser.Entry, error) {
 	}
 
 	queryReq := map[string]interface{}{
-		"query":     queryText,
-		"n_results": nResults,
+		"query":      queryText,
+		"n_results":  nResults,
+		"collection": string(index),
 	}
 
 	jsonData, err := json.Marshal(queryReq)
@@ -109,6 +121,8 @@ func SearchChromaDB(queryText string, nResults int) ([]*parser.Entry, error) {
 	// Convert bridge response to parser.Entry format
 	entries := make([]*parser.Entry, 0)
 	for _, result := range bridgeResp.Results {
+		log.Println("document : ", result.Document, " Score : ", result.Score)
+
 		metadata := result.Metadata
 
 		headword := ""
@@ -129,87 +143,4 @@ func SearchChromaDB(queryText string, nResults int) ([]*parser.Entry, error) {
 	}
 
 	return entries, nil
-}
-
-// convertChromaResponseToEntries converts ChromaDB response to parser.Entry format
-func convertChromaResponseToEntries(chromaResp ChromaDBResponse) ([]*parser.Entry, error) {
-	entries := make([]*parser.Entry, 0)
-	if len(chromaResp.Ids) > 0 && len(chromaResp.Ids[0]) > 0 {
-		for i := range chromaResp.Ids[0] {
-			metadata := chromaResp.Metadatas[0][i]
-
-			// Extract fields from metadata
-			headword := ""
-			meaning := ""
-			if hw, ok := metadata["headword"].(string); ok {
-				headword = hw
-			}
-			if m, ok := metadata["meaning"].(string); ok {
-				meaning = m
-			}
-
-			// Try to get Devanagari from document or transliterate headword
-			devanagariWord := ""
-			if len(chromaResp.Documents) > 0 && len(chromaResp.Documents[0]) > i {
-				// Document might contain Devanagari text
-				doc := chromaResp.Documents[0][i]
-				// Simple extraction - adjust based on your document format
-				devanagariWord = doc
-			}
-
-			entries = append(entries, &parser.Entry{
-				DevanagariWord:     devanagariWord,
-				TransliteratedWord: headword,
-				EnglishMeaning:     meaning,
-				Metadata:           metadata,
-			})
-		}
-	}
-
-	return entries, nil
-}
-
-// SearchChromaDBWithEmbedding searches ChromaDB using pre-computed embeddings
-// This is useful if you want to generate embeddings in Go
-func SearchChromaDBWithEmbedding(queryEmbedding []float32, nResults int) ([]*parser.Entry, error) {
-	if chromaClient == nil {
-		return nil, fmt.Errorf("ChromaDB client not initialized. Call InitChroma() first")
-	}
-
-	queryReq := ChromaQueryRequest{
-		QueryEmbeddings: [][]float32{queryEmbedding},
-		NResults:        nResults,
-		Include:         []string{"documents", "metadatas", "distances"},
-	}
-
-	jsonData, err := json.Marshal(queryReq)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling query request: %w", err)
-	}
-
-	url := fmt.Sprintf("%s/api/v1/collections/dictionary/query", chromaBaseURL)
-	req, err := http.NewRequestWithContext(context.Background(), "POST", url, bytes.NewBuffer(jsonData))
-	if err != nil {
-		return nil, fmt.Errorf("error creating request: %w", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := chromaClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("error executing request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("ChromaDB API error: status %d, body: %s", resp.StatusCode, string(body))
-	}
-
-	var chromaResp ChromaDBResponse
-	if err := json.NewDecoder(resp.Body).Decode(&chromaResp); err != nil {
-		return nil, fmt.Errorf("error decoding response: %w", err)
-	}
-
-	return convertChromaResponseToEntries(chromaResp)
 }

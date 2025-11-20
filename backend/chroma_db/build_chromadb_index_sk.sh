@@ -1,13 +1,13 @@
 #!/bin/bash
-# Build ChromaDB index locally
-# Run this script to generate embeddings before starting Docker
+# Build ChromaDB Sanskrit index locally
+# Run this script to generate embeddings focused on Devanagari content
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-echo "Building ChromaDB index locally..."
+echo "Building ChromaDB Sanskrit index locally..."
 echo "This will install Python dependencies if needed..."
 echo ""
 
@@ -21,15 +21,17 @@ else
     exit 1
 fi
 
+VENV_DIR=".venv"
+
 # Create virtual environment if it doesn't exist
-if [ ! -d ".venv" ]; then
+if [ ! -d "$VENV_DIR" ]; then
     echo "Creating virtual environment..."
-    $PYTHON_CMD -m venv .venv
+    $PYTHON_CMD -m venv "$VENV_DIR"
 fi
 
 # Activate virtual environment
 echo "Activating virtual environment..."
-source .venv/bin/activate
+source "$VENV_DIR/bin/activate"
 
 # Install dependencies
 echo "Installing dependencies (this may take a few minutes)..."
@@ -37,11 +39,11 @@ pip install --quiet chromadb sentence-transformers
 
 # Build ChromaDB
 echo ""
-echo "Building ChromaDB index..."
+echo "Building ChromaDB Sanskrit index..."
 echo "This will take several minutes to generate embeddings..."
-python build_chromadb.py
+python build_chromadb.py --lang sk
 
 echo ""
-echo "Done! ChromaDB index built in: $SCRIPT_DIR"
-echo "You can now run: cd .. && ./start.sh"
+echo "Done! Sanskrit ChromaDB index built in: $SCRIPT_DIR"
+echo "Remember to also build the English index with: ./build_chromadb_index_en.sh"
 

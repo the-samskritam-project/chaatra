@@ -8,6 +8,7 @@ import (
 	"os"
 
 	h "chaatra/http"
+
 	"github.com/joho/godotenv"
 
 	"github.com/rs/cors"
@@ -56,7 +57,6 @@ func main() {
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization"}, // Assuming you might need Authorization
 		AllowCredentials: true,
-		Debug:            true,
 	})
 
 	handler := c.Handler(mux)

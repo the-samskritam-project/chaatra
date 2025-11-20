@@ -106,7 +106,7 @@ func SearchChromaHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	entries, err := persistence.SearchChromaDB(query, nResults)
+	entries, err := persistence.SearchChromaDB(query, nResults, persistence.ChromaIndexEnglish)
 	if err != nil {
 		log.Printf("ChromaDB search error: %v", err)
 		http.Error(w, fmt.Sprintf("Search error: %s", err.Error()), http.StatusInternalServerError)
@@ -133,7 +133,7 @@ func SearchV2EnglishHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	entries, err := persistence.SearchChromaDB(query, nResults)
+	entries, err := persistence.SearchChromaDB(query, nResults, persistence.ChromaIndexEnglish)
 	if err != nil {
 		log.Printf("ChromaDB search error: %v", err)
 		http.Error(w, fmt.Sprintf("Search error: %s", err.Error()), http.StatusInternalServerError)
@@ -152,22 +152,21 @@ func SearchV2SanskritHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nResults := 5
-	if n := r.URL.Query().Get("n"); n != "" {
-		fmt.Sscanf(n, "%d", &nResults)
-		if nResults < 1 || nResults > 50 {
-			nResults = 5
-		}
-	}
+	nResults := 10
 
-	// Transliterate SLP1 to Devanagari and combine both formats for better matching
 	devanagari := trans.Trans(query)
 
-	entries, err := persistence.SearchChromaDB(devanagari, nResults)
+	log.Println("Devanagari query : ", devanagari)
+
+	entries, err := persistence.SearchChromaDB(devanagari, nResults, persistence.ChromaIndexSanskrit)
 	if err != nil {
 		log.Printf("ChromaDB search error: %v", err)
 		http.Error(w, fmt.Sprintf("Search error: %s", err.Error()), http.StatusInternalServerError)
 		return
+	}
+
+	for _, entry := range entries {
+		log.Println("Search Term : ", devanagari, " Entry : ", entry.DevanagariWord)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
