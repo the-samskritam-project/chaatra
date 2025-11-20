@@ -3,9 +3,17 @@ import RamayanaResult from './RamayanaResult';
 import RamayanaModal from './RamayanaModal';
 import './Ramayana.css';
 
+const sampleQueries = [
+  'Right course of action',
+  'Courage in adversity',
+  'Winning friends',
+  'Visionary thinking',
+];
+
 function RamayanaSearch() {
   const [apiUrl, setApiUrl] = useState('');
   const [query, setQuery] = useState('');
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -65,6 +73,14 @@ function RamayanaSearch() {
   useEffect(() => {
     const url = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8081';
     setApiUrl(url);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % sampleQueries.length);
+    }, 3500);
+
+    return () => clearInterval(interval);
   }, []);
 
   const handleSearch = async (event) => {
@@ -138,11 +154,20 @@ function RamayanaSearch() {
       <form className="search-bar ramayana-search-bar" onSubmit={handleSearch}>
         <input
           type="text"
-          placeholder="Search Ramayana by theme or meaning..."
+          placeholder=""
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="search-input"
         />
+        {query.trim().length === 0 && (
+          <div
+            key={placeholderIndex}
+            className="search-placeholder-ghost visible"
+            aria-hidden="true"
+          >
+            Try “{sampleQueries[placeholderIndex]}”
+          </div>
+        )}
         <button type="submit" className="search-button" disabled={isLoading}>
           {isLoading ? 'Searching...' : 'Search'}
         </button>

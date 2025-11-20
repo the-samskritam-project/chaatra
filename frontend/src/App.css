@@ -29,6 +29,8 @@
   /* Consistent rounded corners */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   /* Soft shadow for depth */
+  position: relative;
+  overflow: hidden;
 }
 
 /* Input Field Styles */
@@ -73,6 +75,39 @@
   /* Darker blue on hover for a dynamic effect */
   border-color: #004495;
   /* Slightly darker border on hover for depth */
+}
+
+.search-placeholder-ghost {
+  position: absolute;
+  left: 35px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-style: italic;
+  color: #8d6e63;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  font-size: 0.95rem;
+  animation: placeholderFade 3.5s ease;
+}
+
+.search-placeholder-ghost.visible {
+  opacity: 0.75;
+}
+
+@keyframes placeholderFade {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.75;
+  }
+  85% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 /* Entries container styling */
