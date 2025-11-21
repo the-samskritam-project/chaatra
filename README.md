@@ -48,7 +48,7 @@ This project uses the Valmiki Ramayana dataset, which is licensed under the MIT 
 
 **Copyright (c) 2025 Ashutosh Vijay**
 
-The dataset is used under the terms of the MIT License. See [LICENSE.txt](LICENSE.txt) for the full license text.
+The dataset is used under the terms of the MIT License. See [RAMAYANA_LICENSE.txt](RAMAYANA_LICENSE.txt) for the full license text.
 
 ### Cologne Digital Sanskrit Dictionaries
 This website/application uses data from Cologne Digital Sanskrit Dictionaries, Cologne University, accessed on January 20, 2025, https://www.sanskrit-lexicon.uni-koeln.de
