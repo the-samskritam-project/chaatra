@@ -5,6 +5,7 @@ import './tabs.css';
 import Dictionary from './components/dictionary/Dictionary';
 import Flashcards from './components/flashcards/Flashcards';
 import RamayanaSearch from './components/ramayana/RamayanaSearch';
+import Footer from './components/Footer';
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
           </div>
         </Tabs>
       </div>
+      <Footer />
     </div>
   );
 }
