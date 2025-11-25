@@ -1,0 +1,293 @@
+[
+  {
+    "kanda": "Bala Kanda",
+    "sarga": 1,
+    "shloka": 1,
+    "shloka_text": "तपस्स्वाध्यायनिरतं तपस्वी वाग्विदां वरम् । नारदं परिपप्रच्छ वाल्मीकिर्मुनिपुङ्गवम् ।।1.1.1।।",
+    "transliteration": "tapassvādhyāyanirataṁ tapasvī vāgvidāṁ varam। nāradaṁ paripapraccha vālmīkir munipuṅgavam।।",
+    "translation": "तपस्वी ascetic, वाल्मीकि: Valmiki, तप: स्वाध्यायनिरतम् highly delighted in the practice of religious austerities and study of vedas, वाग्विदां वरम् eloquent among the knowledgeable, मुनिपुङ्गवम् preeminent among sages, नारदम् Narada, परिपप्रच्छ enquired.",
+    "explanation": "Ascetic Valmiki enquired of Narada, preeminent among the sages ever engaged in the practice of religious austerities or study of the Vedas and best among the eloquent.",
+    "comments": "Saint Narada visits hermitage of Valmiki -- Valmiki queries about a single perfect individual bestowed with all good qualities enumerated by him -- Narada, knower of past, present and future, identifies such a man -- describes virtues, qualities of Sri Rama -- narrates briefly the story of his life.",
+    "metrics": {
+      "total_words": 7,
+      "total_chars": 84,
+      "min_word_length": 4,
+      "max_word_length": 22,
+      "avg_word_length": 10.57,
+      "words_with_splits": 2,
+      "words_without_splits": 5,
+      "split_success_ratio": 0.286,
+      "total_split_parts": 10,
+      "avg_parts_per_split_word": 2.5,
+      "max_parts_in_any_split": 3,
+      "min_parts_in_any_split": 2,
+      "split_complexity_score": 1.429,
+      "unsplit_word_ratio": 0.714
+    },
+    "sandhi_splits": {
+      "तपस्स्वाध्यायनिरतं": [
+        "तपस्स्वाध्यायनिरतं"
+      ],
+      "तपस्वी": [
+        "तपस्वी"
+      ],
+      "वाग्विदां": [
+        "वाग्विदां"
+      ],
+      "वरम्": [
+        "वरम्"
+      ],
+      "नारदं": [
+        "नारदं"
+      ],
+      "परिपप्रच्छ": [
+        "परि",
+        "पप्रच्छ"
+      ],
+      "वाल्मीकिर्मुनिपुङ्गवम्": [
+        "वाल्मीकिस्",
+        "मुनि",
+        "पुङ्गवम्"
+      ]
+    }
+  },
+  {
+    "kanda": "Bala Kanda",
+    "sarga": 1,
+    "shloka": 2,
+    "shloka_text": "कोन्वस्मिन्साम्प्रतं लोके गुणवान्कश्च वीर्यवान् । धर्मज्ञश्च कृतज्ञश्च सत्यवाक्यो दृढव्रत:।।1.1.2।।",
+    "transliteration": null,
+    "translation": "अस्मिन् लोके in this world, साम्प्रतम् now, गुणवान् endowed with excellent qualities, क: नु who indeed, वीर्यवांश्च with  prowess, धर्मज्ञ: च knower of righteousness, कृतज्ञ: च grateful (who remembers even little help done by others), सत्यवाक्य: truthful in his statements, दृढव्रत: firm in his vows (till such time he achieves the results), क: who?",
+    "explanation": "Who in this world lives today endowed with excellent qualities, prowess, righteousness, gratitude, truthfulness and firmness in his vows?",
+    "comments": null,
+    "metrics": {
+      "total_words": 8,
+      "total_chars": 91,
+      "min_word_length": 4,
+      "max_word_length": 20,
+      "avg_word_length": 11.25,
+      "words_with_splits": 4,
+      "words_without_splits": 4,
+      "split_success_ratio": 0.5,
+      "total_split_parts": 15,
+      "avg_parts_per_split_word": 2.75,
+      "max_parts_in_any_split": 3,
+      "min_parts_in_any_split": 2,
+      "split_complexity_score": 1.875,
+      "unsplit_word_ratio": 0.5
+    },
+    "sandhi_splits": {
+      "कोन्वस्मिन्साम्प्रतं": [
+        "कोन्वस्मिन्साम्प्रतं"
+      ],
+      "लोके": [
+        "लोके"
+      ],
+      "गुणवान्कश्च": [
+        "गुणवान्",
+        "कस्",
+        "च"
+      ],
+      "वीर्यवान्": [
+        "वीर्यवान्"
+      ],
+      "धर्मज्ञश्च": [
+        "धर्म",
+        "ज्ञस्",
+        "च"
+      ],
+      "कृतज्ञश्च": [
+        "कृतज्ञस्",
+        "च"
+      ],
+      "सत्यवाक्यो": [
+        "सत्य",
+        "वाक्",
+        "यो"
+      ],
+      "दृढव्रत:।।1.1.2।।": [
+        "दृढव्रत:।।1.1.2।।"
+      ]
+    }
+  },
+  {
+    "kanda": "Bala Kanda",
+    "sarga": 1,
+    "shloka": 3,
+    "shloka_text": "चारित्रेण च को युक्तस्सर्वभूतेषु को हित: । विद्वान्क: कस्समर्थश्च कश्चैकप्रियदर्शन: ।।1.1.3।।",
+    "transliteration": null,
+    "translation": "क: who?, चारित्रेण with good conduct, युक्त: is endowed, क: who?, सर्वभूतेषु for all living beings, हित: benefactor, क: who?, विद्वान् learned man (knower of everything which is to be known), क: who?, समर्थ: च competent (capable of doing things which cannot be done by others), क: who? एकप्रियदर्शन: च solely delightful in  appearance  to everyone,",
+    "explanation": "Who is that one gifted with good conduct, given to the wellbeing of all living creatures, learned in the lore (knowledge of all things that is known), capable of doing things which others can not do and singularly handsome?",
+    "comments": null,
+    "metrics": {
+      "total_words": 9,
+      "total_chars": 83,
+      "min_word_length": 1,
+      "max_word_length": 17,
+      "avg_word_length": 8.11,
+      "words_with_splits": 2,
+      "words_without_splits": 6,
+      "split_success_ratio": 0.222,
+      "total_split_parts": 14,
+      "avg_parts_per_split_word": 4.0,
+      "max_parts_in_any_split": 5,
+      "min_parts_in_any_split": 3,
+      "split_complexity_score": 1.556,
+      "unsplit_word_ratio": 0.667
+    },
+    "sandhi_splits": {
+      "चारित्रेण": [
+        "चारित्रेण"
+      ],
+      "च": [
+        "च"
+      ],
+      "को": [
+        "को"
+      ],
+      "युक्तस्सर्वभूतेषु": [
+        "युक्तस्",
+        "सर्व",
+        "भूतेषु"
+      ],
+      "हित:": [
+        "हित:"
+      ],
+      "विद्वान्क:": [
+        "विद्वान्क:"
+      ],
+      "कस्समर्थश्च": [
+        "कस्",
+        "समा",
+        "ॠ",
+        "थस्",
+        "च"
+      ],
+      "कश्चैकप्रियदर्शन:": [
+        "कश्चैकप्रियदर्शन:"
+      ]
+    }
+  },
+  {
+    "kanda": "Bala Kanda",
+    "sarga": 1,
+    "shloka": 4,
+    "shloka_text": "आत्मवान्को जितक्रोधो द्युतिमान्कोऽनसूयक: । कस्य बिभ्यति देवाश्च जातरोषस्य संयुगे ।।1.1.4।।",
+    "transliteration": null,
+    "translation": "आत्मवान् selfrestrained, क: who?, जितक्रोध: one who has conquered anger, द्युतिमान् one who is endowed with splendour, अनसूयक: one who is free from envy (envy depicting one's merits as weak points), क: who?, जातरोषस्य excited to wrath, कस्य to whom, संयुगे in the battle, देवा: च celestial beings, devatas, बिभ्यति are afraid of.",
+    "explanation": "Who (among men) is selfrestrained? Who has conquered anger? Who is endowed with brilliance and free from envy? Who is that when excited to wrath even the devatas, are afraid of (let alone foes)?",
+    "comments": null,
+    "metrics": {
+      "total_words": 8,
+      "total_chars": 81,
+      "min_word_length": 4,
+      "max_word_length": 19,
+      "avg_word_length": 8.88,
+      "words_with_splits": 4,
+      "words_without_splits": 4,
+      "split_success_ratio": 0.5,
+      "total_split_parts": 14,
+      "avg_parts_per_split_word": 2.5,
+      "max_parts_in_any_split": 3,
+      "min_parts_in_any_split": 2,
+      "split_complexity_score": 1.75,
+      "unsplit_word_ratio": 0.5
+    },
+    "sandhi_splits": {
+      "आत्मवान्को": [
+        "आत्म",
+        "वान्",
+        "को"
+      ],
+      "जितक्रोधो": [
+        "जित",
+        "क्रस्",
+        "धो"
+      ],
+      "द्युतिमान्कोऽनसूयक:": [
+        "द्युतिमान्कोऽनसूयक:"
+      ],
+      "कस्य": [
+        "कस्य"
+      ],
+      "बिभ्यति": [
+        "बिभ्यति"
+      ],
+      "देवाश्च": [
+        "देवास्",
+        "च"
+      ],
+      "जातरोषस्य": [
+        "जात",
+        "रोषस्य"
+      ],
+      "संयुगे": [
+        "संयुगे"
+      ]
+    }
+  },
+  {
+    "kanda": "Bala Kanda",
+    "sarga": 1,
+    "shloka": 5,
+    "shloka_text": "एतदिच्छाम्यहं श्रोतुं परं कौतूहलं हि मे । महर्षे त्वं समर्थोऽसि ज्ञातुमेवंविधं नरम् ।।1.1.5।।",
+    "transliteration": null,
+    "translation": "एतत् this, अहम् I, श्रोतुम् to listen, इच्छामि am desirous, मे my, कौतूहलम् curiosity, परं हि is great, महर्षे O Maharshi, त्वम् you, एवंविधम् of such (virtues), नरम् man, ज्ञातुम् to know, समर्थ: असि are competent.",
+    "explanation": "O Maharshi, I intend to hear about such a man whom you are able to place? Indeed great is my curiosity\".",
+    "comments": null,
+    "metrics": {
+      "total_words": 11,
+      "total_chars": 81,
+      "min_word_length": 2,
+      "max_word_length": 14,
+      "avg_word_length": 6.45,
+      "words_with_splits": 2,
+      "words_without_splits": 9,
+      "split_success_ratio": 0.182,
+      "total_split_parts": 14,
+      "avg_parts_per_split_word": 2.5,
+      "max_parts_in_any_split": 3,
+      "min_parts_in_any_split": 2,
+      "split_complexity_score": 1.273,
+      "unsplit_word_ratio": 0.818
+    },
+    "sandhi_splits": {
+      "एतदिच्छाम्यहं": [
+        "एतदिच्छाम्यहं"
+      ],
+      "श्रोतुं": [
+        "श्रोतुं"
+      ],
+      "परं": [
+        "परं"
+      ],
+      "कौतूहलं": [
+        "कौतूहलं"
+      ],
+      "हि": [
+        "हि"
+      ],
+      "मे": [
+        "मे"
+      ],
+      "महर्षे": [
+        "मह",
+        "ऋषे"
+      ],
+      "त्वं": [
+        "त्वं"
+      ],
+      "समर्थोऽसि": [
+        "सम्",
+        "अर्थस्",
+        "असि"
+      ],
+      "ज्ञातुमेवंविधं": [
+        "ज्ञातुमेवंविधं"
+      ],
+      "नरम्": [
+        "नरम्"
+      ]
+    }
+  }
+]
