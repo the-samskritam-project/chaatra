@@ -6,7 +6,7 @@ import random
 
 import matplotlib.pyplot as plt
 
-DATA_PATH = Path("shlokas_with_metrics.json")
+DATA_PATH = Path("shlokas_with_rarity.json")
 PLOTS_DIR = Path("plots")
 # Limit number of shlokas plotted to avoid dense visuals (None = all)
 SAMPLE_SIZE: Optional[int] = 20000
@@ -16,6 +16,8 @@ RANDOM_SEED = 42
 METRICS_TO_PLOT: Dict[str, str] = {
     "avg_word_length": "Average Word Length per Shloka",
     "split_complexity_score": "Split Complexity Score per Shloka",
+    "rarity_score": "Average Rarity Score per Shloka",
+    "complexity_score": "Combined Complexity Score per Shloka",
 }
 
 HISTOGRAM_METRICS = list(METRICS_TO_PLOT.keys())

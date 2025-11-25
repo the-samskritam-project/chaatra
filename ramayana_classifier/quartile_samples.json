@@ -1,0 +1,970 @@
+{
+  "Q1_low": [
+    {
+      "kanda": "Kishkindha Kanda",
+      "sarga": 31,
+      "shloka": 13,
+      "shloka_text": "यथोक्तकारी वचनमुत्तरं चैव सोत्तरम्। बृहस्पतिसमो बुद्ध्या मत्वा रामानुजस्तदा4.31.12।। कामक्रोधसमुत्थेन भ्रातुः कोपाग्निना वृतः। प्रभञ्जन इवाप्रीतः प्रययौ लक्ष्मणस्तदा4.31.13।।",
+      "metrics": {
+        "split_word_count": 28,
+        "split_complexity_score": 1.75,
+        "rarity_score": 0.13264,
+        "complexity_score": 0.098391
+      }
+    },
+    {
+      "kanda": "Bala Kanda",
+      "sarga": 62,
+      "shloka": 8,
+      "shloka_text": "तस्य तद्वचनं श्रुत्वा विश्वामित्रो महातपा:। सान्त्वयित्वा बहुविधं पुत्रानिदमुवाच ह।।1.62.8।।",
+      "metrics": {
+        "split_word_count": 13,
+        "split_complexity_score": 1.444,
+        "rarity_score": 0.103045,
+        "complexity_score": 0.073137
+      }
+    },
+    {
+      "kanda": "Uttara Kanda",
+      "sarga": 30,
+      "shloka": 36,
+      "shloka_text": "यश्च यश्च सुरेन्द्रः स्याद्ध्रुवः स न भविष्यति । एष शापो मया मुक्त इत्यसौ त्वां तदा ऽब्रवीत् ।। 7.30.36 ।।",
+      "metrics": {
+        "split_word_count": 21,
+        "split_complexity_score": 1.312,
+        "rarity_score": 0.068313,
+        "complexity_score": 0.051168
+      }
+    },
+    {
+      "kanda": "Kishkindha Kanda",
+      "sarga": 27,
+      "shloka": 1,
+      "shloka_text": "अभिषिक्ते तु सुग्रीवे प्रविष्टे वानरे गुहाम्। आजगाम सह भ्रात्रा रामः प्रस्रवणं गिरिम्4.27.1।।",
+      "metrics": {
+        "split_word_count": 14,
+        "split_complexity_score": 1.167,
+        "rarity_score": 0.116468,
+        "complexity_score": 0.070552
+      }
+    },
+    {
+      "kanda": "Ayodhya Kanda",
+      "sarga": 87,
+      "shloka": 15,
+      "shloka_text": "तत्सर्वं प्रत्यनुज्ञासीद्राम स्सत्यपराक्रमः। न तु तत्प्रत्यगृह्णात्स क्षत्रधर्ममनुस्मरन्।।2.87.15।।",
+      "metrics": {
+        "split_word_count": 13,
+        "split_complexity_score": 1.857,
+        "rarity_score": 0.142693,
+        "complexity_score": 0.107073
+      }
+    },
+    {
+      "kanda": "Uttara Kanda",
+      "sarga": 62,
+      "shloka": 15,
+      "shloka_text": "तथा ब्रुवति शत्रुघ्ने राघवः पुनरब्रवीत् । एवं भवतु काकुत्स्थ क्रियतां मम शासनम् ।। 7.62.15 ।।",
+      "metrics": {
+        "split_word_count": 14,
+        "split_complexity_score": 1.167,
+        "rarity_score": 0.099231,
+        "complexity_score": 0.061861
+      }
+    },
+    {
+      "kanda": "Uttara Kanda",
+      "sarga": 91,
+      "shloka": 7,
+      "shloka_text": "ते तु रामस्य तच्छ्रुत्वा नमस्कृत्वा वृषध्वजम् । अश्वमेधं द्विजाः सर्वे पूजयन्ति स्म सर्वशः ।। 7.91.7 ।।",
+      "metrics": {
+        "split_word_count": 15,
+        "split_complexity_score": 1.154,
+        "rarity_score": 0.200214,
+        "complexity_score": 0.112339
+      }
+    },
+    {
+      "kanda": "Bala Kanda",
+      "sarga": 23,
+      "shloka": 5,
+      "shloka_text": "तौ प्रयातौ महावीर्यौ दिव्यां त्रिपथगां नदीम्। ददृशाते ततस्तत्र सरय्वास्सङ्गमे शुभे।।1.23.5।।",
+      "metrics": {
+        "split_word_count": 17,
+        "split_complexity_score": 1.7,
+        "rarity_score": 0.165801,
+        "complexity_score": 0.113423
+      }
+    },
+    {
+      "kanda": "Uttara Kanda",
+      "sarga": 25,
+      "shloka": 44,
+      "shloka_text": "रावणस्त्वब्रवीद्धृष्टः स्वसारं तत्र संस्थिताम् । क्व चासौ तव भर्ता वै मम शीघ्रं निवेद्यताम् ।। 7.25.44 ।।",
+      "metrics": {
+        "split_word_count": 19,
+        "split_complexity_score": 1.462,
+        "rarity_score": 0.095216,
+        "complexity_score": 0.069797
+      }
+    },
+    {
+      "kanda": "Bala Kanda",
+      "sarga": 1,
+      "shloka": 13,
+      "shloka_text": "प्रजापतिसमश्श्रीमान् धाता रिपुनिषूदनः । रक्षिता जीवलोकस्य धर्मस्य परिरक्षिता ।।1.1.13।।",
+      "metrics": {
+        "split_word_count": 12,
+        "split_complexity_score": 1.714,
+        "rarity_score": 0.081649,
+        "complexity_score": 0.071466
+      }
+    },
+    {
+      "kanda": "Uttara Kanda",
+      "sarga": 92,
+      "shloka": 6,
+      "shloka_text": "अन्नपानानि वस्त्राणि सानुगानां महात्मनाम् । भरतः सन्ददावाशु शत्रुघ्नसहितस्तदा ।। 7.92.6 ।।",
+      "metrics": {
+        "split_word_count": 13,
+        "split_complexity_score": 1.625,
+        "rarity_score": 0.130093,
+        "complexity_score": 0.092886
+      }
+    },
+    {
+      "kanda": "Aranya Kanda",
+      "sarga": 53,
+      "shloka": 6,
+      "shloka_text": "परमं खलु ते वीर्यं दृश्यते राक्षसाधम। विश्राव्य नामधेयं हि युद्धे नास्मि जिता त्वया।।3.53.6।।",
+      "metrics": {
+        "split_word_count": 15,
+        "split_complexity_score": 1.154,
+        "rarity_score": 0.145018,
+        "complexity_score": 0.084508
+      }
+    },
+    {
+      "kanda": "Bala Kanda",
+      "sarga": 56,
+      "shloka": 11,
+      "shloka_text": "मानवं मोहनं चैव गान्धर्वं स्वापनं तथा। जृम्भणं मादनं चैव संतापनविलापने।।1.56.7।। शोषणं दारणं चैव वज्रमस्त्रं सुदुर्जयम्। ब्रह्मपाशं कालपाशं वारुणं पाशमेव च।।1.56.8।। पैनाकास्त्रं च दयितं शुष्कार्द्रे अशनी उभे। दण्डास्त्रमथ पैशाचं क्रौञ्चमस्त्रं तथैव च।।1.56.9।। धर्मचक्रं कालचक्रं विष्णुचक्रं तथैव च। वायव्यं मथनं चैव अस्त्रं हयशिरस्तथा।।1.56.10।। शक्तिद्वयं च चिक्षेप कङ्कालं मुसलं तथा। 560 वैद्याधरं महास्त्रं च कालास्त्रमथ दारुणम्।।1.56.11।। त्रिशूलमस्त्रं घोरं च कापालमथ कङ्कणम्। एतान्यस्त्राणि चिक्षेप सर्वाणि रघुनन्दन।।1.56.12।। वसिष्ठे जपतां श्रेष्ठे तदद्भुतमिवाभवत्।",
+      "metrics": {
+        "split_word_count": 67,
+        "split_complexity_score": 1.015,
+        "rarity_score": 0.09897,
+        "complexity_score": 0.056597
+      }
+    },
+    {
+      "kanda": "Bala Kanda",
+      "sarga": 77,
+      "shloka": 6,
+      "shloka_text": "रामस्य वचनं श्रुत्वा राजा दशरथ स्सुतम्। बाहुभ्यां सम्परिष्वज्य मूर्ध्नि चाघ्राय राघवम्।।1.77.5।। गतो राम इति श्रुत्वा हृष्ट: प्रमुदितो नृप:। पुनर्जातं तदा मेने पुत्रमात्मानमेव च।।1.77.6।।",
+      "metrics": {
+        "split_word_count": 27,
+        "split_complexity_score": 1.174,
+        "rarity_score": 0.096771,
+        "complexity_score": 0.060857
+      }
+    },
+    {
+      "kanda": "Bala Kanda",
+      "sarga": 50,
+      "shloka": 18,
+      "shloka_text": "इमौ कुमारौ भद्रं ते देवतुल्यपराक्रमौ।।1.50.17।। गजसिंहगती वीरौ शार्दूलवृषभोपमौ। पद्मपत्रविशालाक्षौ खड्गतूणीधनुर्धरौ।।1.50.18।। अश्विनाविव रूपेण समुपस्थितयौवनौ। यदृच्छयैव गां प्राप्तौ देवलोकादिवामरौ।।1.50.19।। कथं पद्भ्यामिह प्राप्तौ किमर्थं कस्य वा मुने।",
+      "metrics": {
+        "split_word_count": 31,
+        "split_complexity_score": 1.292,
+        "rarity_score": 0.07882,
+        "complexity_score": 0.05579
+      }
+    },
+    {
+      "kanda": "Sundara Kanda",
+      "sarga": 14,
+      "shloka": 49,
+      "shloka_text": "सन्ध्याकालमनाः श्यामा ध्रुवमेष्यति जानकी। नदीं चेमां शुभजलां सन्ध्यार्थे वरवर्णिनी।।5.14.49।।",
+      "metrics": {
+        "split_word_count": 15,
+        "split_complexity_score": 1.667,
+        "rarity_score": 0.126221,
+        "complexity_score": 0.092352
+      }
+    },
+    {
+      "kanda": "Uttara Kanda",
+      "sarga": 93,
+      "shloka": 7,
+      "shloka_text": "रामस्य भवनद्वारि यत्र कर्म च कुर्वते । ऋत्विजामग्रतश्चैव तत्र गेयं विशेषतः ।। 7.93.7 ।।",
+      "metrics": {
+        "split_word_count": 15,
+        "split_complexity_score": 1.364,
+        "rarity_score": 0.183583,
+        "complexity_score": 0.111044
+      }
+    },
+    {
+      "kanda": "Bala Kanda",
+      "sarga": 15,
+      "shloka": 24,
+      "shloka_text": "त्वं गति: परमा देव सर्वेषां न: परन्तप:। वधाय देवशत्रूणां नृणां लोके मन: कुरु।।1.15.24।।",
+      "metrics": {
+        "split_word_count": 13,
+        "split_complexity_score": 1.0,
+        "rarity_score": 0.205285,
+        "complexity_score": 0.109696
+      }
+    },
+    {
+      "kanda": "Sundara Kanda",
+      "sarga": 58,
+      "shloka": 61,
+      "shloka_text": "तां दृष्ट्वा तादृशीं नारीं रामपत्नीं यशस्विनीम्। तत्रैव शिंशुपावृक्षे पश्यन्नहमवस्थितः।।5.58.61।।",
+      "metrics": {
+        "split_word_count": 13,
+        "split_complexity_score": 1.444,
+        "rarity_score": 0.158644,
+        "complexity_score": 0.101171
+      }
+    },
+    {
+      "kanda": "Uttara Kanda",
+      "sarga": 21,
+      "shloka": 44,
+      "shloka_text": "ज्वालामाली स तु शरः क्रव्यादानुगतो रणे । मुक्तो गुल्मान्द्रुमांश्चापि भस्म कृत्वा प्रधावति ।। 7.21.44 ।।",
+      "metrics": {
+        "split_word_count": 19,
+        "split_complexity_score": 1.583,
+        "rarity_score": 0.165268,
+        "complexity_score": 0.109204
+      }
+    }
+  ],
+  "Q2_midlow": [
+    {
+      "kanda": "Kishkindha Kanda",
+      "sarga": 39,
+      "shloka": 44,
+      "shloka_text": "यथासुखं पर्वतनिझरेषु वनेषु सर्वेषु च वानरेन्द्राः। निवेशयित्वा विधिवद्बलानि बलं बलज्ञः प्रतिपत्तुमीष्टे।।4.39.44।।",
+      "metrics": {
+        "split_word_count": 16,
+        "split_complexity_score": 1.455,
+        "rarity_score": 0.238531,
+        "complexity_score": 0.141822
+      }
+    },
+    {
+      "kanda": "Kishkindha Kanda",
+      "sarga": 18,
+      "shloka": 55,
+      "shloka_text": "या ते नरपते वृत्तिर्भरते लक्ष्मणे च या। सुग्रीवे चाङ्गदे राजंस्तां त्वमाधातुमिहासि4.18.55।।",
+      "metrics": {
+        "split_word_count": 14,
+        "split_complexity_score": 1.273,
+        "rarity_score": 0.213929,
+        "complexity_score": 0.123272
+      }
+    },
+    {
+      "kanda": "Uttara Kanda",
+      "sarga": 95,
+      "shloka": 5,
+      "shloka_text": "छन्दं मुनेश्च विज्ञाय सीतायाश्च मनोगतम् । प्रत्ययं दातुकामायास्ततः शंसत मे लघु ।। 7.95.5 ।।",
+      "metrics": {
+        "split_word_count": 18,
+        "split_complexity_score": 1.636,
+        "rarity_score": 0.18294,
+        "complexity_score": 0.119904
+      }
+    },
+    {
+      "kanda": "Kishkindha Kanda",
+      "sarga": 25,
+      "shloka": 14,
+      "shloka_text": "समाज्ञापय काष्ठानि शुष्कानि च बहूनि च। चन्दनादीनि दिव्यानि वालिसंस्कारकारणात्4.25.14।।",
+      "metrics": {
+        "split_word_count": 11,
+        "split_complexity_score": 1.222,
+        "rarity_score": 0.220969,
+        "complexity_score": 0.1251
+      }
+    },
+    {
+      "kanda": "Ayodhya Kanda",
+      "sarga": 1,
+      "shloka": 20,
+      "shloka_text": "सम्यग्विद्याव्रतस्नातो यथावत्साङ्गवेदवित्। इष्वस्त्रे च पितु श्श्रेष्ठो बभूव भरताग्रजः।।2.1.20।।",
+      "metrics": {
+        "split_word_count": 14,
+        "split_complexity_score": 1.75,
+        "rarity_score": 0.250218,
+        "complexity_score": 0.157675
+      }
+    },
+    {
+      "kanda": "Sundara Kanda",
+      "sarga": 10,
+      "shloka": 4,
+      "shloka_text": "जातरूपपरिक्षिप्तं चित्रभानुसमप्रभम्। अशोकमालाविततं ददर्श परमासनम्।।5.10.4।। वालव्यजनहस्ताभिर्वीज्यमानं समन्ततः। गन्धैश्च विविधैर्जुष्टं वरधूपेन धूपितम्।।5.10.5।। परमास्तरणास्तीर्णमाविकाजिनसंवृतम्। दामभिर्वरमाल्यानां समन्तादुपशोभितम्।।5.10.6।।",
+      "metrics": {
+        "split_word_count": 17,
+        "split_complexity_score": 1.214,
+        "rarity_score": 0.21376,
+        "complexity_score": 0.121195
+      }
+    },
+    {
+      "kanda": "Sundara Kanda",
+      "sarga": 3,
+      "shloka": 27,
+      "shloka_text": "हनुमद्वचनं श्रुत्वा लङ्का सा कामरूपिणी। उवाच वचनं क्रुद्धा परुषं पवनात्मजम्।।5.3.27।।",
+      "metrics": {
+        "split_word_count": 10,
+        "split_complexity_score": 1.0,
+        "rarity_score": 0.216605,
+        "complexity_score": 0.115403
+      }
+    },
+    {
+      "kanda": "Kishkindha Kanda",
+      "sarga": 41,
+      "shloka": 11,
+      "shloka_text": "विदर्भानृषिकांश्चैव रम्यान्माहिषकानपि। तथा वङ्गान्कलिङ्गांश्च कौशिकांश्च समन्ततः।।4.41.11।। अन्वीक्ष्य दण्डकारण्यं सपर्वतनदीगुहाम्। नदीं गोदावरीं चैव सर्वमेवानुपश्यत।।4.41.12।। तथैवान्ध्रांश्च पुण्ड्रांश्च चोलान्पाण्ड्यांत्स केरलान्।",
+      "metrics": {
+        "split_word_count": 30,
+        "split_complexity_score": 1.765,
+        "rarity_score": 0.222817,
+        "complexity_score": 0.144366
+      }
+    },
+    {
+      "kanda": "Kishkindha Kanda",
+      "sarga": 10,
+      "shloka": 32,
+      "shloka_text": "अमोघास्सूर्यसङ्काशा ममैते निशिता श्शराः। तस्मिन्वालिनि दुर्वृत्ते निपतिष्यन्ति वेगिताः4.10.32।।",
+      "metrics": {
+        "split_word_count": 14,
+        "split_complexity_score": 1.75,
+        "rarity_score": 0.221873,
+        "complexity_score": 0.143384
+      }
+    },
+    {
+      "kanda": "Aranya Kanda",
+      "sarga": 67,
+      "shloka": 29,
+      "shloka_text": "निकृत्तपक्षं रुधिरावसिक्तं स गृध्रराजं परिरभ्य रामः। क्व मैथिली प्राणसमा ममेति विमुच्य वाचं निपपात भूमौ।।3.67.29।।",
+      "metrics": {
+        "split_word_count": 19,
+        "split_complexity_score": 1.357,
+        "rarity_score": 0.219751,
+        "complexity_score": 0.129044
+      }
+    },
+    {
+      "kanda": "Uttara Kanda",
+      "sarga": 40,
+      "shloka": 11,
+      "shloka_text": "अहं च नित्यशो राजन्सुग्रीवसहितस्त्वया । स्मर्तव्यः परया प्रीत्या गच्छ त्वं विगतज्वरः ।। 7.40.11 ।।",
+      "metrics": {
+        "split_word_count": 14,
+        "split_complexity_score": 1.273,
+        "rarity_score": 0.204021,
+        "complexity_score": 0.118276
+      }
+    },
+    {
+      "kanda": "Ayodhya Kanda",
+      "sarga": 19,
+      "shloka": 2,
+      "shloka_text": "एवमस्तु गमिष्यामि वनं वस्तुमहं त्वितः। जटाजिनधरो राज्ञः प्रतिज्ञामनुपालयन्।।2.19.2।।",
+      "metrics": {
+        "split_word_count": 12,
+        "split_complexity_score": 1.5,
+        "rarity_score": 0.261153,
+        "complexity_score": 0.154748
+      }
+    },
+    {
+      "kanda": "Ayodhya Kanda",
+      "sarga": 19,
+      "shloka": 11,
+      "shloka_text": "दण्डकारण्यमेषोऽहमितो गच्छामि सत्वरः। अविचार्य पितुर्वाक्यं समा वस्तुं चतुर्दश।।2.19.11।।",
+      "metrics": {
+        "split_word_count": 14,
+        "split_complexity_score": 1.75,
+        "rarity_score": 0.228775,
+        "complexity_score": 0.146864
+      }
+    },
+    {
+      "kanda": "Sundara Kanda",
+      "sarga": 37,
+      "shloka": 53,
+      "shloka_text": "मां वा हरेयुस्त्वद्धस्ताद्विशसेयुरथापि वा। अव्यवस्थौ हि दृश्येते युद्धे जयपराजयौ।।5.37.53।।",
+      "metrics": {
+        "split_word_count": 16,
+        "split_complexity_score": 1.778,
+        "rarity_score": 0.21729,
+        "complexity_score": 0.142018
+      }
+    },
+    {
+      "kanda": "Kishkindha Kanda",
+      "sarga": 5,
+      "shloka": 22,
+      "shloka_text": "अहं विनिकृतो राम चरामीह भयार्दितः4.5.22।। हृतभार्यो वने त्रस्तो दुर्गमेतदुपाश्रितः।",
+      "metrics": {
+        "split_word_count": 15,
+        "split_complexity_score": 1.667,
+        "rarity_score": 0.178112,
+        "complexity_score": 0.118516
+      }
+    },
+    {
+      "kanda": "Aranya Kanda",
+      "sarga": 67,
+      "shloka": 28,
+      "shloka_text": "इत्येवमुक्त्वा बहुशो राघवस्सहलक्ष्मणः। जटायुषं च पस्पर्श पितृस्नेहं विदर्शयन्।।3.67.28।।",
+      "metrics": {
+        "split_word_count": 11,
+        "split_complexity_score": 1.375,
+        "rarity_score": 0.261315,
+        "complexity_score": 0.150609
+      }
+    },
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 70,
+      "shloka": 44,
+      "shloka_text": "स तस्यपततःखङ्गंतमाच्छिद्यमहाकपिः । ननादगिरिसङ्काशस्त्रासयन् सर्वनैरृता ।।6.70.44।।",
+      "metrics": {
+        "split_word_count": 15,
+        "split_complexity_score": 3.75,
+        "rarity_score": 0.1114,
+        "complexity_score": 0.155213
+      }
+    },
+    {
+      "kanda": "Aranya Kanda",
+      "sarga": 40,
+      "shloka": 23,
+      "shloka_text": "एवं कृत्वा त्विदं कार्यं यथेष्टं गच्छ राक्षस। राज्यस्यार्धं प्रयच्छामि मारीच तव सुव्रत।।3.40.23।।",
+      "metrics": {
+        "split_word_count": 13,
+        "split_complexity_score": 1.083,
+        "rarity_score": 0.219739,
+        "complexity_score": 0.119786
+      }
+    },
+    {
+      "kanda": "Aranya Kanda",
+      "sarga": 58,
+      "shloka": 15,
+      "shloka_text": "सर्वथा तु कृतं कष्टं सीतामुत्सृजता वने। प्रतिकर्तुं नृशंसानां रक्षसां दत्तमन्तरं।।3.58.15।।",
+      "metrics": {
+        "split_word_count": 12,
+        "split_complexity_score": 1.2,
+        "rarity_score": 0.262001,
+        "complexity_score": 0.145046
+      }
+    },
+    {
+      "kanda": "Aranya Kanda",
+      "sarga": 67,
+      "shloka": 15,
+      "shloka_text": "यामोषधिमिवायुष्मन्नन्वेषसि महावने। सा देवी मम च प्राणा रावणेनोभयं हृतम्।।3.67.15।।",
+      "metrics": {
+        "split_word_count": 16,
+        "split_complexity_score": 1.778,
+        "rarity_score": 0.231505,
+        "complexity_score": 0.149186
+      }
+    }
+  ],
+  "Q3_midhigh": [
+    {
+      "kanda": "Bala Kanda",
+      "sarga": 70,
+      "shloka": 15,
+      "shloka_text": "स राजा मन्त्रिसहित स्सोपाध्याय: सबान्धव:।।1.70.15।। वाक्यं वाक्यविदां श्रेष्ठो वैदेहमिदमब्रवीत्।",
+      "metrics": {
+        "split_word_count": 10,
+        "split_complexity_score": 1.111,
+        "rarity_score": 0.299353,
+        "complexity_score": 0.160874
+      }
+    },
+    {
+      "kanda": "Ayodhya Kanda",
+      "sarga": 44,
+      "shloka": 5,
+      "shloka_text": "वर्तते चोत्तमां वृत्तिं लक्ष्मणोऽस्मिन् सदानघः। दयावान् सर्वभूतेषु लाभस्तस्य महात्मनः।।2.44.5।।",
+      "metrics": {
+        "split_word_count": 13,
+        "split_complexity_score": 1.444,
+        "rarity_score": 0.309217,
+        "complexity_score": 0.177091
+      }
+    },
+    {
+      "kanda": "Aranya Kanda",
+      "sarga": 5,
+      "shloka": 40,
+      "shloka_text": "तस्य रोमाणि केशांश्च तदा वह्निर्महात्मनः। जीर्णां त्वचं तथाऽस्थीनि यच्च मांसं सशोणितम्।।3.5.40।।",
+      "metrics": {
+        "split_word_count": 13,
+        "split_complexity_score": 1.182,
+        "rarity_score": 0.379081,
+        "complexity_score": 0.203471
+      }
+    },
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 71,
+      "shloka": 20,
+      "shloka_text": "विंशतिर्दशचाष्टौ च तूण्योऽस्यरथमास्थिताः । कार्मुकानि च भीमानिज्याश्चकाञ्चनपिङ्गळाः ।।6.71.20।।",
+      "metrics": {
+        "split_word_count": 13,
+        "split_complexity_score": 2.167,
+        "rarity_score": 0.231418,
+        "complexity_score": 0.162277
+      }
+    },
+    {
+      "kanda": "Aranya Kanda",
+      "sarga": 6,
+      "shloka": 1,
+      "shloka_text": "शरभङ्गे दिवं प्राप्ते मुनिसङ्घास्समागताः। अभ्यगच्छन्त काकुत्स्थं रामं ज्वलिततेजसम्।।3.6.1।।",
+      "metrics": {
+        "split_word_count": 9,
+        "split_complexity_score": 1.125,
+        "rarity_score": 0.402541,
+        "complexity_score": 0.213375
+      }
+    },
+    {
+      "kanda": "Bala Kanda",
+      "sarga": 30,
+      "shloka": 4,
+      "shloka_text": "अद्यप्रभृति षड्रात्रं रक्षतं राघवौ युवाम्। दीक्षां गतो ह्येष मुनिर्मौनित्वं च गमिष्यति।।1.30.4।।",
+      "metrics": {
+        "split_word_count": 14,
+        "split_complexity_score": 1.273,
+        "rarity_score": 0.326045,
+        "complexity_score": 0.179802
+      }
+    },
+    {
+      "kanda": "Sundara Kanda",
+      "sarga": 64,
+      "shloka": 39,
+      "shloka_text": "निश्चितार्थं ततस्तस्मिन् सुग्रीवं पवनात्मजे।।5.64.39।। लक्ष्मणः प्रीतिमान् प्रीतं बहुमानादवैक्षत।",
+      "metrics": {
+        "split_word_count": 12,
+        "split_complexity_score": 1.5,
+        "rarity_score": 0.342426,
+        "complexity_score": 0.195726
+      }
+    },
+    {
+      "kanda": "Ayodhya Kanda",
+      "sarga": 84,
+      "shloka": 18,
+      "shloka_text": "आशंसे स्वाशिता सेना वत्स्यतीमां विभावरीम्। अर्चितो विविधैः कामै श्श्व स्ससैन्यो गमिष्यसि।।2.84.18।।",
+      "metrics": {
+        "split_word_count": 15,
+        "split_complexity_score": 1.364,
+        "rarity_score": 0.328887,
+        "complexity_score": 0.184308
+      }
+    },
+    {
+      "kanda": "Ayodhya Kanda",
+      "sarga": 85,
+      "shloka": 8,
+      "shloka_text": "तमेवमभिभाषन्तमाकाश इव निर्मलः। भरतश्श्लक्ष्णया वाचा गुहं वचनमब्रवीत्।।2.85.8।।",
+      "metrics": {
+        "split_word_count": 13,
+        "split_complexity_score": 1.857,
+        "rarity_score": 0.28103,
+        "complexity_score": 0.176824
+      }
+    },
+    {
+      "kanda": "Ayodhya Kanda",
+      "sarga": 57,
+      "shloka": 20,
+      "shloka_text": "ततो दशरथस्त्रीणां प्रासादेभ्य स्तत स्ततः। रामशोकाभितप्तानां मन्दं शुश्राव जल्पितम्।।2.57.20।।",
+      "metrics": {
+        "split_word_count": 12,
+        "split_complexity_score": 1.333,
+        "rarity_score": 0.313405,
+        "complexity_score": 0.175455
+      }
+    },
+    {
+      "kanda": "Sundara Kanda",
+      "sarga": 33,
+      "shloka": 10,
+      "shloka_text": "रोदनादतिनिश्श्वासाद्भूमिसंस्पर्शनादपि।।5.33.10।। न त्वां देवीमहं मन्ये राज्ञ स्सर्वज्ञावधारणात्।",
+      "metrics": {
+        "split_word_count": 8,
+        "split_complexity_score": 1.143,
+        "rarity_score": 0.404021,
+        "complexity_score": 0.214729
+      }
+    },
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 74,
+      "shloka": 47,
+      "shloka_text": "तस्यनानद्यमानस्यश्रुत्वानिनदमद्भुतम् । लङ्कास्थाराक्षसास्सर्वे न शेकुस्स्पन्दितुंभयात् ।।6.74.47।।",
+      "metrics": {
+        "split_word_count": 19,
+        "split_complexity_score": 4.75,
+        "rarity_score": 0.077429,
+        "complexity_score": 0.17185
+      }
+    },
+    {
+      "kanda": "Ayodhya Kanda",
+      "sarga": 72,
+      "shloka": 25,
+      "shloka_text": "﻿दानयज्ञाधिकारा हि शीलश्रुतिवचोऽनुगा। बुद्धिस्ते बुद्धिसम्पन्न प्रभेवार्कस्य मन्दिरे।।2.72.25।।",
+      "metrics": {
+        "split_word_count": 11,
+        "split_complexity_score": 1.571,
+        "rarity_score": 0.331995,
+        "complexity_score": 0.192864
+      }
+    },
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 80,
+      "shloka": 12,
+      "shloka_text": "स वाजिभिश्चतुर्भिस्तुबाणैश्चनिशितैर्युतः । आरोपितमहाचापश्शुशुभेस्यन्दनोत्तमः ।।6.80.12।।",
+      "metrics": {
+        "split_word_count": 18,
+        "split_complexity_score": 6.0,
+        "rarity_score": 0.050909,
+        "complexity_score": 0.200685
+      }
+    },
+    {
+      "kanda": "Bala Kanda",
+      "sarga": 21,
+      "shloka": 5,
+      "shloka_text": "त्रस्तरूपं तु विज्ञाय जगत्सर्वं महानृषि:। नृपतिं सुव्रतो धीरो वसिष्ठो वाक्यमब्रवीत्।।1.21.5।।",
+      "metrics": {
+        "split_word_count": 11,
+        "split_complexity_score": 1.1,
+        "rarity_score": 0.409285,
+        "complexity_score": 0.215931
+      }
+    },
+    {
+      "kanda": "Sundara Kanda",
+      "sarga": 41,
+      "shloka": 13,
+      "shloka_text": "अहं तु तैः संयति चण्डविक्रमै स्समेत्य रक्षोभिरसह्य विक्रमः। निहत्य तद्रावणचोदितं बलं सुखं गमिष्यामि कपीश्वरालयम्।।5.41.13।।",
+      "metrics": {
+        "split_word_count": 19,
+        "split_complexity_score": 1.357,
+        "rarity_score": 0.279103,
+        "complexity_score": 0.15897
+      }
+    },
+    {
+      "kanda": "Ayodhya Kanda",
+      "sarga": 76,
+      "shloka": 23,
+      "shloka_text": "कृत्वोदकं ते भरतेन सार्धं नृपाङ्गना मन्त्रिपुरोहिता श्च। पुरंप्रविश्याश्रुपरीतनेत्राः भूमौ दशाहं व्यनयन्त दुःखम्।।2.76.23।।",
+      "metrics": {
+        "split_word_count": 20,
+        "split_complexity_score": 1.667,
+        "rarity_score": 0.33634,
+        "complexity_score": 0.198297
+      }
+    },
+    {
+      "kanda": "Bala Kanda",
+      "sarga": 41,
+      "shloka": 18,
+      "shloka_text": "कपिलेनाप्रमेयेन दग्धा हीमे महाबला:। सलिलं नार्हसि प्राज्ञ दातुमेषां हि लौकिकम्।।1.41.18।।",
+      "metrics": {
+        "split_word_count": 13,
+        "split_complexity_score": 1.3,
+        "rarity_score": 0.290365,
+        "complexity_score": 0.162724
+      }
+    },
+    {
+      "kanda": "Sundara Kanda",
+      "sarga": 37,
+      "shloka": 55,
+      "shloka_text": "कामं त्वमसि पर्याप्तो निहन्तुं सर्वराक्षसान्। राघवस्य यशो हीयेत्त्वया शस्तैस्तु राक्षसैः।।5.37.55।।",
+      "metrics": {
+        "split_word_count": 16,
+        "split_complexity_score": 1.6,
+        "rarity_score": 0.260931,
+        "complexity_score": 0.158012
+      }
+    },
+    {
+      "kanda": "Ayodhya Kanda",
+      "sarga": 65,
+      "shloka": 21,
+      "shloka_text": "तासामाक्रन्दशब्देन सहसोद्धतचेतने। कौसल्या च सुमित्रा च त्यक्त निद्रे बभूवतुः।।2.65.21।।",
+      "metrics": {
+        "split_word_count": 11,
+        "split_complexity_score": 1.222,
+        "rarity_score": 0.334677,
+        "complexity_score": 0.182432
+      }
+    }
+  ],
+  "Q4_high": [
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 51,
+      "shloka": 8,
+      "shloka_text": "तथोक्तास्तेनसम्भ्रान्ताःप्राकारमधिरुह्यच । ददृशुःपालितांसेनांसुग्रीवेणमहात्मना ।।6.51.8।। तौचमुक्तौसुघोरेणशरबन्धेनराघवौ । समुत्थितौमहाभागौविषेदुःप्रेक्ष्यराक्षसाः ।।6.51.9।।",
+      "metrics": {
+        "split_word_count": 29,
+        "split_complexity_score": 7.25,
+        "rarity_score": 0.049021,
+        "complexity_score": 0.24194
+      }
+    },
+    {
+      "kanda": "Sundara Kanda",
+      "sarga": 9,
+      "shloka": 23,
+      "shloka_text": "मणिसोपानविकृतां हेमजालविभूषिताम्। स्फाटिकैरावृततलां दन्तान्तरितरूपिकाम्।।5.9.23।।",
+      "metrics": {
+        "split_word_count": 4,
+        "split_complexity_score": 1.0,
+        "rarity_score": 1.0,
+        "complexity_score": 0.5104
+      }
+    },
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 63,
+      "shloka": 44,
+      "shloka_text": "गिरिमात्रशरीरस्यशितशूलधरस्यमे ।।6.63.44।। नर्दतस्तीक्षणदंष्ट्रस्यबिभीयाच्चपुरन्दरः ।",
+      "metrics": {
+        "split_word_count": 13,
+        "split_complexity_score": 6.5,
+        "rarity_score": 0.212212,
+        "complexity_score": 0.298899
+      }
+    },
+    {
+      "kanda": "Kishkindha Kanda",
+      "sarga": 22,
+      "shloka": 8,
+      "shloka_text": "सुखार्हं सुखसंवृद्धं बालमेनमबालिशम्। बाष्पपूर्णमुखं पश्य भूमौ पतितमङ्गदम्4.22.8।।",
+      "metrics": {
+        "split_word_count": 7,
+        "split_complexity_score": 1.0,
+        "rarity_score": 0.715902,
+        "complexity_score": 0.367154
+      }
+    },
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 93,
+      "shloka": 49,
+      "shloka_text": "सीतादुःखसमाविष्टाविलपन्तीदमब्रवीत् ।।6.93.48।। यथायंमामभिक्रुद्धःसमभिद्रवतिस्वयम् । वधिष्यतिसनाथांमामनाथामिवदुर्मतिः ।।6.93.49।।",
+      "metrics": {
+        "split_word_count": 23,
+        "split_complexity_score": 7.667,
+        "rarity_score": 0.093824,
+        "complexity_score": 0.278611
+      }
+    },
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 13,
+      "shloka": 3,
+      "shloka_text": "ईश्वरस्येश्वरःकोऽस्तितवशत्रुनिबर्हण: । रमस्वसहवैदेह्याशत्रूनाक्रम्यमूर्धसु ।।6.13.3।।",
+      "metrics": {
+        "split_word_count": 8,
+        "split_complexity_score": 4.0,
+        "rarity_score": 0.273615,
+        "complexity_score": 0.245445
+      }
+    },
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 100,
+      "shloka": 30,
+      "shloka_text": "शरान्धकारमाकाशंचक्रतुःप्रथमंतदा । गतेऽस्तं तपने चापि महामेघाविवोथतितौ ।।6.100.30।।",
+      "metrics": {
+        "split_word_count": 12,
+        "split_complexity_score": 2.4,
+        "rarity_score": 0.347775,
+        "complexity_score": 0.228812
+      }
+    },
+    {
+      "kanda": "Ayodhya Kanda",
+      "sarga": 96,
+      "shloka": 13,
+      "shloka_text": "तामश्वगजसम्पूर्णां रथध्वजविभूषिताम्। शशंस सेनां रामाय वचनं चेदमब्रवीत्।।2.96.13।।",
+      "metrics": {
+        "split_word_count": 7,
+        "split_complexity_score": 1.0,
+        "rarity_score": 0.447857,
+        "complexity_score": 0.232003
+      }
+    },
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 64,
+      "shloka": 22,
+      "shloka_text": "अहंद्विजिह्वस्सम्ह्रादीकुम्भकर्णोवितर्दनः । पञ्चरामवधायैतेनिर्यान्त्वित्यवघोषय ।।6.64.22।।",
+      "metrics": {
+        "split_word_count": 17,
+        "split_complexity_score": 8.5,
+        "rarity_score": 0.138215,
+        "complexity_score": 0.32912
+      }
+    },
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 96,
+      "shloka": 28,
+      "shloka_text": "ततःप्रयातस्सहसाराक्षसैर्भहुभिर्वृतः ।।6.96.28।। रावणःसत्त्वगाम्भीर्याद्दारयन्निवमेदिनीम् ।",
+      "metrics": {
+        "split_word_count": 15,
+        "split_complexity_score": 7.5,
+        "rarity_score": 0.156175,
+        "complexity_score": 0.30441
+      }
+    },
+    {
+      "kanda": "Uttara Kanda",
+      "sarga": 56,
+      "shloka": 17,
+      "shloka_text": "वरुणस्त्वब्रवीद्वाक्यं कन्दर्पशरपीडितः । इदं तेजः समुत्स्रक्ष्ये कुम्भे ऽस्मिन्देवनिर्मिते ।। 7.56.17 ।।",
+      "metrics": {
+        "split_word_count": 10,
+        "split_complexity_score": 1.25,
+        "rarity_score": 0.456885,
+        "complexity_score": 0.244997
+      }
+    },
+    {
+      "kanda": "Bala Kanda",
+      "sarga": 75,
+      "shloka": 19,
+      "shloka_text": "जृम्भितं तद्धनुर्द्रृष्ट्वा शैवं विष्णुपराक्रमै:। अधिकं मेनिरे विष्णुं देवा स्सर्षिगणास्तदा\t।।1.75.19।।",
+      "metrics": {
+        "split_word_count": 9,
+        "split_complexity_score": 1.0,
+        "rarity_score": 0.44765,
+        "complexity_score": 0.231899
+      }
+    },
+    {
+      "kanda": "Ayodhya Kanda",
+      "sarga": 108,
+      "shloka": 2,
+      "shloka_text": "साधु राघव माऽभूत्ते बुध्दिरेवं निरर्थिका। प्राकृतस्य नरस्येव ह्यार्यबुद्धेर्मनस्विनः।।2.108.2।।",
+      "metrics": {
+        "split_word_count": 9,
+        "split_complexity_score": 1.125,
+        "rarity_score": 0.612381,
+        "complexity_score": 0.319179
+      }
+    },
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 101,
+      "shloka": 35,
+      "shloka_text": "न्यपतत्सामहावेगालक्ष्मणस्यमहोरसि । जिह्वेवोरगराजस्यदीप्यमानामहाद्युतिः ।।6.101.35।।",
+      "metrics": {
+        "split_word_count": 12,
+        "split_complexity_score": 6.0,
+        "rarity_score": 0.153559,
+        "complexity_score": 0.252442
+      }
+    },
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 103,
+      "shloka": 4,
+      "shloka_text": "दीप्तपावकसङ्काशैःशरैःकाञ्चनभूषणैः ।।6.103.4।। अभ्यवर्षद्रणरामोदशग्रीवंसमाहितः ।",
+      "metrics": {
+        "split_word_count": 14,
+        "split_complexity_score": 7.0,
+        "rarity_score": 0.065837,
+        "complexity_score": 0.241978
+      }
+    },
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 46,
+      "shloka": 15,
+      "shloka_text": "यत्कृतेचिन्तयानस्यशोकार्तस्यपितुर्मम ।।6.46.14।। अस्पृष्टवाशयनंगात्रैस्त्रियामायातिशर्वरी । त्स्नेयंयत्कृतेलङ्कानदीवर्षास्विवाकुला ।।6.46.15।। सोऽयंमूलहरोऽनर्थःसर्वेषांनिहतोमया ।",
+      "metrics": {
+        "split_word_count": 23,
+        "split_complexity_score": 5.75,
+        "rarity_score": 0.116869,
+        "complexity_score": 0.225502
+      }
+    },
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 120,
+      "shloka": 6,
+      "shloka_text": "कर्तासर्वस्यलोकस्यश्रेष्ठोज्ञानवतांप्रभुः । उपेक्षसेकथंसीतांपतन्तींहव्यवाहने ।।6.120.6।। कथंदेवगणश्रेष्ठमात्मानंनावबुद्ध्यसे ।",
+      "metrics": {
+        "split_word_count": 20,
+        "split_complexity_score": 6.667,
+        "rarity_score": 0.150242,
+        "complexity_score": 0.273292
+      }
+    },
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 65,
+      "shloka": 57,
+      "shloka_text": "विपुलपरिघवान् स कुम्भकर्णोरिपुनिधनायविनिस्पृतोत्मा । कपिषणभयमाददत्सुभीमंप्रभुरिवदण्डवान्युगान्ते ।।6.65.57।।",
+      "metrics": {
+        "split_word_count": 24,
+        "split_complexity_score": 6.0,
+        "rarity_score": 0.123631,
+        "complexity_score": 0.237352
+      }
+    },
+    {
+      "kanda": "Yuddha Kanda",
+      "sarga": 23,
+      "shloka": 9,
+      "shloka_text": "ह्रस्वोरूक्षोऽप्रशस्तश्चपरिवेषस्सुलोहितः । आदित्येविमलेनीलंलक्ष्मलक्ष्मणदृश्यते ।।6.23.9।।",
+      "metrics": {
+        "split_word_count": 15,
+        "split_complexity_score": 7.5,
+        "rarity_score": 0.17106,
+        "complexity_score": 0.311915
+      }
+    },
+    {
+      "kanda": "Aranya Kanda",
+      "sarga": 37,
+      "shloka": 15,
+      "shloka_text": "शरार्चिषमाधृष्यं चापखङ्गेन्धनं रणे। रामाग्निं सहसा दीप्तं न प्रवेष्टुं त्वमर्हसि।।3.37.15।।",
+      "metrics": {
+        "split_word_count": 9,
+        "split_complexity_score": 1.0,
+        "rarity_score": 0.467066,
+        "complexity_score": 0.241689
+      }
+    }
+  ]
+}
