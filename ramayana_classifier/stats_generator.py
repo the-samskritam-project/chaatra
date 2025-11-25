@@ -132,7 +132,7 @@ def main():
     all_metrics = []
     output_data = []
 
-    for idx, item in enumerate(shlokas[:5], start=1):
+    for idx, item in enumerate(shlokas, start=1):
         text = item.get("shloka_text")
         if not text:
             continue
