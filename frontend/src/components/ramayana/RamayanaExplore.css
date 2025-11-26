@@ -79,10 +79,6 @@
   font-weight: 600;
 }
 
-.slider-score {
-  color: #6b7280;
-}
-
 .explore-footnote {
   font-size: 0.8rem;
   color: #6b7280;
@@ -147,27 +143,23 @@
   line-height: 1.5;
 }
 
-.explore-metrics {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.75rem;
-  margin-top: 1.5rem;
+.explore-actions {
+  margin: 1rem 0 1.25rem;
 }
 
-.explore-metrics div {
-  background: #f3f4f6;
-  border-radius: 12px;
-  padding: 0.75rem;
+.explore-context-button {
+  border: 1px solid #7c3aed;
+  color: #7c3aed;
+  background: transparent;
+  border-radius: 999px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.explore-metrics span {
-  display: block;
-  font-size: 0.8rem;
-  color: #6b7280;
+.explore-context-button:hover {
+  background: rgba(124, 58, 237, 0.08);
 }
 
-.explore-metrics strong {
-  font-size: 1.1rem;
-  color: #111827;
-}
 

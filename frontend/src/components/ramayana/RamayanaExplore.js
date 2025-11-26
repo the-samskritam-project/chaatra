@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import RamayanaModal from './RamayanaModal';
 import './RamayanaExplore.css';
 
 const difficultyLabels = [
@@ -14,7 +15,13 @@ function RamayanaExplore() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [entry, setEntry] = useState(null);
-  const [matchedScore, setMatchedScore] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [contextData, setContextData] = useState(null);
+  const [contextError, setContextError] = useState('');
+  const [isContextLoading, setIsContextLoading] = useState(false);
+  const [summary, setSummary] = useState('');
+  const [summaryError, setSummaryError] = useState('');
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
 
   useEffect(() => {
     const url = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8081';
@@ -41,12 +48,15 @@ function RamayanaExplore() {
       }
       const data = await response.json();
       setEntry(data.shloka || null);
-      setMatchedScore(data.matched_score ?? 0);
+      setContextData(null);
+      setContextError('');
+      setSummary('');
+      setSummaryError('');
+      setIsModalOpen(false);
     } catch (err) {
       console.error('Ramayana explore error:', err);
       setError('Unable to fetch a shloka. Please try again.');
       setEntry(null);
-      setMatchedScore(0);
     } finally {
       setIsLoading(false);
     }
@@ -54,6 +64,81 @@ function RamayanaExplore() {
 
   const handleSliderChange = (event) => {
     setSliderValue(Number(event.target.value));
+  };
+
+  const handleOpenContext = async () => {
+    if (!apiUrl || !entry) return;
+    setIsModalOpen(true);
+    setIsContextLoading(true);
+    setContextError('');
+    setContextData(null);
+    setSummary('');
+    setSummaryError('');
+    setIsSummaryLoading(false);
+
+    try {
+      const response = await fetch(
+        `${apiUrl}/v2/ramayana/context?kanda=${encodeURIComponent(
+          entry.kanda
+        )}&sarga=${entry.sarga}&shloka=${entry.shloka}&window=10`
+      );
+      if (!response.ok) {
+        throw new Error(`Context request failed: ${response.statusText}`);
+      }
+      const data = await response.json();
+      setContextData(data);
+    } catch (err) {
+      console.error('Ramayana explore context error:', err);
+      setContextError('Unable to load context.');
+    } finally {
+      setIsContextLoading(false);
+    }
+  };
+
+  const handleSummarize = async () => {
+    if (!apiUrl || !contextData) return;
+    const payload = {
+      kanda: contextData.kanda,
+      sarga: contextData.sarga,
+      shloka: contextData.shloka,
+      window: contextData.window || 10,
+      prompt: '',
+    };
+
+    setSummary('');
+    setSummaryError('');
+    setIsSummaryLoading(true);
+
+    try {
+      const response = await fetch(`${apiUrl}/v2/ramayana/summarize`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Summary request failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setSummary(data.summary || '');
+    } catch (err) {
+      console.error('Ramayana explore summary error:', err);
+      setSummaryError('Unable to generate summary.');
+    } finally {
+      setIsSummaryLoading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setContextData(null);
+    setContextError('');
+    setSummary('');
+    setSummaryError('');
+    setIsSummaryLoading(false);
   };
 
   return (
@@ -82,9 +167,8 @@ function RamayanaExplore() {
             onChange={handleSliderChange}
           />
           <div className="slider-output">
-            <span className="slider-value">{difficultyLabel}</span>
-            <span className="slider-score">
-              Target score: {sliderValue.toFixed(2)}
+            <span className="slider-value">
+              Current difficulty: {difficultyLabel}
             </span>
           </div>
         </div>
@@ -111,7 +195,6 @@ function RamayanaExplore() {
               <span>
                 {entry.kanda} · Sarga {entry.sarga}, Shloka {entry.shloka}
               </span>
-              <span>Matched score: {matchedScore.toFixed(2)}</span>
             </div>
             <p className="explore-sanskrit">{entry.shloka_text}</p>
             {entry.translation && (
@@ -120,33 +203,30 @@ function RamayanaExplore() {
             {entry.explanation && (
               <p className="explore-explanation">{entry.explanation}</p>
             )}
-            <div className="explore-metrics">
-              <div>
-                <span>Split words</span>
-                <strong>{entry.metrics?.split_word_count ?? '—'}</strong>
-              </div>
-              <div>
-                <span>Split complexity</span>
-                <strong>
-                  {(entry.metrics?.split_complexity_score ?? 0).toFixed(2)}
-                </strong>
-              </div>
-              <div>
-                <span>Rarity</span>
-                <strong>
-                  {(entry.metrics?.rarity_score ?? 0).toFixed(3)}
-                </strong>
-              </div>
-              <div>
-                <span>Complexity</span>
-                <strong>
-                  {(entry.metrics?.complexity_score ?? 0).toFixed(3)}
-                </strong>
-              </div>
+            <div className="explore-actions">
+              <button
+                type="button"
+                className="explore-context-button"
+                onClick={handleOpenContext}
+              >
+                View context & summary
+              </button>
             </div>
           </div>
         )}
       </div>
+      <RamayanaModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        contextData={contextData}
+        isLoading={isContextLoading}
+        error={contextError}
+        onSummarize={handleSummarize}
+        isSummaryLoading={isSummaryLoading}
+        summary={summary}
+        summaryError={summaryError}
+        disableSummarize={!contextData}
+      />
     </div>
   );
 }
