@@ -5,13 +5,14 @@ import './tabs.css';
 import Dictionary from './components/dictionary/Dictionary';
 import Flashcards from './components/flashcards/Flashcards';
 import RamayanaSearch from './components/ramayana/RamayanaSearch';
+import RamayanaExplore from './components/ramayana/RamayanaExplore';
 import Footer from './components/Footer';
 
 function App() {
   return (
     <div>
       <div className="tabs-container">
-        <Tabs defaultIndex={2}>
+        <Tabs defaultIndex={3}>
           <div className="tabs-section">
             <div className="heading">
               <span className="devanagari">छात्रः</span>
@@ -34,6 +35,7 @@ function App() {
                   Flash cards
                 </Tab>
                 <Tab>Ramayana</Tab>
+                <Tab>Explore</Tab>
               </TabList>
             </div>
           </div>
@@ -49,6 +51,10 @@ function App() {
 
             <TabPanel>
               <RamayanaSearch />
+            </TabPanel>
+
+            <TabPanel>
+              <RamayanaExplore />
             </TabPanel>
           </div>
         </Tabs>
