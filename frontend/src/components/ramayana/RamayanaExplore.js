@@ -185,7 +185,7 @@ function RamayanaExplore() {
           onClick={handleFetch}
           disabled={isLoading}
         >
-          {isLoading ? 'Fetching...' : "I'm Feeling Lucky"}
+          {isLoading ? 'Fetching...' : "Explore"}
         </button>
 
         {error && <div className="explore-error">{error}</div>}

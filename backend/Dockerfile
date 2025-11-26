@@ -37,6 +37,7 @@ COPY --from=builder /go/src/chaatra/backend/core/parser/dictionary.xml /root/dic
 RUN mkdir -p /root/chroma_db
 COPY --from=builder /go/src/chaatra/backend/chroma_db/chromadb_bridge.py /root/chroma_db/chromadb_bridge.py
 COPY --from=builder /go/src/chaatra/backend/chroma_db/valmiki_ramayan_shlokas_filtered.json /root/chroma_db/valmiki_ramayan_shlokas_filtered.json
+COPY --from=builder /go/src/chaatra/ramayana_classifier/shlokas_with_rarity.json /root/shlokas_with_rarity.json
 
 # Copy built ChromaDB index files (from artifact download in CI, or empty locally)
 # These files will be included when built via GitHub Actions
@@ -79,6 +80,7 @@ echo "Starting Go server..."\n\
 cd /root\n\
 export CHROMA_URL=http://localhost:8000\n\
 export CHROMA_BRIDGE_URL=http://localhost:8001\n\
+export RAMAYANA_RARITY_PATH=/root/shlokas_with_rarity.json\n\
 # Use Railway PORT if set, otherwise default to 8081\n\
 if [ -z "$PORT" ]; then\n\
   export PORT=8081\n\
