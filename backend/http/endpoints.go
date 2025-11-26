@@ -294,3 +294,42 @@ func RamayanaSummarizeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
+
+func RamayanaExploreHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	score := 0.5
+	if raw := r.URL.Query().Get("score"); raw != "" {
+		val, err := strconv.ParseFloat(raw, 64)
+		if err != nil {
+			http.Error(w, "score must be a number between 0 and 1", http.StatusBadRequest)
+			return
+		}
+		if val < 0 || val > 1 {
+			http.Error(w, "score must be between 0 and 1", http.StatusBadRequest)
+			return
+		}
+		score = val
+	}
+
+	shloka, err := service.GetRandomShlokaByComplexity(score)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	resp := map[string]any{
+		"requested_score": score,
+		"matched_score":   shloka.Metrics.ComplexityScore,
+		"shloka":          shloka,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		http.Error(w, fmt.Sprintf("failed to encode response: %v", err), http.StatusInternalServerError)
+		return
+	}
+}

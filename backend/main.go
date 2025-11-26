@@ -53,6 +53,7 @@ func main() {
 	mux.HandleFunc("/v2/search/sanskrit", h.SearchV2SanskritHandler)
 	mux.HandleFunc("/v2/search/ramayana", h.SearchRamayanaHandler)
 	mux.HandleFunc("/v2/ramayana/context", h.RamayanaContextHandler)
+	mux.HandleFunc("/v2/ramayana/explore", h.RamayanaExploreHandler)
 	mux.HandleFunc("/v2/ramayana/summarize", h.RamayanaSummarizeHandler)
 
 	c := cors.New(cors.Options{

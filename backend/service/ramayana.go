@@ -6,8 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
+	"math/rand"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -48,6 +53,24 @@ type chatCompletionResponse struct {
 		Type    string `json:"type"`
 	} `json:"error,omitempty"`
 }
+
+type exploreShloka struct {
+	persistence.RamayanaEntry
+	Metrics struct {
+		SplitWordCount       int     `json:"split_word_count"`
+		SplitComplexityScore float64 `json:"split_complexity_score"`
+		RarityScore          float64 `json:"rarity_score"`
+		ComplexityScore      float64 `json:"complexity_score"`
+	} `json:"metrics"`
+}
+
+var (
+	exploreDataOnce sync.Once
+	exploreDataErr  error
+	exploreEntries  []exploreShloka
+)
+
+const exploreDataPathEnv = "RAMAYANA_RARITY_PATH"
 
 // CallOpenAISummary sends the Ramayana context to OpenAI and returns a concise summary.
 func CallOpenAISummary(apiKey string, req RamayanaSummarizeRequest, context []persistence.RamayanaEntry) (string, error) {
@@ -146,4 +169,86 @@ func buildContextText(entries []persistence.RamayanaEntry) string {
 		b.WriteString("\n")
 	}
 	return b.String()
+}
+
+func loadExploreDataset() error {
+	exploreDataOnce.Do(func() {
+		path := os.Getenv(exploreDataPathEnv)
+		if path == "" {
+			exploreDataErr = fmt.Errorf("%s not set", exploreDataPathEnv)
+			return
+		}
+		data, err := os.ReadFile(path)
+		if err != nil {
+			exploreDataErr = fmt.Errorf("failed to read explore dataset: %w", err)
+			return
+		}
+		if err := json.Unmarshal(data, &exploreEntries); err != nil {
+			exploreDataErr = fmt.Errorf("failed to parse explore dataset: %w", err)
+			return
+		}
+	})
+	return exploreDataErr
+}
+
+func GetRandomShlokaByComplexity(score float64) (*exploreShloka, error) {
+	if score < 0 {
+		score = 0
+	}
+	if score > 1 {
+		score = 1
+	}
+	if err := loadExploreDataset(); err != nil {
+		return nil, err
+	}
+	if len(exploreEntries) == 0 {
+		return nil, fmt.Errorf("explore dataset is empty")
+	}
+
+	window := 0.05
+	const maxWindow = 0.3
+
+	for window <= maxWindow {
+		var candidates []exploreShloka
+		lower := math.Max(0, score-window)
+		upper := math.Min(1, score+window)
+
+		for _, entry := range exploreEntries {
+			c := entry.Metrics.ComplexityScore
+			if c >= lower && c <= upper {
+				candidates = append(candidates, entry)
+			}
+		}
+
+		if len(candidates) > 0 {
+			idx := rand.Intn(len(candidates))
+			return &candidates[idx], nil
+		}
+
+		window += 0.05
+	}
+
+	return nil, fmt.Errorf("no shlokas found near score %.2f", score)
+}
+
+// GetExploreShlokaHandler handles GET /api/ramayana/explore?score=0.7
+func GetExploreShlokaHandler(w http.ResponseWriter, r *http.Request) {
+	score := 0.5
+	if raw := r.URL.Query().Get("score"); raw != "" {
+		if v, err := strconv.ParseFloat(raw, 64); err == nil {
+			score = v
+		}
+	}
+
+	shloka, err := GetRandomShlokaByComplexity(score)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(shloka); err != nil {
+		http.Error(w, fmt.Sprintf("failed to encode response: %v", err), http.StatusInternalServerError)
+		return
+	}
 }
