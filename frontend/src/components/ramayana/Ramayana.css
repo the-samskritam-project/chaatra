@@ -50,6 +50,11 @@
   font-size: 1.1rem;
 }
 
+.ramayana-shloka .shloka-line,
+.ramayana-modal-shloka .shloka-line {
+  display: block;
+}
+
 .ramayana-transliteration {
   font-style: italic;
   color: #6d4c41;

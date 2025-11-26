@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import RamayanaModal from './RamayanaModal';
+import { splitShlokaLines } from './shlokaUtils';
 import './RamayanaExplore.css';
 
 const difficultyLabels = [
@@ -196,7 +197,13 @@ function RamayanaExplore() {
                 {entry.kanda} · Sarga {entry.sarga}, Shloka {entry.shloka}
               </span>
             </div>
-            <p className="explore-sanskrit">{entry.shloka_text}</p>
+            <div className="explore-sanskrit">
+              {splitShlokaLines(entry.shloka_text).map((line, idx) => (
+                <span key={`${entry.shloka}-${idx}`} className="shloka-line">
+                  {line}
+                </span>
+              ))}
+            </div>
             {entry.translation && (
               <p className="explore-translation">{entry.translation}</p>
             )}

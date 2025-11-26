@@ -1,5 +1,6 @@
 import React from 'react';
 import './Ramayana.css';
+import { splitShlokaLines } from './shlokaUtils';
 
 const parseDevanagariFromDocument = (document) => {
   if (!document) return '';
@@ -37,7 +38,13 @@ function RamayanaResult({ entry, onClick }) {
       </div>
 
       {shlokaText && (
-        <div className="ramayana-shloka devanagari-word">{shlokaText}</div>
+        <div className="ramayana-shloka devanagari-word">
+          {splitShlokaLines(shlokaText).map((line, idx) => (
+            <span key={`${kanda}-${sarga}-${shloka}-${idx}`} className="shloka-line">
+              {line}
+            </span>
+          ))}
+        </div>
       )}
 
       {transliteration && (

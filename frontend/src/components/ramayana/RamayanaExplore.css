@@ -136,6 +136,10 @@
   line-height: 1.6;
 }
 
+.explore-sanskrit .shloka-line {
+  display: block;
+}
+
 .explore-translation,
 .explore-explanation {
   margin: 0.5rem 0;

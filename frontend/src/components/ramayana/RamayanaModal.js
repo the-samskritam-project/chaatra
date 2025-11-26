@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { splitShlokaLines } from './shlokaUtils';
 import './Ramayana.css';
 
 const RamayanaModal = ({
@@ -83,7 +84,13 @@ const RamayanaModal = ({
               <span className="ramayana-kanda">{item.kanda}</span>
               <span className="ramayana-sarga">Sarga {item.sarga} • Shloka {item.shloka}</span>
             </div>
-            <div className="ramayana-modal-shloka">{item.shloka_text}</div>
+            <div className="ramayana-modal-shloka">
+              {splitShlokaLines(item.shloka_text).map((line, idx) => (
+                <span key={`${item.shloka}-${idx}`} className="shloka-line">
+                  {line}
+                </span>
+              ))}
+            </div>
             {item.translation && (
               <div className="ramayana-modal-section">
                 <span className="label">Translation</span>
