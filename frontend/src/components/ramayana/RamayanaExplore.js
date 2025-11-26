@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import RamayanaModal from './RamayanaModal';
-import { splitShlokaLines } from './shlokaUtils';
+import { splitShlokaLines, splitTranslationTokens } from './shlokaUtils';
 import './RamayanaExplore.css';
 
 const difficultyLabels = [
@@ -205,7 +205,13 @@ function RamayanaExplore() {
               ))}
             </div>
             {entry.translation && (
-              <p className="explore-translation">{entry.translation}</p>
+              <div className="explore-translation">
+                {splitTranslationTokens(entry.translation).map((token, idx) => (
+                  <span key={`${entry.shloka}-translation-${idx}`} className="translation-chip">
+                    {token}
+                  </span>
+                ))}
+              </div>
             )}
             {entry.explanation && (
               <p className="explore-explanation">{entry.explanation}</p>

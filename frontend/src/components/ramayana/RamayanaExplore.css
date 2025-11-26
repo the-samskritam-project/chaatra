@@ -140,7 +140,29 @@
   display: block;
 }
 
-.explore-translation,
+.explore-translation {
+  margin: 0.75rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.translation-chip {
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-size: 0.9rem;
+  border: 1px solid #c7d2fe;
+  transition: background 0.2s ease, color 0.2s ease;
+  cursor: default;
+}
+
+.translation-chip:hover {
+  background: #4338ca;
+  color: #fff;
+}
+
 .explore-explanation {
   margin: 0.5rem 0;
   color: #374151;

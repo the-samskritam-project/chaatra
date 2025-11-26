@@ -41,3 +41,14 @@ export const splitShlokaLines = (text) => {
   return lines;
 };
 
+export const splitTranslationTokens = (translation) => {
+  if (!translation) {
+    return [];
+  }
+
+  return translation
+    .split(',')
+    .map((token) => token.trim())
+    .filter(Boolean);
+};
+
