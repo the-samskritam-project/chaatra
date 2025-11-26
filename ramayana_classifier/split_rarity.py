@@ -101,6 +101,10 @@ def augment_records(records: List[Dict]) -> List[Dict]:
             "sarga": base.get("sarga"),
             "shloka": base.get("shloka"),
             "shloka_text": base.get("shloka_text"),
+            "transliteration": base.get("transliteration"),
+            "translation": base.get("translation"),
+            "explanation": base.get("explanation"),
+            "comments": base.get("comments"),
             "metrics": {
                 "split_word_count": item["split_word_count"],
                 "split_complexity_score": item["split_complexity_score"],
