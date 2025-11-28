@@ -2,7 +2,7 @@ import React from 'react';
 import emptyStateImage from '../../images/search.webp'; // Import the image
 import { toDevanagiriString } from '../../utils/transliterate'; // Add this import
 
-function Entries({ entries }) {
+function Entries({ entries, highlightedEntryWord }) {
   // Check if entry is DictionaryEntry format (has Word, Type, Meanings) or Entry format (has devanagariWord, englishMeaning)
   const isDictionaryEntry = (entry) => {
     return entry.hasOwnProperty('word') || entry.hasOwnProperty('Word');
@@ -41,8 +41,11 @@ function Entries({ entries }) {
     // Convert SLP1 to Devanagari
     const devanagariWord = toDevanagiriString(word);
     
+    // Check if this entry should be highlighted
+    const isHighlighted = highlightedEntryWord && word === highlightedEntryWord;
+    
     return (
-      <div key={index} className="entry">
+      <div key={index} className={`entry ${isHighlighted ? 'highlighted' : ''}`}>
         <div className="entry-main">
           <span className="devanagari-word">{devanagariWord}</span>
           {type && (

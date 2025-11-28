@@ -12,6 +12,7 @@ function Dictionary() {
     const [currentPage, setCurrentPage] = useState(1);
     const [entriesPerPage] = useState(10); // Adjust number per page as needed
     const [keyboardType, setKeyboardType] = useState('devanagari');
+    const [highlightedEntryWord, setHighlightedEntryWord] = useState(null);
     const totalPages = Math.ceil(entries.length / entriesPerPage);
     const keyboardRef = useRef(null);
 
@@ -66,23 +67,53 @@ function Dictionary() {
     }, []);
 
     // Handle dropdown item click - call /search endpoint
-    const handleDropdownItemClick = async (slp1Query) => {
+    const handleDropdownItemClick = async (slp1Query, selectedDevanagari = null) => {
         if (!config.apiUrl || !slp1Query) return;
 
         try {
             const url = `${config.apiUrl}/search?slp1=${encodeURIComponent(slp1Query)}`;
             const response = await fetch(url);
             if (response.ok) {
-                const data = await response.json();
+                let data = await response.json();
+                
+                // If a Devanagari suggestion was selected, find and reorder the matching entry
+                if (selectedDevanagari && data.length > 0) {
+                    // Extract just the word part if suggestion contains " — "
+                    const targetDevanagari = selectedDevanagari.split(' — ')[0].trim();
+                    
+                    // Find the index of the entry that matches the selected Devanagari
+                    const matchingIndex = data.findIndex(entry => {
+                        const word = entry.word || entry.Word || '';
+                        const entryDevanagari = toDevanagiriString(word);
+                        return entryDevanagari === targetDevanagari;
+                    });
+                    
+                    if (matchingIndex !== -1) {
+                        // Move the matching entry to the beginning
+                        const matchingEntry = data[matchingIndex];
+                        data = [matchingEntry, ...data.filter((_, index) => index !== matchingIndex)];
+                        // Set the highlighted word (using SLP1 word as identifier)
+                        setHighlightedEntryWord(matchingEntry.word || matchingEntry.Word);
+                    } else {
+                        // No match found, clear highlight
+                        setHighlightedEntryWord(null);
+                    }
+                } else {
+                    // No selection, clear highlight
+                    setHighlightedEntryWord(null);
+                }
+                
                 setEntries(data);
                 setCurrentPage(1); // Reset to first page with new data
             } else {
                 console.error('Search error:', response.statusText);
                 setEntries([]);
+                setHighlightedEntryWord(null);
             }
         } catch (error) {
             console.error('Search error:', error);
             setEntries([]);
+            setHighlightedEntryWord(null);
         }
     };
 
@@ -128,6 +159,7 @@ function Dictionary() {
             )}
             <Entries
                 entries={entries.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage)}
+                highlightedEntryWord={highlightedEntryWord}
             />
             <div className="pagination">
                 <button onClick={prevPage} disabled={currentPage === 1} className="pagination-button">←</button>

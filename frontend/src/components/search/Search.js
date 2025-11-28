@@ -109,6 +109,20 @@ function SearchBar({ devanagariString, slp1LatinStr, onInputChange, onFocus, han
         }
     }, [showDropdown]);
 
+    const getDropdownDevanagari = (item) => {
+      if (item.devanagariWord) {
+        const parts = item.devanagariWord.split(' — ');
+        if (parts.length >= 2) {
+          return parts[1].trim();
+        }
+        return parts[0].trim();
+      }
+      if (item.transliteratedWord) {
+        return toDevanagiriString(item.transliteratedWord);
+      }
+      return '';
+    };
+
     const handleItemClick = (item) => {
         setShowDropdown(false);
         if (onDropdownItemClick) {
@@ -116,7 +130,20 @@ function SearchBar({ devanagariString, slp1LatinStr, onInputChange, onFocus, han
             const slp1ToSearch = item.type === 'complete' 
                 ? item.slp1Query 
                 : (item.transliteratedWord || slp1LatinStr);
-            onDropdownItemClick(slp1ToSearch);
+            
+            // Extract Devanagari word for highlighting
+            let selectedDevanagari = null;
+            if (item.type === 'complete') {
+                // For complete items, use devanagariWord and extract just the word part
+                if (item.devanagariWord) {
+                    selectedDevanagari = item.devanagariWord.split(' — ')[0].trim();
+                }
+            } else {
+                // For search items, get Devanagari using the same logic as display
+                selectedDevanagari = getDropdownDevanagari(item);
+            }
+            
+            onDropdownItemClick(slp1ToSearch, selectedDevanagari);
         }
         // Notify parent that a dropdown item was selected (for keyboard dismissal)
         if (onDropdownItemSelected) {
@@ -160,20 +187,6 @@ function SearchBar({ devanagariString, slp1LatinStr, onInputChange, onFocus, han
     };
 
     const showClearButton = Boolean(devanagariString && devanagariString.trim().length > 0);
-
-    const getDropdownDevanagari = (item) => {
-      if (item.devanagariWord) {
-        const parts = item.devanagariWord.split(' — ');
-        if (parts.length >= 2) {
-          return parts[1].trim();
-        }
-        return parts[0].trim();
-      }
-      if (item.transliteratedWord) {
-        return toDevanagiriString(item.transliteratedWord);
-      }
-      return '';
-    };
 
     return (
         <div className="search-bar">

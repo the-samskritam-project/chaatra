@@ -102,9 +102,8 @@ const KeyboardBridge = forwardRef(({
     const currentWord = value.split(' ').pop();
     
     if (onSuggestionSearch && currentWord) {
-      // Search using the current SLP1 prefix - this will return entries
-      // that match, and one of them should correspond to the clicked suggestion
-      await onSuggestionSearch(currentWord);
+      // Pass both the SLP1 query and the selected Devanagari suggestion
+      await onSuggestionSearch(currentWord, wordPart);
     }
     
     // Clear active keys and dismiss keyboard

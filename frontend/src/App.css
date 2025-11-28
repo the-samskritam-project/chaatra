@@ -144,6 +144,12 @@
   border-radius: 8px;
 }
 
+.entry.highlighted {
+  background-color: rgba(230, 247, 255, 0.4);
+  border: 1px solid rgba(0, 123, 255, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 123, 255, 0.2);
+}
+
 .add-button {
   position: absolute;
   top: 10px;
