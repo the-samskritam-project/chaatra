@@ -7,7 +7,8 @@ const KeyboardBridge = forwardRef(({
   onInput,
   isFocused,
   value = '',
-  apiUrl: propApiUrl
+  apiUrl: propApiUrl,
+  onSuggestionSearch
 }, ref) => {
   const [isKeyboardDocked, setIsKeyboardDocked] = useState(true);
   const [activeKeys, setActiveKeys] = useState([]);
@@ -93,14 +94,18 @@ const KeyboardBridge = forwardRef(({
     }
   }));
 
-  const handleSuggestionClick = (suggestion) => {
+  const handleSuggestionClick = async (suggestion) => {
     // Extract just the word part if it contains " — " (meaning separator)
     const wordPart = suggestion.split(' — ')[0].trim();
     
-    // For now, we'll trigger a search with the current query
-    // The parent component should handle the actual search
-    // This is a placeholder - the suggestion click needs proper SLP1 conversion
-    console.log('Suggestion clicked:', wordPart);
+    // Get the current word that was used for completion
+    const currentWord = value.split(' ').pop();
+    
+    if (onSuggestionSearch && currentWord) {
+      // Search using the current SLP1 prefix - this will return entries
+      // that match, and one of them should correspond to the clicked suggestion
+      await onSuggestionSearch(currentWord);
+    }
     
     // Clear active keys and dismiss keyboard
     setActiveKeys([]);

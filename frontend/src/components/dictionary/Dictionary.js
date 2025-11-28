@@ -123,6 +123,7 @@ function Dictionary() {
                     onInput={handleInput}
                     value={slp1SearchStr}
                     apiUrl={config.apiUrl}
+                    onSuggestionSearch={handleDropdownItemClick}
                 />
             )}
             <Entries
