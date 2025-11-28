@@ -4,12 +4,14 @@ FROM golang:1.25 AS builder
 # Set the working directory inside the container
 WORKDIR /go/src/chaatra/backend
 
-# Copy the local package files to the container's workspace
-COPY . .
+# Copy go.mod and go.sum first for better caching
+COPY backend/go.mod backend/go.sum ./
 
-# Download any necessary dependencies
-# Ensure to copy go.mod and go.sum files before running go mod download
+# Download dependencies
 RUN go mod download
+
+# Copy the rest of the backend source
+COPY backend/ .
 
 # Build your application statically
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o samskritam .
@@ -35,9 +37,9 @@ COPY --from=builder /go/src/chaatra/backend/core/parser/dictionary.xml /root/dic
 
 # Copy ChromaDB bridge script and built database files
 RUN mkdir -p /root/chroma_db
-COPY --from=builder /go/src/chaatra/backend/chroma_db/chromadb_bridge.py /root/chroma_db/chromadb_bridge.py
-COPY --from=builder /go/src/chaatra/backend/chroma_db/valmiki_ramayan_shlokas_filtered.json /root/chroma_db/valmiki_ramayan_shlokas_filtered.json
-COPY --from=builder /go/src/chaatra/ramayana_classifier/shlokas_with_rarity.json /root/shlokas_with_rarity.json
+COPY backend/chroma_db/chromadb_bridge.py /root/chroma_db/chromadb_bridge.py
+COPY backend/chroma_db/valmiki_ramayan_shlokas_filtered.json /root/chroma_db/valmiki_ramayan_shlokas_filtered.json
+COPY ramayana_classifier/shlokas_with_rarity.json /root/shlokas_with_rarity.json
 
 # Copy built ChromaDB index files (from artifact download in CI, or empty locally)
 # These files will be included when built via GitHub Actions

@@ -20,11 +20,7 @@ function App() {
             </div>
             <div className="tabs-wrapper">
               <TabList>
-                <Tab
-                  className="react-tabs__tab tab-coming-soon"
-                  disabled
-                  data-tooltip="Coming soon"
-                >
+                <Tab data-tooltip="Coming soon">
                   Dictionary
                 </Tab>
                 <Tab

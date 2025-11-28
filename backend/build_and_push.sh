@@ -55,7 +55,13 @@ echo ""
 echo "ℹ️  Note: ChromaDB embeddings are included in the image"
 echo ""
 
-docker buildx build --platform linux/amd64 -t "${FULL_IMAGE_NAME}:${VERSION}" --push .
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+docker buildx build \
+  --platform linux/amd64 \
+  -f "$SCRIPT_DIR/Dockerfile" \
+  -t "${FULL_IMAGE_NAME}:${VERSION}" \
+  --push \
+  "$REPO_ROOT"
 
 echo ""
 echo "✅ Successfully pushed to Docker Hub!"

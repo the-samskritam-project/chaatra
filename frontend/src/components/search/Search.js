@@ -32,10 +32,8 @@ function SearchBar({ devanagariString, slp1LatinStr, onInputChange, onFocus, han
             setIsLoading(true);
             try {
                 if (keyboardType === 'devanagari') {
-                    // Sanskrit mode: Call both /complete and /v2/search/sanskrit
                     const [completeResponse, searchResponse] = await Promise.all([
                         fetch(`${apiUrl}/complete?slp1=${encodeURIComponent(query)}`).catch(() => null),
-                        fetch(`${apiUrl}/v2/search/sanskrit?q=${encodeURIComponent(query)}&n=5`).catch(() => null)
                     ]);
 
                     const completeResults = completeResponse && completeResponse.ok 
