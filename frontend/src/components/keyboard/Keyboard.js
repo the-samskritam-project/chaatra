@@ -7,6 +7,9 @@ function Keyboard({ isDocked, activeKeys, alphabet, completionResults, onDismiss
     return null;
   }
 
+  // Debug logging
+  console.log('Keyboard render - isDocked:', isDocked, 'completionResults:', completionResults);
+
   return (
     <div className={`keyboard undocked`}>
       <button 
@@ -18,15 +21,26 @@ function Keyboard({ isDocked, activeKeys, alphabet, completionResults, onDismiss
         ×
       </button>
       <div className="suggestions">
-        {completionResults.map((result, index) => (
-          <span 
-            key={index} 
-            className="suggestion-item"
-            onClick={() => onSuggestionClick && onSuggestionClick(result)}
-          >
-            {result}
+        {completionResults && completionResults.length > 0 ? (
+          completionResults.map((result, index) => {
+            // Extract just the word part if it contains " — " (meaning separator)
+            const displayText = result.split(' — ')[0].trim();
+            return (
+              <span 
+                key={index} 
+                className="suggestion-item"
+                onClick={() => onSuggestionClick && onSuggestionClick(result)}
+                title={result} // Show full text on hover
+              >
+                {displayText}
+              </span>
+            );
+          })
+        ) : (
+          <span className="suggestions-placeholder" style={{ color: '#999', fontSize: '12px' }}>
+            Type to see suggestions...
           </span>
-        ))}
+        )}
       </div>
 
       <div className="keys-container">

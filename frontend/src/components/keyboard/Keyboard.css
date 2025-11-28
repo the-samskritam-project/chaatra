@@ -92,9 +92,16 @@
 .suggestions {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 10px;
   padding: 10px;
   flex-wrap: wrap;
+  min-height: 50px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #b3e0ff;
+  background-color: #f0f8ff;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .suggestion-item {

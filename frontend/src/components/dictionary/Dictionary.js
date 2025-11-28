@@ -122,6 +122,7 @@ function Dictionary() {
                     isFocused={isFocused}
                     onInput={handleInput}
                     value={slp1SearchStr}
+                    apiUrl={config.apiUrl}
                 />
             )}
             <Entries

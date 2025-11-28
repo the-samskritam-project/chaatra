@@ -6,20 +6,24 @@ import { vowels, consonants } from '../../utils/constants';
 const KeyboardBridge = forwardRef(({ 
   onInput,
   isFocused,
-  value = ''
+  value = '',
+  apiUrl: propApiUrl
 }, ref) => {
   const [isKeyboardDocked, setIsKeyboardDocked] = useState(true);
   const [activeKeys, setActiveKeys] = useState([]);
   const [completionResults, setCompletionResults] = useState([]);
-  const [config, setConfig] = useState({});
+  const [apiUrl, setApiUrl] = useState('');
 
   useEffect(() => {
-    // Fetch configuration from the environment variable
-    const apiUrl = process.env.REACT_APP_API_BASE_URL;
-    setConfig({ apiUrl });
-  }, []);
+    // Use prop if provided, otherwise get from env with fallback
+    const url = propApiUrl || process.env.REACT_APP_API_BASE_URL || 'http://localhost:8081';
+    setApiUrl(url);
+    console.log('KeyboardBridge API URL set to:', url);
+  }, [propApiUrl]);
 
   useEffect(() => {
+    console.log('KeyboardBridge useEffect - value:', value, 'apiUrl:', apiUrl);
+    
     if (value.length === 0) {
       setCompletionResults([]);
       setActiveKeys([]);
@@ -27,26 +31,48 @@ const KeyboardBridge = forwardRef(({
     }
 
     const currentWord = value.split(' ').pop();
+    console.log('Current word for completion:', currentWord);
 
-    if (currentWord.length > 0) {
-      if (currentWord.charAt(currentWord.length - 1) === ' ') {
-        return;
-      }
-
-      if (!config.apiUrl) {
-        return;
-      }
-
-      const fetchResults = async () => {
-        const url = `${config.apiUrl}/complete?slp1=${encodeURIComponent(currentWord)}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        setCompletionResults(data);
-      };
-
-      fetchResults();
+    if (currentWord.length === 0) {
+      setCompletionResults([]);
+      return;
     }
-  }, [value, config.apiUrl]);
+
+    if (currentWord.charAt(currentWord.length - 1) === ' ') {
+      setCompletionResults([]);
+      return;
+    }
+
+    if (!apiUrl) {
+      console.log('No API URL configured, skipping completion fetch');
+      return;
+    }
+
+    const fetchResults = async () => {
+      try {
+        const url = `${apiUrl}/complete?slp1=${encodeURIComponent(currentWord)}`;
+        console.log('Fetching completion from:', url);
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          // Ensure data is an array
+          const results = Array.isArray(data) ? data : [];
+          console.log('Keyboard completion results:', results, 'count:', results.length);
+          setCompletionResults(results);
+        } else {
+          console.log('Keyboard completion API error:', response.status, response.statusText);
+          setCompletionResults([]);
+        }
+      } catch (error) {
+        console.error('Error fetching completion results:', error);
+        setCompletionResults([]);
+      }
+    };
+
+    // Add a small debounce to avoid too many calls
+    const timeoutId = setTimeout(fetchResults, 200);
+    return () => clearTimeout(timeoutId);
+  }, [value, apiUrl]);
 
   useEffect(() => {
     // Show keyboard whenever search bar is focused in devanagari mode
@@ -68,14 +94,13 @@ const KeyboardBridge = forwardRef(({
   }));
 
   const handleSuggestionClick = (suggestion) => {
-    // Replace the current word with the selected suggestion
-    const words = value.split(' ');
-    const currentWordIndex = words.length - 1;
-    words[currentWordIndex] = suggestion;
-    const newValue = words.join(' ');
+    // Extract just the word part if it contains " — " (meaning separator)
+    const wordPart = suggestion.split(' — ')[0].trim();
     
-    // Update the input value
-    onInput({ type: 'key', value: newValue });
+    // For now, we'll trigger a search with the current query
+    // The parent component should handle the actual search
+    // This is a placeholder - the suggestion click needs proper SLP1 conversion
+    console.log('Suggestion clicked:', wordPart);
     
     // Clear active keys and dismiss keyboard
     setActiveKeys([]);
