@@ -1,0 +1,49 @@
+services:
+  chromadb-server:
+    image: chromadb/chroma:latest
+    container_name: chaatra-chromadb-server
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./chromadb-server/data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - CHROMA_SERVER_HOST=0.0.0.0
+      - CHROMA_SERVER_HTTP_PORT=8000
+    networks:
+      - chromadb-network
+
+  chromadb-bridge:
+    build:
+      context: ./chromadb-bridge
+      dockerfile: Dockerfile
+    container_name: chaatra-chromadb-bridge
+    ports:
+      - "8001:8001"
+    environment:
+      - PORT=8001
+      - CHROMA_SERVER_URL=http://chromadb-server:8000
+    depends_on:
+      - chromadb-server
+    networks:
+      - chromadb-network
+
+  chromadb-indexing:
+    build:
+      context: ./chromadb-server
+      dockerfile: Dockerfile.indexing
+    container_name: chaatra-chromadb-indexing
+    volumes:
+      - ./chromadb-server:/app
+    environment:
+      - CHROMA_SERVER_URL=http://chromadb-server:8000
+    depends_on:
+      - chromadb-server
+    networks:
+      - chromadb-network
+    profiles:
+      - indexing
+
+networks:
+  chromadb-network:
+    driver: bridge

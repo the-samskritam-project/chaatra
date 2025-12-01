@@ -1,0 +1,27 @@
+# ChromaDB Indexing Service Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+RUN pip install --no-cache-dir \
+    chromadb \
+    sentence-transformers
+
+# Pre-download the sentence transformer model during build
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/paraphrase-multilingual-mpnet-base-v2')"
+
+# Copy build scripts
+COPY build_chromadb.py .
+COPY build_chromadb_index_en.sh .
+COPY build_ramayana_index_en.sh .
+RUN chmod +x *.sh
+
+# Default command
+CMD ["/bin/bash"]
+
