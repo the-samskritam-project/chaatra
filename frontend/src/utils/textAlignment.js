@@ -4,137 +4,6 @@
  */
 
 /**
- * Calculate similarity between two strings using character-based comparison
- * Returns a value between 0 and 1, where 1 is identical
- * Uses a combination of longest common subsequence and character overlap
- * @param {string} str1 - First string
- * @param {string} str2 - Second string
- * @returns {number} Similarity score between 0 and 1
- */
-export function calculateSimilarity(str1, str2) {
-  if (!str1 || !str2) return 0;
-  if (str1 === str2) return 1;
-
-  const s1 = str1.trim();
-  const s2 = str2.trim();
-
-  if (s1.length === 0 && s2.length === 0) return 1;
-  if (s1.length === 0 || s2.length === 0) return 0;
-
-  // Check for substring matches (handles cases like "आप्तयज्ञहरं" vs "आप्तयज्ञहरम्")
-  if (s1.includes(s2) || s2.includes(s1)) {
-    const shorter = s1.length < s2.length ? s1 : s2;
-    const longer = s1.length >= s2.length ? s1 : s2;
-    return shorter.length / longer.length;
-  }
-
-  // Calculate longest common subsequence (LCS) length
-  const lcsLength = longestCommonSubsequence(s1, s2);
-  
-  // Calculate character overlap (how many characters match)
-  const charOverlap = calculateCharacterOverlap(s1, s2);
-  
-  // Combine both metrics with weights
-  const lcsScore = lcsLength / Math.max(s1.length, s2.length);
-  const overlapScore = charOverlap / Math.max(s1.length, s2.length);
-  
-  // Weighted average (LCS is more important for order, overlap for content)
-  return (lcsScore * 0.7 + overlapScore * 0.3);
-}
-
-/**
- * Calculate the length of the longest common subsequence
- * @param {string} str1 - First string
- * @param {string} str2 - Second string
- * @returns {number} Length of LCS
- */
-function longestCommonSubsequence(str1, str2) {
-  const m = str1.length;
-  const n = str2.length;
-  const dp = Array(m + 1)
-    .fill(null)
-    .map(() => Array(n + 1).fill(0));
-
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      if (str1[i - 1] === str2[j - 1]) {
-        dp[i][j] = dp[i - 1][j - 1] + 1;
-      } else {
-        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
-      }
-    }
-  }
-
-  return dp[m][n];
-}
-
-/**
- * Calculate character overlap between two strings
- * @param {string} str1 - First string
- * @param {string} str2 - Second string
- * @returns {number} Number of matching characters
- */
-function calculateCharacterOverlap(str1, str2) {
-  const chars1 = [...str1];
-  const chars2 = [...str2];
-  let matches = 0;
-  const used2 = new Set();
-
-  for (const char1 of chars1) {
-    for (let i = 0; i < chars2.length; i++) {
-      if (!used2.has(i) && char1 === chars2[i]) {
-        matches++;
-        used2.add(i);
-        break;
-      }
-    }
-  }
-
-  return matches;
-}
-
-/**
- * Calculate Levenshtein edit distance between two strings
- * @param {string} str1 - First string
- * @param {string} str2 - Second string
- * @returns {number} Edit distance (number of edits needed)
- */
-function levenshteinDistance(str1, str2) {
-  const len1 = str1.length;
-  const len2 = str2.length;
-
-  // Create a matrix
-  const matrix = Array(len1 + 1)
-    .fill(null)
-    .map(() => Array(len2 + 1).fill(0));
-
-  // Initialize first row and column
-  for (let i = 0; i <= len1; i++) {
-    matrix[i][0] = i;
-  }
-  for (let j = 0; j <= len2; j++) {
-    matrix[0][j] = j;
-  }
-
-  // Fill the matrix
-  for (let i = 1; i <= len1; i++) {
-    for (let j = 1; j <= len2; j++) {
-      if (str1[i - 1] === str2[j - 1]) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j] + 1,     // deletion
-          matrix[i][j - 1] + 1,     // insertion
-          matrix[i - 1][j - 1] + 1  // substitution
-        );
-      }
-    }
-  }
-
-  return matrix[len1][len2];
-}
-
-/**
  * Extract the source language word from a translation token
  * Handles formats like "आप्तयज्ञहरम् a disrupter..." or "word1 word2 translation"
  * @param {string} token - Translation token containing source word and translation
@@ -192,13 +61,14 @@ export function extractSourceWord(token) {
 }
 
 /**
- * Find the position of a source word in target text using edit distance
+ * Find the position of a source word in target text using substring matching
+ * Matches at least until the second-last character (word.length - 2)
+ * Uses character arrays to properly handle Devanagari conjuncts and half vowels
  * @param {string} sourceWord - The word to find
  * @param {string} targetText - The text to search in
- * @param {number} maxEditDistance - Maximum allowed edit distance (default: 3)
- * @returns {Object|null} Object with {startIndex, endIndex, editDistance} or null if not found
+ * @returns {Object|null} Object with {startIndex, endIndex} or null if not found
  */
-export function findWordPosition(sourceWord, targetText, maxEditDistance = 3) {
+export function findWordPosition(sourceWord, targetText) {
   if (!sourceWord || !targetText) return null;
 
   const sourceWordClean = sourceWord.trim();
@@ -206,43 +76,55 @@ export function findWordPosition(sourceWord, targetText, maxEditDistance = 3) {
 
   if (sourceWordClean.length === 0) return null;
 
-  // First try exact match
-  const exactIndex = targetTextClean.indexOf(sourceWordClean);
-  if (exactIndex !== -1) {
-    return {
-      startIndex: exactIndex,
-      endIndex: exactIndex + sourceWordClean.length,
-      editDistance: 0,
-    };
+  // Convert strings to character arrays for proper Unicode handling
+  const sourceChars = Array.from(sourceWordClean);
+  const targetChars = Array.from(targetTextClean);
+
+  if (sourceChars.length === 0) return null;
+
+  // First try exact match using character arrays
+  const exactMatch = findExactMatch(sourceChars, targetChars);
+  if (exactMatch) {
+    return exactMatch;
   }
 
-  // Use sliding window with edit distance
-  let bestMatch = null;
-  let bestEditDistance = Infinity;
-  const sourceLength = sourceWordClean.length;
+  // Match at least until second-last character
+  const minMatchLength = Math.max(1, sourceChars.length - 2);
+  const prefixToMatch = sourceChars.slice(0, minMatchLength);
 
-  // Try window sizes around the source word length (±2 characters)
+  // Find the prefix position in the target character array
+  const prefixIndex = findSubarrayIndex(prefixToMatch, targetChars);
+  if (prefixIndex === -1) {
+    return null;
+  }
+
+  // Found the prefix, now try different window sizes starting from that position
+  const sourceLength = sourceChars.length;
   const windowSizes = [
+    sourceLength + 2,
+    sourceLength + 1,
     sourceLength,
     sourceLength - 1,
-    sourceLength + 1,
     sourceLength - 2,
-    sourceLength + 2,
-  ].filter(len => len > 0 && len <= targetTextClean.length);
+  ].filter(len => len > 0 && len <= targetChars.length);
+
+  let bestMatch = null;
+  let bestMatchLength = 0;
 
   for (const windowSize of windowSizes) {
-    for (let i = 0; i <= targetTextClean.length - windowSize; i++) {
-      const candidate = targetTextClean.substring(i, i + windowSize);
-      const editDist = levenshteinDistance(sourceWordClean, candidate);
-
-      // Accept if edit distance is within threshold and better than previous best
-      if (editDist <= maxEditDistance && editDist < bestEditDistance) {
-        bestEditDistance = editDist;
-        bestMatch = {
-          startIndex: i,
-          endIndex: i + windowSize,
-          editDistance: editDist,
-        };
+    if (prefixIndex + windowSize <= targetChars.length) {
+      const candidate = targetChars.slice(prefixIndex, prefixIndex + windowSize);
+      
+      // Check if candidate starts with the required prefix
+      if (arraysStartWith(candidate, prefixToMatch)) {
+        // Prefer longer matches
+        if (windowSize > bestMatchLength) {
+          bestMatch = {
+            startIndex: prefixIndex,
+            endIndex: prefixIndex + windowSize,
+          };
+          bestMatchLength = windowSize;
+        }
       }
     }
   }
@@ -251,12 +133,77 @@ export function findWordPosition(sourceWord, targetText, maxEditDistance = 3) {
 }
 
 /**
+ * Find exact match of sourceChars in targetChars
+ * @param {Array} sourceChars - Source word as character array
+ * @param {Array} targetChars - Target text as character array
+ * @returns {Object|null} Object with {startIndex, endIndex} or null
+ */
+function findExactMatch(sourceChars, targetChars) {
+  for (let i = 0; i <= targetChars.length - sourceChars.length; i++) {
+    let match = true;
+    for (let j = 0; j < sourceChars.length; j++) {
+      if (targetChars[i + j] !== sourceChars[j]) {
+        match = false;
+        break;
+      }
+    }
+    if (match) {
+      return {
+        startIndex: i,
+        endIndex: i + sourceChars.length,
+      };
+    }
+  }
+  return null;
+}
+
+/**
+ * Find the index of a subarray within a larger array
+ * @param {Array} subarray - The subarray to find
+ * @param {Array} array - The array to search in
+ * @returns {number} Index of subarray or -1 if not found
+ */
+function findSubarrayIndex(subarray, array) {
+  if (subarray.length === 0) return 0;
+  if (subarray.length > array.length) return -1;
+
+  for (let i = 0; i <= array.length - subarray.length; i++) {
+    let match = true;
+    for (let j = 0; j < subarray.length; j++) {
+      if (array[i + j] !== subarray[j]) {
+        match = false;
+        break;
+      }
+    }
+    if (match) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Check if an array starts with a given prefix array
+ * @param {Array} array - The array to check
+ * @param {Array} prefix - The prefix array
+ * @returns {boolean} True if array starts with prefix
+ */
+function arraysStartWith(array, prefix) {
+  if (prefix.length > array.length) return false;
+  for (let i = 0; i < prefix.length; i++) {
+    if (array[i] !== prefix[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
  * Align source text with translation tokens
+ * Creates a map of word -> index, sorts by index, and returns parts in order
  * @param {string} sourceText - The original text (e.g., Sanskrit shloka)
  * @param {string[]} translationTokens - Array of translation tokens
  * @param {Object} options - Configuration options
- * @param {number} options.minSimilarity - Minimum similarity threshold (default: 0.9)
- * @param {string} options.tokenSeparator - Separator for tokens (default: ',')
  * @param {Function} options.extractSourceWordFn - Custom function to extract source word (optional)
  * @returns {Array} Array of aligned parts: {text, startIndex, endIndex, translationIndex}
  */
@@ -266,17 +213,15 @@ export function alignTextWithTranslations(sourceText, translationTokens, options
   }
 
   const {
-    maxEditDistance = 3,
     extractSourceWordFn = extractSourceWord,
   } = options;
 
-  const alignedParts = [];
-  let currentIndex = 0;
   const sourceTextClean = sourceText.trim();
-
-  // Track used positions to avoid overlaps
-  const usedRanges = [];
-
+  
+  // Map to store word -> index
+  const wordToIndexMap = new Map();
+  
+  // Find position for each translation token
   for (let i = 0; i < translationTokens.length; i++) {
     const token = translationTokens[i];
     const sourceWord = extractSourceWordFn(token);
@@ -285,71 +230,44 @@ export function alignTextWithTranslations(sourceText, translationTokens, options
       continue;
     }
 
-    // Find position starting from currentIndex to maintain order
-    const searchText = sourceTextClean.substring(currentIndex);
-    const match = findWordPosition(sourceWord, searchText, maxEditDistance);
+    // Find position in the entire text
+    const match = findWordPosition(sourceWord, sourceTextClean);
 
     if (match) {
-      // Adjust indices to account for currentIndex offset
-      const actualStart = currentIndex + match.startIndex;
-      const actualEnd = currentIndex + match.endIndex;
-
-      // Check if this range overlaps with any used range
-      const overlaps = usedRanges.some(
-        (range) =>
-          (actualStart < range.end && actualEnd > range.start) ||
-          (range.start < actualEnd && range.end > actualStart)
-      );
-
-      if (!overlaps) {
-        // Add text before this match if any
-        if (actualStart > currentIndex) {
-          const beforeText = sourceTextClean.substring(currentIndex, actualStart);
-          if (beforeText.trim()) {
-            alignedParts.push({
-              text: beforeText,
-              startIndex: currentIndex,
-              endIndex: actualStart,
-              translationIndex: null,
-            });
-          }
-        }
-
-        // Add the matched part
-        const matchedText = sourceTextClean.substring(actualStart, actualEnd);
-        alignedParts.push({
-          text: matchedText,
-          startIndex: actualStart,
-          endIndex: actualEnd,
-          translationIndex: i,
-        });
-
-        usedRanges.push({ start: actualStart, end: actualEnd });
-        currentIndex = actualEnd;
-      }
-    }
-  }
-
-  // Add any remaining text after the last match
-  if (currentIndex < sourceTextClean.length) {
-    const remainingText = sourceTextClean.substring(currentIndex);
-    if (remainingText.trim()) {
-      alignedParts.push({
-        text: remainingText,
-        startIndex: currentIndex,
-        endIndex: sourceTextClean.length,
-        translationIndex: null,
+      // Store the match with translation index
+      wordToIndexMap.set(i, {
+        startIndex: match.startIndex,
+        endIndex: match.endIndex,
+        translationIndex: i,
+        word: sourceWord,
       });
     }
   }
 
-  // If no matches were found, return the entire text as one part
-  if (alignedParts.length === 0) {
-    alignedParts.push({
+  // Sort all matches by startIndex
+  const sortedMatches = Array.from(wordToIndexMap.values())
+    .sort((a, b) => a.startIndex - b.startIndex);
+
+  if (sortedMatches.length === 0) {
+    // If no matches found, return entire text as one part
+    return [{
       text: sourceTextClean,
       startIndex: 0,
       endIndex: sourceTextClean.length,
       translationIndex: null,
+    }];
+  }
+
+  // Build aligned parts in order - only include words that have translations
+  const alignedParts = [];
+
+  for (const match of sortedMatches) {
+    // Only add the matched part - use the word from translation, not from shloka
+    alignedParts.push({
+      text: match.word, // Use the word from translation token
+      startIndex: match.startIndex,
+      endIndex: match.endIndex,
+      translationIndex: match.translationIndex,
     });
   }
 

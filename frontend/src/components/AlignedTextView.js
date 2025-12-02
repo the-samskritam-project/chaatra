@@ -10,7 +10,6 @@ import './AlignedTextView.css';
  * @param {string} props.sourceText - The original text (e.g., Sanskrit shloka)
  * @param {string} props.translation - The translation string
  * @param {string} props.tokenSeparator - How to split translation into tokens (default: ',')
- * @param {number} props.maxEditDistance - Maximum edit distance for matching (default: 3)
  * @param {string} props.sourceClassName - CSS class for source text container
  * @param {string} props.translationClassName - CSS class for translation container
  * @param {string} props.highlightClassName - CSS class for highlighted elements
@@ -20,7 +19,6 @@ function AlignedTextView({
   sourceText,
   translation,
   tokenSeparator = ',',
-  maxEditDistance = 3,
   sourceClassName = '',
   translationClassName = '',
   highlightClassName = 'aligned-highlight',
@@ -60,60 +58,88 @@ function AlignedTextView({
       ];
     }
 
-    return alignTextWithTranslations(cleanedSourceText, translationTokens, {
-      maxEditDistance,
-    });
-  }, [cleanedSourceText, translationTokens, maxEditDistance]);
+    return alignTextWithTranslations(cleanedSourceText, translationTokens, {});
+  }, [cleanedSourceText, translationTokens]);
 
-  // Split aligned parts into lines if splitIntoLines function is provided
+  // Split aligned parts into lines based on | delimiter position
   const alignedPartsByLine = useMemo(() => {
     if (!splitIntoLines || !cleanedSourceText) {
       return [alignedParts];
     }
 
+    // Use splitIntoLines to get the lines
     const lines = splitIntoLines(cleanedSourceText);
     if (lines.length === 0) {
       return [alignedParts];
     }
 
-    // Reconstruct the text from lines to find exact positions
-    // This handles cases where the split function might normalize the text
+    // Normalize the cleaned text for matching
     const normalizedText = cleanedSourceText.replace(/\s+/g, ' ').trim();
-    let currentPos = 0;
-    const lineRanges = [];
-
-    for (const line of lines) {
-      const normalizedLine = line.replace(/\s+/g, ' ').trim();
-      // Find where this line starts in the normalized text
-      const lineStart = normalizedText.indexOf(normalizedLine, currentPos);
-      if (lineStart === -1) {
-        // Fallback: use current position
-        lineRanges.push({ start: currentPos, end: currentPos + normalizedLine.length });
-        currentPos += normalizedLine.length;
-      } else {
-        const lineEnd = lineStart + normalizedLine.length;
-        lineRanges.push({ start: lineStart, end: lineEnd });
-        currentPos = lineEnd;
+    
+    // Find delimiter position by matching the first line (without delimiter) in the normalized text
+    let delimiterIndex = -1;
+    if (lines.length > 0) {
+      const firstLine = lines[0].replace(/\s+/g, ' ').trim();
+      // Remove delimiter from first line to find the content
+      const firstLineContent = firstLine.replace(/\s*\|\s*$/, '').trim();
+      
+      // Find where first line content ends in normalized text
+      const contentIndex = normalizedText.indexOf(firstLineContent);
+      if (contentIndex !== -1) {
+        delimiterIndex = contentIndex + firstLineContent.length;
       }
     }
-
-    // Group aligned parts by which line they belong to
-    // A part belongs to a line if its midpoint is within the line range
-    const partsByLine = [];
-    for (const lineRange of lineRanges) {
-      const lineParts = alignedParts.filter((part) => {
-        const partMidpoint = (part.startIndex + part.endIndex) / 2;
-        return partMidpoint >= lineRange.start && partMidpoint < lineRange.end;
-      });
-      partsByLine.push(lineParts);
+    
+    // Fallback: look for | in normalized text
+    if (delimiterIndex === -1) {
+      delimiterIndex = normalizedText.indexOf('|');
     }
-
-    // If no parts were assigned to any line, fall back to single line
-    if (partsByLine.every((parts) => parts.length === 0)) {
+    
+    if (delimiterIndex === -1 || delimiterIndex >= normalizedText.length) {
+      // No delimiter found or invalid position, return all parts as single line
       return [alignedParts];
     }
 
-    return partsByLine;
+    // Group parts by line: parts before delimiter belong to first line, after to second
+    const firstLineParts = [];
+    const secondLineParts = [];
+
+    for (const part of alignedParts) {
+      // Check if part belongs to first line (before delimiter) or second line (after delimiter)
+      if (part.startIndex < delimiterIndex) {
+        // Part is in first line
+        if (part.endIndex <= delimiterIndex) {
+          // Part is fully in first line
+          firstLineParts.push(part);
+        } else {
+          // Part spans across delimiter - split it
+          const firstPartLength = delimiterIndex - part.startIndex;
+          firstLineParts.push({
+            ...part,
+            text: part.text.substring(0, firstPartLength),
+            endIndex: delimiterIndex,
+          });
+          secondLineParts.push({
+            ...part,
+            text: part.text.substring(firstPartLength),
+            startIndex: delimiterIndex,
+          });
+        }
+      } else {
+        // Part is in second line
+        secondLineParts.push(part);
+      }
+    }
+
+    const partsByLine = [];
+    if (firstLineParts.length > 0) {
+      partsByLine.push(firstLineParts);
+    }
+    if (secondLineParts.length > 0) {
+      partsByLine.push(secondLineParts);
+    }
+
+    return partsByLine.length > 0 ? partsByLine : [alignedParts];
   }, [alignedParts, cleanedSourceText, splitIntoLines]);
 
   // Create a map from translation index to aligned part indices
@@ -184,6 +210,13 @@ function AlignedTextView({
                 </span>
               );
             })}
+            {/* Add delimiter at end of line: | for first line, || for second line */}
+            {lineIdx === 0 && alignedPartsByLine.length > 1 && (
+              <span className="aligned-delimiter"> |</span>
+            )}
+            {lineIdx === 1 && (
+              <span className="aligned-delimiter"> ||</span>
+            )}
           </div>
         ))}
       </div>

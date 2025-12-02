@@ -211,7 +211,6 @@ function RamayanaExplore() {
                   sourceText={entry.shloka_text}
                   translation={entry.translation}
                   tokenSeparator=","
-                  maxEditDistance={3}
                   sourceClassName="explore-sanskrit-aligned"
                   translationClassName="explore-translation-aligned"
                   highlightClassName="explore-highlight"
