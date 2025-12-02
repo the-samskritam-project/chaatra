@@ -2,6 +2,7 @@
 # Build ChromaDB Ramayana English index against running ChromaDB server
 
 set -e
+set -x  # Enable command tracing
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
