@@ -174,9 +174,13 @@ function AlignedTextView({
     return part && part.translationIndex === translationIndex;
   };
 
-  if (!sourceText || !cleanedSourceText) {
-    return null;
-  }
+  // Get original shloka lines for display (must be before early return)
+  const shlokaLines = useMemo(() => {
+    if (!splitIntoLines || !cleanedSourceText) {
+      return cleanedSourceText ? [cleanedSourceText] : [];
+    }
+    return splitIntoLines(cleanedSourceText);
+  }, [cleanedSourceText, splitIntoLines]);
 
   // Find the global index of a part within alignedParts
   const getGlobalPartIndex = (lineIdx, partIdx) => {
@@ -187,51 +191,77 @@ function AlignedTextView({
     return globalIdx + partIdx;
   };
 
+  if (!sourceText || !cleanedSourceText) {
+    return null;
+  }
+
   return (
     <div className="aligned-text-view">
-      <div className={`aligned-source-text ${sourceClassName}`}>
-        {alignedPartsByLine.map((lineParts, lineIdx) => (
-          <div key={lineIdx} className="aligned-line">
-            {lineParts.map((part, partIdx) => {
-              const globalIdx = getGlobalPartIndex(lineIdx, partIdx);
-              return (
-                <span
-                  key={globalIdx}
-                  className={`aligned-part ${
-                    isPartHighlighted(globalIdx) ? highlightClassName : ''
-                  }`}
-                  onMouseEnter={() => handlePartHover(globalIdx)}
-                  onMouseLeave={handlePartLeave}
-                  style={{
-                    cursor: part.translationIndex !== null ? 'pointer' : 'default',
-                  }}
-                >
-                  {part.text}
-                </span>
-              );
-            })}
-            {/* Add delimiter at end of line: | for first line, || for second line */}
-            {lineIdx === 0 && alignedPartsByLine.length > 1 && (
-              <span className="aligned-delimiter"> |</span>
-            )}
-            {lineIdx === 1 && (
-              <span className="aligned-delimiter"> ||</span>
-            )}
+      <div className="aligned-cards-container">
+        {/* Shloka card on the left */}
+        <div className="aligned-shloka-card">
+          <div className="aligned-card-label">Original</div>
+          <div className={`aligned-shloka-text ${sourceClassName}`}>
+            {shlokaLines.map((line, lineIdx) => (
+              <div key={lineIdx} className="aligned-shloka-line">
+                {line}
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
+
+        {/* Aligned splits on the right */}
+        <div className="aligned-splits-container">
+          <div className="aligned-card-label">Split by sandhi</div>
+          <div className={`aligned-source-text ${sourceClassName}`}>
+            {alignedPartsByLine.map((lineParts, lineIdx) => (
+              <div key={lineIdx} className="aligned-line">
+                {lineParts.map((part, partIdx) => {
+                  const globalIdx = getGlobalPartIndex(lineIdx, partIdx);
+                  return (
+                    <span
+                      key={globalIdx}
+                      className={`aligned-part ${
+                        isPartHighlighted(globalIdx) ? highlightClassName : ''
+                      }`}
+                      onMouseEnter={() => handlePartHover(globalIdx)}
+                      onMouseLeave={handlePartLeave}
+                      style={{
+                        cursor: part.translationIndex !== null ? 'pointer' : 'default',
+                      }}
+                    >
+                      {part.text}
+                    </span>
+                  );
+                })}
+                {/* Add delimiter at end of line: | for first line, || for second line */}
+                {lineIdx === 0 && alignedPartsByLine.length > 1 && (
+                  <span className="aligned-delimiter"> |</span>
+                )}
+                {lineIdx === 1 && (
+                  <span className="aligned-delimiter"> ||</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
+
+      {/* Translation labels below, spanning full width */}
       {translation && translationTokens.length > 0 && (
-        <div className={`aligned-translation ${translationClassName}`}>
-          {translationTokens.map((token, idx) => (
-            <span
-              key={idx}
-              className={`aligned-token ${
-                isTranslationHighlighted(idx) ? highlightClassName : ''
-              }`}
-            >
-              {token}
-            </span>
-          ))}
+        <div className={`aligned-translation-container ${translationClassName}`}>
+          <div className="aligned-translation">
+            {translationTokens.map((token, idx) => (
+              <span
+                key={idx}
+                className={`aligned-token ${
+                  isTranslationHighlighted(idx) ? highlightClassName : ''
+                }`}
+              >
+                {token}
+              </span>
+            ))}
+          </div>
         </div>
       )}
     </div>

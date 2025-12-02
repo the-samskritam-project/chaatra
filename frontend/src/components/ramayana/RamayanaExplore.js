@@ -198,13 +198,6 @@ function RamayanaExplore() {
                 {entry.kanda} · Sarga {entry.sarga}, Shloka {entry.shloka}
               </span>
             </div>
-            <div className="explore-sanskrit">
-              {splitShlokaLines(entry.shloka_text).map((line, idx) => (
-                <span key={`${entry.shloka}-${idx}`} className="shloka-line">
-                  {line}
-                </span>
-              ))}
-            </div>
             {entry.translation && (
               <div className="explore-translation-aligned">
                 <AlignedTextView
