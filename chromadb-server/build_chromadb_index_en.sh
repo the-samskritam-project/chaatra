@@ -2,7 +2,6 @@
 # Build ChromaDB English index against running ChromaDB server
 
 set -e
-set -x  # Enable command tracing
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
@@ -30,36 +29,22 @@ fi
 
 # Wait for server to be ready
 echo "Waiting for ChromaDB server to be ready..."
-echo "DEBUG: CHROMA_SERVER_URL = $CHROMA_SERVER_URL"
 MAX_RETRIES=30
 RETRY_COUNT=0
 
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-    echo "DEBUG: Attempting to connect to $CHROMA_SERVER_URL..."
-    CURL_OUTPUT=$(curl -v -s -o /dev/null -w "%{http_code}" "$CHROMA_SERVER_URL/" 2>&1)
-    HTTP_CODE=$(echo "$CURL_OUTPUT" | tail -1)
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$CHROMA_SERVER_URL/" 2>&1)
     CURL_EXIT=$?
-    echo "DEBUG: curl exit code: $CURL_EXIT, HTTP code: $HTTP_CODE"
-    echo "DEBUG: curl output: $CURL_OUTPUT"
-    
-    # Try DNS resolution test
-    if [[ "$CHROMA_SERVER_URL" =~ railway\.internal ]]; then
-        HOSTNAME=$(echo "$CHROMA_SERVER_URL" | sed -E 's|https?://([^:]+).*|\1|')
-        echo "DEBUG: Testing DNS resolution for $HOSTNAME..."
-        if nslookup "$HOSTNAME" 2>&1; then
-            echo "DEBUG: DNS resolution successful"
-        else
-            echo "DEBUG: DNS resolution failed!"
-        fi
-    fi
     
     if [ $CURL_EXIT -eq 0 ] && [ "$HTTP_CODE" != "000" ]; then
-        echo "✓ ChromaDB server is ready! (HTTP $HTTP_CODE)"
+        echo "✓ ChromaDB server is ready!"
         break
     fi
     
     RETRY_COUNT=$((RETRY_COUNT + 1))
-    echo "  Waiting... ($RETRY_COUNT/$MAX_RETRIES)"
+    if [ $((RETRY_COUNT % 5)) -eq 0 ]; then
+        echo "  Waiting for ChromaDB server... ($RETRY_COUNT/$MAX_RETRIES)"
+    fi
     sleep 2
 done
 

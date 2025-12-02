@@ -150,7 +150,6 @@ def build_index(items, dataset, lang, model_name, out_path):
     # Use HttpClient if CHROMA_SERVER_URL is set, otherwise use PersistentClient
     if CHROMA_SERVER_URL:
         from urllib.parse import urlparse
-        print(f"DEBUG: CHROMA_SERVER_URL = {CHROMA_SERVER_URL}")
         parsed = urlparse(CHROMA_SERVER_URL)
         host = parsed.hostname or "localhost"
         # Use port 443 for HTTPS if no port specified, otherwise use specified port or default to 8000
@@ -162,13 +161,11 @@ def build_index(items, dataset, lang, model_name, out_path):
             port = 8000
         # Enable SSL for HTTPS
         ssl_enabled = parsed.scheme == "https"
-        print(f"DEBUG: Parsed hostname = {host}, port = {port}, SSL = {ssl_enabled}")
-        print(f"Connecting to ChromaDB server at {parsed.scheme}://{host}:{port} (SSL: {ssl_enabled})")
+        print(f"Connecting to ChromaDB server at {parsed.scheme}://{host}:{port}")
         try:
             client = chromadb.HttpClient(host=host, port=port, ssl=ssl_enabled)
-            print(f"DEBUG: HttpClient created successfully")
         except Exception as e:
-            print(f"DEBUG: Error creating HttpClient: {e}")
+            print(f"Error creating HttpClient: {e}")
             raise
     else:
         print(f"Using persistent ChromaDB client at {out_path}")

@@ -27,8 +27,17 @@ print(f"Model: {MODEL_NAME}")
 try:
     parsed = urlparse(CHROMA_SERVER_URL)
     host = parsed.hostname or "localhost"
-    port = parsed.port or 8000
-    client = chromadb.HttpClient(host=host, port=port)
+    # Use port 443 for HTTPS if no port specified, otherwise use specified port or default to 8000
+    if parsed.port:
+        port = parsed.port
+    elif parsed.scheme == "https":
+        port = 443
+    else:
+        port = 8000
+    # Enable SSL for HTTPS
+    ssl_enabled = parsed.scheme == "https"
+    print(f"Connecting to ChromaDB server at {parsed.scheme}://{host}:{port} (SSL: {ssl_enabled})")
+    client = chromadb.HttpClient(host=host, port=port, ssl=ssl_enabled)
     collections_cache = {}
     default_collections = ["dictionary_en", "ramayana_en"]
     for name in default_collections:
@@ -37,7 +46,7 @@ try:
             print(f"Connected to ChromaDB collection '{name}'")
         except Exception:
             print(f"Collection '{name}' not available yet. It will be loaded on demand.")
-    print(f"Connected to ChromaDB server at {host}:{port}")
+    print(f"Connected to ChromaDB server at {parsed.scheme}://{host}:{port}")
 except Exception as e:
     print(f"Error connecting to ChromaDB: {e}")
     sys.exit(1)
