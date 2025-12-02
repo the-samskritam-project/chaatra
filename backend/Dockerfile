@@ -33,6 +33,9 @@ COPY --from=builder /go/src/chaatra/backend/samskritam /root/samskritam
 # Import the dictionary.xml file
 COPY --from=builder /go/src/chaatra/backend/core/parser/dictionary.xml /root/dictionary.xml
 
+RUN mkdir -p /root/chroma_db
+COPY backend/chroma_db/valmiki_ramayan_shlokas_filtered.json /root/chroma_db/valmiki_ramayan_shlokas_filtered.json
+
 # Copy ramayana rarity data if needed
 COPY ramayana_classifier/shlokas_with_rarity.json /root/shlokas_with_rarity.json
 
