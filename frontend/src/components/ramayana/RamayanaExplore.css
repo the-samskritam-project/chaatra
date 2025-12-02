@@ -140,6 +140,23 @@
   display: block;
 }
 
+/* Styles for AlignedTextView integration */
+.explore-sanskrit-aligned {
+  font-size: 1.25rem;
+  line-height: 1.6;
+}
+
+.explore-translation-aligned {
+  margin: 0.75rem 0;
+}
+
+.explore-highlight {
+  background-color: rgba(124, 58, 237, 0.2) !important;
+  color: #4338ca;
+  font-weight: 500;
+}
+
+/* Legacy styles for backward compatibility */
 .explore-translation {
   margin: 0.75rem 0;
   display: flex;

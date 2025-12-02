@@ -5,12 +5,14 @@ export const splitShlokaLines = (text) => {
 
   let normalized = text;
 
-  // Replace numbered endings like "।।6.121.2।।" with a double bar
-  normalized = normalized.replace(/।।\d+(?:\.\d+)*।।/g, ' || ');
-  normalized = normalized.replace(/।।\d+(?:\.\d+)*$/g, ' || ');
+  // Remove numbered endings like "।।6.121.2।।" completely (don't replace with ||)
+  normalized = normalized.replace(/।।\d+(?:\.\d+)*।।/g, '');
+  normalized = normalized.replace(/।।\d+(?:\.\d+)*$/g, '');
 
   // Convert remaining danda punctuation into bars
+  // First handle double danda (||) - this marks the end of second line
   normalized = normalized.replace(/।।/g, ' || ');
+  // Then handle single danda (|) - this marks the end of first line
   normalized = normalized.replace(/।/g, ' | ');
 
   // Collapse whitespace for cleaner parsing
@@ -28,6 +30,7 @@ export const splitShlokaLines = (text) => {
       continue;
     }
 
+    // Include the delimiter in the line (| for first line, || for second line)
     const line = delimiter ? `${content} ${delimiter}`.trim() : content;
     if (line) {
       lines.push(line);
