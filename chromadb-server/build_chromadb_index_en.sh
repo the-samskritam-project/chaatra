@@ -36,9 +36,22 @@ RETRY_COUNT=0
 
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
     echo "DEBUG: Attempting to connect to $CHROMA_SERVER_URL..."
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$CHROMA_SERVER_URL/" 2>&1)
+    CURL_OUTPUT=$(curl -v -s -o /dev/null -w "%{http_code}" "$CHROMA_SERVER_URL/" 2>&1)
+    HTTP_CODE=$(echo "$CURL_OUTPUT" | tail -1)
     CURL_EXIT=$?
     echo "DEBUG: curl exit code: $CURL_EXIT, HTTP code: $HTTP_CODE"
+    echo "DEBUG: curl output: $CURL_OUTPUT"
+    
+    # Try DNS resolution test
+    if [[ "$CHROMA_SERVER_URL" =~ railway\.internal ]]; then
+        HOSTNAME=$(echo "$CHROMA_SERVER_URL" | sed -E 's|https?://([^:]+).*|\1|')
+        echo "DEBUG: Testing DNS resolution for $HOSTNAME..."
+        if nslookup "$HOSTNAME" 2>&1; then
+            echo "DEBUG: DNS resolution successful"
+        else
+            echo "DEBUG: DNS resolution failed!"
+        fi
+    fi
     
     if [ $CURL_EXIT -eq 0 ] && [ "$HTTP_CODE" != "000" ]; then
         echo "✓ ChromaDB server is ready! (HTTP $HTTP_CODE)"
@@ -51,7 +64,12 @@ while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
 done
 
 if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
-    echo "Error: ChromaDB server did not become ready in time"
+    echo "ERROR: ChromaDB server did not become ready in time"
+    echo "DEBUG: Final connection test..."
+    curl -v "$CHROMA_SERVER_URL/" || true
+    echo "DEBUG: Testing if hostname resolves..."
+    HOSTNAME=$(echo "$CHROMA_SERVER_URL" | sed -E 's|https?://([^:]+).*|\1|')
+    ping -c 1 "$HOSTNAME" 2>&1 || echo "DEBUG: Ping failed"
     exit 1
 fi
 
