@@ -6,11 +6,6 @@ FROM chromadb/chroma:latest
 # Set working directory
 WORKDIR /chroma
 
-# Configure ChromaDB for persistent mode
-ENV IS_PERSISTENT=TRUE
-ENV CHROMA_SERVER_HOST=0.0.0.0
-ENV CHROMA_SERVER_HTTP_PORT=8000
-
 # Create directory for persistent data
 RUN mkdir -p /chroma/chroma
 
