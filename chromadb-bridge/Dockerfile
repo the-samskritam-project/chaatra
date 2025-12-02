@@ -8,6 +8,9 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Install PyTorch CPU-only first (much smaller, no CUDA)
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
 # Install Python dependencies
 RUN pip install --no-cache-dir \
     flask \
@@ -19,7 +22,7 @@ RUN pip install --no-cache-dir \
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/paraphrase-multilingual-mpnet-base-v2')"
 
 # Copy bridge service
-COPY chromadb_bridge.py .
+COPY chromadb-bridge/chromadb_bridge.py .
 
 # Expose port
 EXPOSE 8001

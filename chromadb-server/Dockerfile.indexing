@@ -8,6 +8,9 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Install PyTorch CPU-only first (much smaller, no CUDA)
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
 # Install Python dependencies
 RUN pip install --no-cache-dir \
     chromadb \
@@ -16,12 +19,14 @@ RUN pip install --no-cache-dir \
 # Pre-download the sentence transformer model during build
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/paraphrase-multilingual-mpnet-base-v2')"
 
-# Copy build scripts
-COPY build_chromadb.py .
-COPY build_chromadb_index_en.sh .
-COPY build_ramayana_index_en.sh .
+# Copy build scripts and data files
+COPY chromadb-server/build_chromadb.py .
+COPY chromadb-server/build_chromadb_index_en.sh .
+COPY chromadb-server/build_ramayana_index_en.sh .
+COPY chromadb-server/parsed_dictionary.json .
+COPY chromadb-server/valmiki_ramayan_shlokas_filtered.json .
 RUN chmod +x *.sh
 
-# Default command
-CMD ["/bin/bash"]
+# Default command - runs both indexes
+CMD ["/bin/bash", "-c", "./build_chromadb_index_en.sh && ./build_ramayana_index_en.sh"]
 

@@ -29,14 +29,21 @@ fi
 
 # Wait for server to be ready
 echo "Waiting for ChromaDB server to be ready..."
+echo "DEBUG: CHROMA_SERVER_URL = $CHROMA_SERVER_URL"
 MAX_RETRIES=30
 RETRY_COUNT=0
 
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-    if curl -s "$CHROMA_SERVER_URL/" > /dev/null 2>&1; then
-        echo "✓ ChromaDB server is ready!"
+    echo "DEBUG: Attempting to connect to $CHROMA_SERVER_URL..."
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$CHROMA_SERVER_URL/" 2>&1)
+    CURL_EXIT=$?
+    echo "DEBUG: curl exit code: $CURL_EXIT, HTTP code: $HTTP_CODE"
+    
+    if [ $CURL_EXIT -eq 0 ] && [ "$HTTP_CODE" != "000" ]; then
+        echo "✓ ChromaDB server is ready! (HTTP $HTTP_CODE)"
         break
     fi
+    
     RETRY_COUNT=$((RETRY_COUNT + 1))
     echo "  Waiting... ($RETRY_COUNT/$MAX_RETRIES)"
     sleep 2
