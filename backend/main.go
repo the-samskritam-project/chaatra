@@ -32,6 +32,9 @@ func main() {
 		log.Println("ChromaDB not initialized (set CHROMA_URL env var to enable)")
 	}
 
+	// Initialize MongoDB if URI is provided (optional)
+	persistence.InitMongoDB()
+
 	var err error
 	h.Dictionary, err = service.ParseApteDictionary(`dictionary.xml`)
 	if err != nil {
@@ -53,6 +56,8 @@ func main() {
 	mux.HandleFunc("/v2/ramayana/context", h.RamayanaContextHandler)
 	mux.HandleFunc("/v2/ramayana/explore", h.RamayanaExploreHandler)
 	mux.HandleFunc("/v2/ramayana/summarize", h.RamayanaSummarizeHandler)
+	mux.HandleFunc("/v2/hitopadesa/chapters", h.HitopadesaChaptersHandler)
+	mux.HandleFunc("/v2/hitopadesa/verses", h.HitopadesaVersesHandler)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "https://chaatra-frontend-production.up.railway.app"},

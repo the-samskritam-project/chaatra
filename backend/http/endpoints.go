@@ -277,3 +277,51 @@ func RamayanaExploreHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// HitopadesaChaptersHandler returns all chapter metadata
+func HitopadesaChaptersHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	chapters, err := service.GetHitopadesaChapters()
+	if err != nil {
+		log.Printf("Error getting Hitopadesa chapters: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to get chapters: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(chapters)
+}
+
+// HitopadesaVersesHandler returns verses for a given chapter
+func HitopadesaVersesHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	chapterStr := r.URL.Query().Get("chapter")
+	if chapterStr == "" {
+		http.Error(w, "chapter parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	chapterNumber, err := strconv.Atoi(chapterStr)
+	if err != nil {
+		http.Error(w, "chapter must be a valid number", http.StatusBadRequest)
+		return
+	}
+
+	verses, err := service.GetHitopadesaVerses(chapterNumber)
+	if err != nil {
+		log.Printf("Error getting Hitopadesa verses for chapter %d: %v", chapterNumber, err)
+		http.Error(w, fmt.Sprintf("Failed to get verses: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(verses)
+}
