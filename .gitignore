@@ -28,3 +28,6 @@ venv/
 # ChromaDB and large files
 pre-processing/search_playground/v1/chroma_db/
 pre-processing/search_playground/v1/index.pkl
+
+# MongoDB data
+corpus/hitopadesa/mongodb_data/

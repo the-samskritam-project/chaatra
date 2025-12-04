@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: hitopadesa_mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      # Mount local data directory for persistence
+      - ./corpus/hitopadesa/mongodb_data:/data/db
+      # Optional: mount config file if needed
+      # - ./corpus/hitopadesa/mongodb.conf:/etc/mongod.conf
+    environment:
+      - MONGO_INITDB_DATABASE=hitopadesa
+    restart: unless-stopped
+    command: mongod --bind_ip_all
+
