@@ -6,9 +6,13 @@ import Dictionary from './components/dictionary/Dictionary';
 import Flashcards from './components/flashcards/Flashcards';
 import RamayanaSearch from './components/ramayana/RamayanaSearch';
 import RamayanaExplore from './components/ramayana/RamayanaExplore';
+import Hitopadesa from './components/hitopadesa/Hitopadesa';
 import Footer from './components/Footer';
 
 function App() {
+  // Check if Hitopadesa tab should be visible
+  const showHitopadesa = process.env.REACT_APP_SHOW_HITOPADESA === 'true';
+
   return (
     <div>
       <div className="tabs-container">
@@ -32,6 +36,7 @@ function App() {
                 </Tab>
                 <Tab>Ramayana</Tab>
                 <Tab>Explore</Tab>
+                {showHitopadesa && <Tab>Hitopadesa</Tab>}
               </TabList>
             </div>
           </div>
@@ -52,6 +57,12 @@ function App() {
             <TabPanel>
               <RamayanaExplore />
             </TabPanel>
+
+            {showHitopadesa && (
+              <TabPanel>
+                <Hitopadesa />
+              </TabPanel>
+            )}
           </div>
         </Tabs>
       </div>
