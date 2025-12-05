@@ -144,7 +144,12 @@ function Hitopadesa() {
         <>
           <div className="hitopadesa-verses">
             {currentVerses.map((verse) => (
-              <HitopadesaVerse key={verse.verse_number} verse={verse} />
+              <HitopadesaVerse 
+                key={verse.verse_number} 
+                verse={verse} 
+                apiUrl={apiUrl}
+                onUpdate={() => fetchVerses(selectedChapter)}
+              />
             ))}
           </div>
 

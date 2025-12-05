@@ -30,15 +30,22 @@ type WordTranslation struct {
 	Translation string `json:"translation" bson:"translation"`
 }
 
+// EditedTranslation represents an edited translation with timestamp
+type EditedTranslation struct {
+	Translation string    `json:"translation" bson:"translation"`
+	EditedAt    time.Time `json:"edited_at" bson:"edited_at"`
+}
+
 // HitopadesaVerse represents a verse document
 type HitopadesaVerse struct {
-	VerseNumber              string            `json:"verse_number" bson:"verse_number"`
-	ChapterNumber            int               `json:"chapter_number" bson:"chapter_number"`
-	VerseIndex               int               `json:"verse_index" bson:"verse_index"`
-	OriginalIast             string            `json:"original_iast" bson:"original_iast"`
-	TransliteratedDevanagari string            `json:"transliterated_devanagari" bson:"transliterated_devanagari"`
-	WordByWordTranslation    []WordTranslation `json:"word_by_word_translation" bson:"word_by_word_translation"`
-	FullTranslation          string            `json:"full_translation" bson:"full_translation"`
+	VerseNumber              string              `json:"verse_number" bson:"verse_number"`
+	ChapterNumber            int                 `json:"chapter_number" bson:"chapter_number"`
+	VerseIndex               int                 `json:"verse_index" bson:"verse_index"`
+	OriginalIast             string              `json:"original_iast" bson:"original_iast"`
+	TransliteratedDevanagari string              `json:"transliterated_devanagari" bson:"transliterated_devanagari"`
+	WordByWordTranslation    []WordTranslation   `json:"word_by_word_translation" bson:"word_by_word_translation"`
+	FullTranslation          string              `json:"full_translation" bson:"full_translation"`
+	EditedTranslations       []EditedTranslation `json:"edited_translations" bson:"edited_translations"`
 }
 
 // InitMongoDB initializes MongoDB connection
@@ -125,4 +132,50 @@ func GetHitopadesaVerses(chapterNumber int) ([]HitopadesaVerse, error) {
 	}
 
 	return verses, nil
+}
+
+// UpdateHitopadesaVerseTranslation appends a new edited translation to a verse
+func UpdateHitopadesaVerseTranslation(verseNumber string, editedTranslation string) error {
+	if mongoDB == nil {
+		return fmt.Errorf("MongoDB not initialized")
+	}
+
+	// Parse verse number to get chapter number
+	// Format: "chapter.verse" (e.g., "0.1")
+	var chapterNumber int
+	_, err := fmt.Sscanf(verseNumber, "%d.", &chapterNumber)
+	if err != nil {
+		return fmt.Errorf("invalid verse number format: %w", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	collectionName := fmt.Sprintf("hitopadesa_chapter_%d", chapterNumber)
+	collection := mongoDB.Collection(collectionName)
+
+	// Create the edited translation entry with current timestamp
+	editedEntry := EditedTranslation{
+		Translation: editedTranslation,
+		EditedAt:    time.Now(),
+	}
+
+	// Use $push to append to the edited_translations array
+	filter := bson.M{"verse_number": verseNumber}
+	update := bson.M{
+		"$push": bson.M{
+			"edited_translations": editedEntry,
+		},
+	}
+
+	result, err := collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return fmt.Errorf("failed to update verse translation: %w", err)
+	}
+
+	if result.MatchedCount == 0 {
+		return fmt.Errorf("verse not found: %s", verseNumber)
+	}
+
+	return nil
 }

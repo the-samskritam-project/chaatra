@@ -58,10 +58,11 @@ func main() {
 	mux.HandleFunc("/v2/ramayana/summarize", h.RamayanaSummarizeHandler)
 	mux.HandleFunc("/v2/hitopadesa/chapters", h.HitopadesaChaptersHandler)
 	mux.HandleFunc("/v2/hitopadesa/verses", h.HitopadesaVersesHandler)
+	mux.HandleFunc("/v2/hitopadesa/verses/", h.HitopadesaUpdateVerseHandler)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "https://chaatra-frontend-production.up.railway.app"},
-		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization"}, // Assuming you might need Authorization
 		AllowCredentials: true,
 	})

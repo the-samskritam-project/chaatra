@@ -22,3 +22,14 @@ func GetHitopadesaVerses(chapterNumber int) ([]persistence.HitopadesaVerse, erro
 	}
 	return verses, nil
 }
+
+// UpdateHitopadesaVerseTranslation updates a verse with a new edited translation
+func UpdateHitopadesaVerseTranslation(verseNumber string, editedTranslation string) error {
+	if verseNumber == "" {
+		return fmt.Errorf("verse number is required")
+	}
+	if editedTranslation == "" {
+		return fmt.Errorf("edited translation cannot be empty")
+	}
+	return persistence.UpdateHitopadesaVerseTranslation(verseNumber, editedTranslation)
+}
