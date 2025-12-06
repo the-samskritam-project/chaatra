@@ -14,7 +14,7 @@ import requests
 
 
 OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions"
-DEFAULT_MODEL = "gpt-4o-mini"
+DEFAULT_MODEL = "gpt-4o"  # Latest OpenAI model with improved multilingual capabilities
 
 
 def split_devanagari_words(text: str) -> List[str]:
@@ -80,7 +80,7 @@ def translate_devanagari_word_by_word(
     Args:
         text: Devanagari Sanskrit text
         api_key: OpenAI API key
-        model: OpenAI model to use (default: gpt-4o-mini)
+        model: OpenAI model to use (default: gpt-4o)
         
     Returns:
         List of dictionaries with 'word' and 'translation' keys
@@ -295,7 +295,7 @@ def translate_devanagari_full(
     Args:
         text: Devanagari Sanskrit text
         api_key: OpenAI API key
-        model: OpenAI model to use (default: gpt-4o-mini)
+        model: OpenAI model to use (default: gpt-4o)
         
     Returns:
         Full English translation of the text
@@ -378,7 +378,7 @@ def translate_devanagari_complete(
     Args:
         text: Devanagari Sanskrit text
         api_key: OpenAI API key
-        model: OpenAI model to use (default: gpt-4o-mini)
+        model: OpenAI model to use (default: gpt-4o)
         
     Returns:
         Tuple of (word_by_word_translations, full_translation)
