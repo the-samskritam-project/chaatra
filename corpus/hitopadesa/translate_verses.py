@@ -2,17 +2,15 @@
 """
 Process Hitopadesa verses and prose, adding word-by-word translations using OpenAI.
 
-Reads hitopadesa_verses.json (which contains both verses and prose),
-processes all items, and outputs hitopadesa_verses_translated.json with translations.
+Reads from hitopadesa_raw_transliterated MongoDB collection,
+processes items in batches, and writes to hitopadesa_raw_translated collection.
+Tracks progress in hitopadesa_translation_run collection for resume capability.
 
-Supports both verse and prose items from the updated JSON format.
+Supports both verse and prose items with batch processing and progress tracking.
 """
 
-import json
 import os
 import sys
-import time
-from typing import List, Dict, Optional
 
 try:
     from dotenv import load_dotenv
@@ -20,105 +18,46 @@ except ImportError:
     print("Warning: python-dotenv not installed. Install with: pip install python-dotenv")
     load_dotenv = None
 
-from translator import translate_devanagari_complete
+try:
+    from pymongo.errors import ConnectionFailure
+except ImportError:
+    print("Error: pymongo not installed. Install with: pip install pymongo")
+    sys.exit(1)
 
-
-def load_items(json_path: str) -> List[Dict]:
-    """Load verses and prose from JSON file."""
-    with open(json_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-
-def save_items(items: List[Dict], output_path: str) -> None:
-    """Save verses and prose to JSON file."""
-    with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(items, f, ensure_ascii=False, indent=2)
-
-
-def process_items(
-    items: List[Dict],
-    api_key: str,
-    limit: Optional[int] = None,
-    delay: float = 1.0,
-    model: str = "gpt-4o"
-) -> List[Dict]:
-    """
-    Process verses and prose items and add word-by-word translations.
-    
-    Args:
-        items: List of verse/prose dictionaries (with 'type' field)
-        api_key: OpenAI API key
-        limit: Number of items to process (None = all items)
-        delay: Delay between API calls in seconds (default: 1.0)
-        model: OpenAI model to use (default: gpt-4o)
-        
-    Returns:
-        List of items with added word_by_word_translation and full_translation fields
-    """
-    processed_items = []
-    processed_count = 0
-    total_to_process = limit if limit is not None else len(items)
-    
-    for i, item in enumerate(items):
-        if limit is not None and processed_count >= limit:
-            # Add remaining items without translation
-            processed_items.append(item)
-            continue
-        
-        item_type = item.get('type', 'unknown')
-        item_number = item.get('verse_number') or item.get('prose_number', f'unknown_{i}')
-        devanagari_text = item.get('transliterated_devanagari', '')
-        
-        if not devanagari_text:
-            print(f"Warning: {item_type.capitalize()} {item_number} has no Devanagari text, skipping translation")
-            processed_items.append(item)
-            continue
-        
-        print(f"Processing {item_type} {item_number} ({processed_count + 1}/{total_to_process})...")
-        
-        try:
-            # Translate with both word-by-word and full translation in one call
-            translations, full_translation = translate_devanagari_complete(
-                devanagari_text, 
-                api_key,
-                model=model
-            )
-            
-            # Add translations to item
-            item_with_translation = item.copy()
-            item_with_translation['word_by_word_translation'] = translations
-            item_with_translation['full_translation'] = full_translation
-            
-            processed_items.append(item_with_translation)
-            processed_count += 1
-            
-            print(f"  ✓ Translated {len(translations)} words")
-            print(f"  ✓ Full translation: {full_translation[:60]}..." if len(full_translation) > 60 else f"  ✓ Full translation: {full_translation}")
-            
-            # Rate limiting: delay between API calls
-            if (limit is None or processed_count < limit) and i < len(items) - 1:
-                time.sleep(delay)
-                
-        except Exception as e:
-            print(f"  ✗ Error translating {item_type} {item_number}: {e}")
-            # Add item without translation
-            processed_items.append(item)
-            continue
-    
-    return processed_items
+from utils.mongodb_utils import (
+    connect_mongodb,
+    load_items_from_mongodb,
+    get_already_translated_ids,
+    write_translated_batch_to_mongodb
+)
+from utils.run_tracker import create_or_get_run, update_run_progress
+from processors.translation_processor import process_batch
+from utils.item_utils import get_unique_id
+from utils.batch_processor import create_batches
 
 
 def main():
-    """Main function to process verses and prose and generate translated JSON."""
-    input_path = 'hitopadesa_verses.json'
-    output_path = 'hitopadesa_verses_translated.json'
+    """Main function to process verses and prose and write to MongoDB in batches."""
+    batch_size = 10
+    delay = 1.0  # Delay between API calls in seconds
     
-    # Load environment variables from .env file if available
+    # Load environment variables
     if load_dotenv:
-        load_dotenv()
+        env_path = os.path.join(os.path.dirname(__file__), '../.env')
+        load_dotenv(dotenv_path=env_path)
     
-    # Get API key from environment (from .env file or environment variable)
+    # Get configuration
+    mongodb_uri = os.getenv('MONGODB_URI')
+    database_name = os.getenv('MONGODB_DATABASE', 'hitopadesa')
     api_key = os.getenv('OPENAI_API_KEY')
+    model = os.getenv('OPENAI_MODEL', 'gpt-4o')
+    
+    if not mongodb_uri:
+        print("Error: MONGODB_URI environment variable not set")
+        print("Please set it in your .env file or environment:")
+        print("  MONGODB_URI=mongodb://localhost:27017/")
+        sys.exit(1)
+    
     if not api_key:
         print("Error: OPENAI_API_KEY not found")
         print("Please set it in one of the following ways:")
@@ -126,60 +65,157 @@ def main():
         print("  2. Or set environment variable: export OPENAI_API_KEY='your-api-key'")
         sys.exit(1)
     
-    # Get model from environment or use default
-    model = os.getenv('OPENAI_MODEL', 'gpt-4o')
+    print("Hitopadesa Translation to MongoDB")
+    print("=" * 60)
+    print(f"Database: {database_name}")
+    print(f"Input collection: hitopadesa_raw_transliterated")
+    print(f"Output collection: hitopadesa_raw_translated")
+    print(f"Run tracking: hitopadesa_translation_run")
+    print(f"Model: {model}")
+    print(f"Batch size: {batch_size}")
+    print("=" * 60)
     
-    print(f"Loading items from {input_path}...")
+    # Connect to MongoDB
+    print(f"\nConnecting to MongoDB...")
     try:
-        items = load_items(input_path)
-        print(f"Loaded {len(items)} items")
+        db, client = connect_mongodb(mongodb_uri, database_name)
+        transliterated_collection = db['hitopadesa_raw_transliterated']
+        translated_collection = db['hitopadesa_raw_translated']
+    except ConnectionFailure as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+    
+    # Load items from transliterated collection
+    print(f"\nLoading items from hitopadesa_raw_transliterated...")
+    items = load_items_from_mongodb(transliterated_collection)
+    
+    if not items:
+        print("Error: No items found in hitopadesa_raw_transliterated collection")
+        print("Please run transliterate_hitopadesa.py first")
+        client.close()
+        sys.exit(1)
+    
+    verse_count = sum(1 for item in items if item.get('type') == 'verse')
+    prose_count = sum(1 for item in items if item.get('type') == 'prose')
+    
+    print(f"Loaded {len(items)} items")
+    print(f"  - {verse_count} verses")
+    print(f"  - {prose_count} prose entries")
+    
+    # Get already translated IDs for resume
+    print(f"\nChecking for already translated items...")
+    already_translated_ids = get_already_translated_ids(translated_collection)
+    already_count = len(already_translated_ids)
+    print(f"Found {already_count} already translated items")
+    
+    # Filter out already translated items
+    items_to_process = [item for item in items if get_unique_id(item) not in already_translated_ids]
+    remaining_count = len(items_to_process)
+    
+    if remaining_count == 0:
+        print("\nAll items are already translated!")
+        client.close()
+        return
+    
+    print(f"Items remaining to translate: {remaining_count}")
+    
+    # Create or get run
+    run_id = create_or_get_run(db, model)
+    update_run_progress(db, run_id, already_count, len(items), 0)
+    
+    # Process in batches
+    print(f"\nProcessing {remaining_count} items in batches of {batch_size}...")
+    batches = create_batches(items_to_process, batch_size)
+    total_batches = len(batches)
+    total_inserted = 0
+    total_errors = 0
+    
+    try:
+        for batch_num, batch in enumerate(batches, 1):
+            print(f"\n--- Batch {batch_num}/{total_batches} ---")
+            
+            # Process batch
+            translated_batch = process_batch(
+                batch,
+                api_key,
+                model,
+                delay=delay,
+                already_translated_ids=already_translated_ids
+            )
+            
+            # Write batch to MongoDB
+            if translated_batch:
+                inserted = write_translated_batch_to_mongodb(
+                    translated_batch,
+                    translated_collection,
+                    model,
+                    batch_num,
+                    total_batches
+                )
+                total_inserted += inserted
+            
+            # Update run progress
+            processed_so_far = already_count + (batch_num * batch_size)
+            if processed_so_far > len(items):
+                processed_so_far = len(items)
+            
+            update_run_progress(
+                db,
+                run_id,
+                processed_so_far,
+                len(items),
+                batch_num
+            )
         
-        # Count verses and prose
-        verse_count = sum(1 for item in items if item.get('type') == 'verse')
-        prose_count = sum(1 for item in items if item.get('type') == 'prose')
-        print(f"  - {verse_count} verses")
-        print(f"  - {prose_count} prose entries")
-    except FileNotFoundError:
-        print(f"Error: File {input_path} not found")
-        sys.exit(1)
-    except json.JSONDecodeError as e:
-        print(f"Error: Failed to parse JSON file: {e}")
-        sys.exit(1)
-    
-    # Process all items
-    print(f"\nProcessing all {len(items)} items using model: {model}...")
-    processed_items = process_items(items, api_key, limit=None, model=model)
-    
-    print(f"\nSaving to {output_path}...")
-    save_items(processed_items, output_path)
-    
-    translated_count = sum(
-        1 for item in processed_items 
-        if 'word_by_word_translation' in item and item['word_by_word_translation']
-    )
-    
-    full_translated_count = sum(
-        1 for item in processed_items 
-        if 'full_translation' in item and item['full_translation']
-    )
-    
-    verse_translated = sum(
-        1 for item in processed_items 
-        if item.get('type') == 'verse' and 'word_by_word_translation' in item and item['word_by_word_translation']
-    )
-    
-    prose_translated = sum(
-        1 for item in processed_items 
-        if item.get('type') == 'prose' and 'word_by_word_translation' in item and item['word_by_word_translation']
-    )
-    
-    print(f"\nDone! Processed {translated_count} items with word-by-word translations.")
-    print(f"  - {verse_translated} verses")
-    print(f"  - {prose_translated} prose entries")
-    print(f"Processed {full_translated_count} items with full translations.")
-    print(f"Output saved to {output_path}")
+        # Mark run as completed
+        update_run_progress(
+            db,
+            run_id,
+            len(items),
+            len(items),
+            total_batches,
+            status='completed'
+        )
+        
+        print(f"\n{'='*60}")
+        print(f"Translation Summary:")
+        print(f"  Total items: {len(items)}")
+        print(f"  Already translated: {already_count}")
+        print(f"  Newly translated: {total_inserted}")
+        print(f"  Verses: {verse_count}")
+        print(f"  Prose entries: {prose_count}")
+        print(f"  Run ID: {run_id}")
+        print(f"{'='*60}")
+        
+    except KeyboardInterrupt:
+        print("\n\n⚠ Process interrupted by user")
+        update_run_progress(
+            db,
+            run_id,
+            already_count + total_inserted,
+            len(items),
+            (total_inserted // batch_size) + 1,
+            status='running',  # Keep as running so it can be resumed
+            error_message='Interrupted by user'
+        )
+        print(f"Progress saved. Run ID: {run_id}")
+        print("You can resume by running this script again.")
+    except Exception as e:
+        print(f"\n\n✗ Critical error: {e}")
+        update_run_progress(
+            db,
+            run_id,
+            already_count + total_inserted,
+            len(items),
+            (total_inserted // batch_size) + 1,
+            status='failed',
+            error_message=str(e)
+        )
+        raise
+    finally:
+        client.close()
+        print("\n✓ Translation process completed!")
 
 
 if __name__ == '__main__':
     main()
-
