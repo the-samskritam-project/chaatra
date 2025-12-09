@@ -188,8 +188,8 @@ Examples:
     )
     parser.add_argument(
         '--model',
-        default='gpt-5',
-        help='OpenAI model to use (default: gpt-5)'
+        default='gpt-4o',
+        help='OpenAI model to use (default: gpt-4o). Options: gpt-4o, gpt-4-turbo, gpt-4, o1-preview, o1-mini'
     )
     parser.add_argument(
         '--delay',

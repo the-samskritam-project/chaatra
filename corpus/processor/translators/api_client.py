@@ -10,7 +10,7 @@ import requests
 
 
 OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions"
-DEFAULT_MODEL = "gpt-5"
+DEFAULT_MODEL = "gpt-4o"
 
 
 def make_openai_request(
@@ -64,6 +64,16 @@ def make_openai_request(
             headers=headers,
             timeout=30
         )
+        
+        # Get error details if request failed
+        if not response.ok:
+            try:
+                error_data = response.json()
+                error_msg = error_data.get('error', {}).get('message', response.text)
+                raise ValueError(f"OpenAI API error ({response.status_code}): {error_msg}")
+            except json.JSONDecodeError:
+                raise ValueError(f"OpenAI API request failed ({response.status_code}): {response.text}")
+        
         response.raise_for_status()
         
         data = response.json()

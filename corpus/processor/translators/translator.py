@@ -25,7 +25,7 @@ def translate_devanagari_word_by_word(
     Args:
         text: Devanagari Sanskrit text
         api_key: OpenAI API key
-        model: OpenAI model to use (default: gpt-5)
+        model: OpenAI model to use (default: gpt-4o)
         
     Returns:
         List of dictionaries with 'word' and 'translation' keys
@@ -96,7 +96,7 @@ def translate_devanagari_full(
     Args:
         text: Devanagari Sanskrit text
         api_key: OpenAI API key
-        model: OpenAI model to use (default: gpt-5)
+        model: OpenAI model to use (default: gpt-4o)
         
     Returns:
         Full English translation of the text
@@ -145,7 +145,7 @@ def translate_devanagari_complete(
     Args:
         text: Devanagari Sanskrit text
         api_key: OpenAI API key
-        model: OpenAI model to use (default: gpt-5)
+        model: OpenAI model to use (default: gpt-4o)
         
     Returns:
         Tuple of (word_by_word_translations, full_translation)

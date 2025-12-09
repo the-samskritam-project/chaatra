@@ -45,7 +45,7 @@ def translate_verses(
     delay: float = 1.0,
     skip_translation: bool = False,
     api_key: str = None,
-    model: str = 'gpt-5'
+    model: str = 'gpt-4o'
 ):
     """
     Process verses and prose and write to MongoDB in batches.
@@ -361,7 +361,7 @@ if __name__ == '__main__':
                        help='Skip translation and only update metadata')
     parser.add_argument('--api-key', help='OpenAI API key', 
                        default=os.getenv('OPENAI_API_KEY'))
-    parser.add_argument('--model', default='gpt-5', help='OpenAI model')
+    parser.add_argument('--model', default='gpt-4o', help='OpenAI model')
     
     args = parser.parse_args()
     
