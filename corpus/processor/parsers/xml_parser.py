@@ -68,8 +68,25 @@ def parse_xml(xml_path: str, verse_pattern: str) -> List[Dict[str, str]]:
     sequence_index = 0  # Global sequence counter across all items
     chapter_sequence_counters = {}  # chapter -> sequence counter (resets per chapter)
     
-    # Iterate through all direct children of body in order
-    for elem in body:
+    # Get all lg and p elements recursively (to handle div wrappers)
+    # We need to maintain document order, so we iterate through body and collect elements
+    # Use a set to track which elements we've already added (to avoid duplicates)
+    seen_elements = set()
+    all_elements = []
+    
+    # Find all lg and p elements (with namespace)
+    lg_elements = body.findall('.//tei:lg', ns) if body.findall('.//tei:lg', ns) else body.findall('.//lg')
+    p_elements = body.findall('.//tei:p', ns) if body.findall('.//tei:p', ns) else body.findall('.//p')
+    all_target_elements = lg_elements + p_elements
+    
+    # Iterate through body in document order and collect elements when we encounter them
+    for elem in body.iter():
+        if elem in all_target_elements and id(elem) not in seen_elements:
+            all_elements.append(elem)
+            seen_elements.add(id(elem))
+    
+    # Iterate through all lg and p elements in document order
+    for elem in all_elements:
         tag = elem.tag
         # Remove namespace prefix if present
         if '}' in tag:
