@@ -9,6 +9,47 @@ to Devanagari script.
 import re
 from typing import Optional
 
+try:
+    # Preferred: use indic-transliteration for accurate conjuncts/half-consonants
+    from indic_transliteration.sanscript import (
+        DEVANAGARI,
+        IAST,
+        transliterate,
+    )
+except ImportError:
+    transliterate = None
+    DEVANAGARI = None
+    IAST = None
+
+DEV_VOWEL_SIGNS = {
+    'अ': '',
+    'आ': 'ा',
+    'इ': 'ि',
+    'ई': 'ी',
+    'उ': 'ु',
+    'ऊ': 'ू',
+    'ऋ': 'ृ',
+    'ॠ': 'ॄ',
+    'ऌ': 'ॢ',
+    'ॡ': 'ॣ',
+    'ए': 'े',
+    'ऐ': 'ै',
+    'ओ': 'ो',
+    'औ': 'ौ',
+}
+
+
+def _join_consonant_vowel(text: str) -> str:
+    """Join consonant + halant + independent vowel into consonant + vowel sign."""
+    def repl(match):
+        cons_halant = match.group(1)  # e.g., म्
+        vowel = match.group(2)        # e.g., अ
+        cons = cons_halant[:-1]       # drop halant
+        sign = DEV_VOWEL_SIGNS.get(vowel, '')
+        return cons + sign
+
+    return re.sub(r'([क-ह]्)([अआइईउऊऋॠऌॡएऐओऔ])', repl, text)
+
 
 # IAST to Devanagari mapping
 IAST_VOWELS = {
@@ -65,7 +106,24 @@ def iast_to_devanagari(text: str) -> str:
     """
     if not text:
         return ''
-    
+
+    # Normalize intra-word hyphens that should not break conjuncts (e.g., yan-mūrdhni)
+    # Remove hyphens when they occur between letters.
+    text = re.sub(r'(?<=\w)-(?!\s)(?=\w)', '', text)
+
+    # Normalize split sandhi like "satām astu" -> "satāmastu" (join nasal+vowel across space)
+    text = re.sub(r'(?<=[mṃṁṅñṇ])\\s+(?=[aāiīuūṛṝḷḹeoAEO])', '', text, flags=re.IGNORECASE)
+
+    # Prefer library transliteration for correctness (handles conjuncts/virama)
+    if transliterate and IAST and DEVANAGARI:
+        output = transliterate(text, IAST, DEVANAGARI)
+        # Join any virama-ending across spaces: "् " -> "्"
+        output = re.sub(r'्\s+', '्', output)
+        # Join consonant-halant + independent vowel into consonant + vowel sign
+        output = _join_consonant_vowel(output)
+        return output
+
+    # Legacy fallback: existing in-repo transliteration
     # Check if already in Devanagari
     devanagari_pattern = re.compile(r'^[\u0900-\u097F\s|]+$')
     if devanagari_pattern.match(text):
