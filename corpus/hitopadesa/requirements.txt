@@ -1,2 +1,0 @@
-indic-transliteration>=2.3.58
-

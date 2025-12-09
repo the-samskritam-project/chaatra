@@ -8,7 +8,7 @@ services:
       - "27017:27017"
     volumes:
       # Mount local data directory for persistence
-      - ./corpus/hitopadesa/mongodb_data:/data/db
+      - ./corpus/mongodb_data:/data/db
       # Optional: mount config file if needed
       # - ./corpus/hitopadesa/mongodb.conf:/etc/mongod.conf
     environment:
