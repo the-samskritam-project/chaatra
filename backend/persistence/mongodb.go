@@ -36,11 +36,17 @@ type EditedTranslation struct {
 	EditedAt    time.Time `json:"edited_at" bson:"edited_at"`
 }
 
-// HitopadesaVerse represents a verse document
+// HitopadesaVerse represents a verse or prose document
 type HitopadesaVerse struct {
-	VerseNumber              string              `json:"verse_number" bson:"verse_number"`
+	ID                       interface{}         `json:"_id,omitempty" bson:"_id,omitempty"` // MongoDB _id field
+	Type                     string              `json:"type" bson:"type"`                   // "verse" or "prose"
+	VerseNumber              string              `json:"verse_number,omitempty" bson:"verse_number,omitempty"`
+	ProseNumber              string              `json:"prose_number,omitempty" bson:"prose_number,omitempty"`
 	ChapterNumber            int                 `json:"chapter_number" bson:"chapter_number"`
-	VerseIndex               int                 `json:"verse_index" bson:"verse_index"`
+	VerseIndex               int                 `json:"verse_index,omitempty" bson:"verse_index,omitempty"`                       // For verses
+	ProseIndex               int                 `json:"prose_index,omitempty" bson:"prose_index,omitempty"`                       // For prose
+	SequenceIndex            *int                `json:"sequence_index,omitempty" bson:"sequence_index,omitempty"`                 // Global sequence index
+	ChapterSequenceIndex     int                 `json:"chapter_sequence_index,omitempty" bson:"chapter_sequence_index,omitempty"` // Sequence within chapter
 	OriginalIast             string              `json:"original_iast" bson:"original_iast"`
 	TransliteratedDevanagari string              `json:"transliterated_devanagari" bson:"transliterated_devanagari"`
 	WordByWordTranslation    []WordTranslation   `json:"word_by_word_translation" bson:"word_by_word_translation"`
@@ -119,7 +125,13 @@ func GetHitopadesaVerses(chapterNumber int) ([]HitopadesaVerse, error) {
 	collectionName := fmt.Sprintf("hitopadesa_chapter_%d", chapterNumber)
 	collection := mongoDB.Collection(collectionName)
 
-	sortOpt := bson.D{{Key: "verse_index", Value: 1}}
+	// Sort by chapter_sequence_index to preserve interleaved order of verses and prose
+	// Fallback to verse_index/prose_index if chapter_sequence_index is missing
+	sortOpt := bson.D{
+		{Key: "chapter_sequence_index", Value: 1},
+		{Key: "verse_index", Value: 1},
+		{Key: "prose_index", Value: 1},
+	}
 	cursor, err := collection.Find(ctx, bson.M{}, options.Find().SetSort(sortOpt))
 	if err != nil {
 		return nil, fmt.Errorf("failed to query verses for chapter %d: %w", chapterNumber, err)
@@ -130,6 +142,54 @@ func GetHitopadesaVerses(chapterNumber int) ([]HitopadesaVerse, error) {
 	if err := cursor.All(ctx, &verses); err != nil {
 		return nil, fmt.Errorf("failed to decode verses: %w", err)
 	}
+
+	// Infer type if missing and normalize data
+	verseCount := 0
+	proseCount := 0
+	for i := range verses {
+		// Infer type from available fields if missing
+		if verses[i].Type == "" {
+			// First, check _id field (most reliable - format: "verse_X.Y" or "prose_X.Y")
+			if verses[i].ID != nil {
+				if idStr, ok := verses[i].ID.(string); ok {
+					if len(idStr) >= 6 && idStr[:6] == "prose_" {
+						verses[i].Type = "prose"
+					} else if len(idStr) >= 6 && idStr[:6] == "verse_" {
+						verses[i].Type = "verse"
+					}
+				}
+			}
+
+			// If still not set, check verse_number/prose_number
+			if verses[i].Type == "" {
+				if verses[i].VerseNumber != "" {
+					verses[i].Type = "verse"
+				} else if verses[i].ProseNumber != "" {
+					verses[i].Type = "prose"
+				}
+			}
+
+			// If still not set, check verse_index vs prose_index
+			if verses[i].Type == "" {
+				if verses[i].VerseIndex > 0 {
+					verses[i].Type = "verse"
+				} else if verses[i].ProseIndex > 0 {
+					verses[i].Type = "prose"
+				} else {
+					// Last resort: default to verse
+					verses[i].Type = "verse"
+				}
+			}
+		}
+
+		// Count for logging
+		if verses[i].Type == "verse" {
+			verseCount++
+		} else if verses[i].Type == "prose" {
+			proseCount++
+		}
+	}
+	log.Printf("GetHitopadesaVerses chapter %d: returned %d items (%d verses, %d prose)", chapterNumber, len(verses), verseCount, proseCount)
 
 	return verses, nil
 }

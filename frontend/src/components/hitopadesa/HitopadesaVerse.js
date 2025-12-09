@@ -60,7 +60,8 @@ function HitopadesaVerse({ verse, apiUrl, onUpdate }) {
     setError('');
 
     try {
-      const response = await fetch(`${apiUrl}/v2/hitopadesa/verses/${verse.verse_number}`, {
+      const itemNumber = getItemNumber();
+      const response = await fetch(`${apiUrl}/v2/hitopadesa/verses/${itemNumber}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -105,16 +106,41 @@ function HitopadesaVerse({ verse, apiUrl, onUpdate }) {
     }
   };
 
+  // Get the item number (verse_number or prose_number)
+  const getItemNumber = () => {
+    return verse.verse_number || verse.prose_number || '';
+  };
+
+  // Get the type label
+  const getTypeLabel = () => {
+    const type = verse.type || (verse.verse_number ? 'verse' : 'prose');
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  };
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Rendering HitopadesaVerse:', {
+      type: verse.type,
+      verse_number: verse.verse_number,
+      prose_number: verse.prose_number,
+      chapter_sequence_index: verse.chapter_sequence_index
+    });
+  }, [verse]);
+
   return (
     <div className="hitopadesa-verse">
       <div className="hitopadesa-verse-header">
-        <span className="hitopadesa-verse-id">{verse.verse_number}</span>
+        <span className="hitopadesa-verse-type">{getTypeLabel()}</span>
+        <span className="hitopadesa-verse-id">{getItemNumber()}</span>
+        {verse.chapter_sequence_index && (
+          <span className="hitopadesa-sequence-number">#{verse.chapter_sequence_index}</span>
+        )}
       </div>
 
       {verse.transliterated_devanagari && (
         <div className="hitopadesa-devanagari">
-          {splitDevanagariLines(verse.transliterated_devanagari).map((line, idx) => (
-            <div key={`devanagari-${verse.verse_number}-${idx}`} className="hitopadesa-line">
+            {splitDevanagariLines(verse.transliterated_devanagari).map((line, idx) => (
+            <div key={`devanagari-${getItemNumber()}-${idx}`} className="hitopadesa-line">
               {line}
             </div>
           ))}
@@ -129,7 +155,7 @@ function HitopadesaVerse({ verse, apiUrl, onUpdate }) {
         <div className="hitopadesa-word-by-word">
           <div className="hitopadesa-word-list">
             {verse.word_by_word_translation.map((item, idx) => (
-              <span key={`word-${verse.verse_number}-${idx}`} className="hitopadesa-word-item">
+              <span key={`word-${getItemNumber()}-${idx}`} className="hitopadesa-word-item">
                 <span className="hitopadesa-word">{item.word}</span>
                 <span className="hitopadesa-word-translation">({item.translation})</span>
               </span>

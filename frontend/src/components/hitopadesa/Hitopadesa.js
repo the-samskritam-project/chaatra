@@ -65,7 +65,22 @@ function Hitopadesa() {
         throw new Error(`Failed to fetch verses: ${response.statusText}`);
       }
       const data = await response.json();
-      setVerses(data);
+      console.log('Fetched data:', data.length, 'items');
+      console.log('Sample items:', data.slice(0, 3));
+      
+      // Sort by chapter_sequence_index as fallback (backend should already sort, but ensure client-side order)
+      const sortedData = [...data].sort((a, b) => {
+        const aSeq = a.chapter_sequence_index || 0;
+        const bSeq = b.chapter_sequence_index || 0;
+        return aSeq - bSeq;
+      });
+      
+      // Log counts
+      const verseCount = sortedData.filter(item => item.type === 'verse' || item.verse_number).length;
+      const proseCount = sortedData.filter(item => item.type === 'prose' || item.prose_number).length;
+      console.log(`Sorted: ${sortedData.length} items (${verseCount} verses, ${proseCount} prose)`);
+      
+      setVerses(sortedData);
     } catch (err) {
       console.error('Error fetching verses:', err);
       setError('Unable to load verses. Please try again.');
@@ -113,7 +128,7 @@ function Hitopadesa() {
             )}
             {chapters.map((chapter) => (
               <option key={chapter.chapter_number} value={chapter.chapter_number}>
-                Chapter {chapter.chapter_number} ({chapter.verse_count} verses)
+                Chapter {chapter.chapter_number}
               </option>
             ))}
           </select>
@@ -143,14 +158,20 @@ function Hitopadesa() {
       {!isLoadingVerses && currentVerses.length > 0 && (
         <>
           <div className="hitopadesa-verses">
-            {currentVerses.map((verse) => (
-              <HitopadesaVerse 
-                key={verse.verse_number} 
-                verse={verse} 
-                apiUrl={apiUrl}
-                onUpdate={() => fetchVerses(selectedChapter)}
-              />
-            ))}
+            {currentVerses.map((verse) => {
+              // Use chapter_sequence_index for key if available, otherwise fallback to verse_number or prose_number
+              const key = verse.chapter_sequence_index 
+                ? `item-${verse.chapter_sequence_index}` 
+                : (verse.verse_number || verse.prose_number || `verse-${verse.verse_index}`);
+              return (
+                <HitopadesaVerse 
+                  key={key} 
+                  verse={verse} 
+                  apiUrl={apiUrl}
+                  onUpdate={() => fetchVerses(selectedChapter)}
+                />
+              );
+            })}
           </div>
 
           {totalPages > 1 && (
