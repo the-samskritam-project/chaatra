@@ -137,83 +137,89 @@ function HitopadesaVerse({ verse, apiUrl, onUpdate }) {
         )}
       </div>
 
-      {verse.transliterated_devanagari && (
-        <div className="hitopadesa-devanagari">
-            {splitDevanagariLines(verse.transliterated_devanagari).map((line, idx) => (
-            <div key={`devanagari-${getItemNumber()}-${idx}`} className="hitopadesa-line">
-              {line}
+      <div className="hitopadesa-verse-content">
+        <div className="hitopadesa-verse-column-left">
+          {verse.transliterated_devanagari && (
+            <div className="hitopadesa-devanagari">
+              {splitDevanagariLines(verse.transliterated_devanagari).map((line, idx) => (
+                <div key={`devanagari-${getItemNumber()}-${idx}`} className="hitopadesa-line">
+                  {line}
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+
+          {verse.original_iast && (
+            <div className="hitopadesa-iast">{verse.original_iast}</div>
+          )}
         </div>
-      )}
 
-      {verse.original_iast && (
-        <div className="hitopadesa-iast">{verse.original_iast}</div>
-      )}
-
-      {verse.word_by_word_translation && verse.word_by_word_translation.length > 0 && (
-        <div className="hitopadesa-word-by-word">
-          <div className="hitopadesa-word-list">
-            {verse.word_by_word_translation.map((item, idx) => (
-              <span key={`word-${getItemNumber()}-${idx}`} className="hitopadesa-word-item">
-                <span className="hitopadesa-word">{item.word}</span>
-                <span className="hitopadesa-word-translation">({item.translation})</span>
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {(displayTranslation.text || isEditing) && (
-        <div className="hitopadesa-translation">
-          {isEditing ? (
-            <div className="hitopadesa-translation-edit">
-              <textarea
-                className="hitopadesa-translation-textarea"
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                rows={4}
-                disabled={isSaving}
-              />
-              {error && <div className="hitopadesa-translation-error">{error}</div>}
-              <div className="hitopadesa-translation-actions">
-                <button
-                  className="hitopadesa-save-button"
-                  onClick={handleSave}
-                  disabled={isSaving}
-                >
-                  {isSaving ? 'Saving...' : 'Save'}
-                </button>
-                <button
-                  className="hitopadesa-cancel-button"
-                  onClick={handleCancel}
-                  disabled={isSaving}
-                >
-                  Cancel
-                </button>
+        <div className="hitopadesa-verse-column-right">
+          {verse.word_by_word_translation && verse.word_by_word_translation.length > 0 && (
+            <div className="hitopadesa-word-by-word">
+              <div className="hitopadesa-word-list">
+                {verse.word_by_word_translation.map((item, idx) => (
+                  <span key={`word-${getItemNumber()}-${idx}`} className="hitopadesa-word-item">
+                    <span className="hitopadesa-word">{item.word}</span>
+                    <span className="hitopadesa-word-translation">({item.translation})</span>
+                  </span>
+                ))}
               </div>
             </div>
-          ) : (
-            <div>
-              {displayTranslation.isEdited && (
-                <span className="hitopadesa-edited-label">Edited</span>
-              )}
-              <p 
-                className="hitopadesa-translation-text hitopadesa-translation-clickable"
-                onClick={handleEditClick}
-                title="Click to edit"
-              >
-                {displayTranslation.text}
-              </p>
-              {displayTranslation.isEdited && displayTranslation.editedAt && (
-                <div className="hitopadesa-edited-date">
-                  Last edited: {formatDate(displayTranslation.editedAt)}
+          )}
+
+          {(displayTranslation.text || isEditing) && (
+            <div className="hitopadesa-translation">
+              {isEditing ? (
+                <div className="hitopadesa-translation-edit">
+                  <textarea
+                    className="hitopadesa-translation-textarea"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    rows={4}
+                    disabled={isSaving}
+                  />
+                  {error && <div className="hitopadesa-translation-error">{error}</div>}
+                  <div className="hitopadesa-translation-actions">
+                    <button
+                      className="hitopadesa-save-button"
+                      onClick={handleSave}
+                      disabled={isSaving}
+                    >
+                      {isSaving ? 'Saving...' : 'Save'}
+                    </button>
+                    <button
+                      className="hitopadesa-cancel-button"
+                      onClick={handleCancel}
+                      disabled={isSaving}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  {displayTranslation.isEdited && (
+                    <span className="hitopadesa-edited-label">Edited</span>
+                  )}
+                  <p 
+                    className="hitopadesa-translation-text hitopadesa-translation-clickable"
+                    onClick={handleEditClick}
+                    title="Click to edit"
+                  >
+                    {displayTranslation.text}
+                  </p>
+                  {displayTranslation.isEdited && displayTranslation.editedAt && (
+                    <div className="hitopadesa-edited-date">
+                      Last edited: {formatDate(displayTranslation.editedAt)}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
