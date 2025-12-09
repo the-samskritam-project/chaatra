@@ -2,12 +2,11 @@
 """
 Import Hitopadesa verses into MongoDB.
 
-Reads hitopadesa_verses_translated.json and imports into MongoDB with:
+Reads from hitopadesa_raw_translated MongoDB collection and imports into MongoDB with:
 - Metadata collection: hitopadesa_chapters
 - Chapter collections: hitopadesa_chapter_0, hitopadesa_chapter_1, etc.
 """
 
-import json
 import os
 import sys
 from collections import defaultdict
@@ -20,11 +19,12 @@ except ImportError:
     load_dotenv = None
 
 try:
-    from pymongo import MongoClient
     from pymongo.errors import ConnectionFailure, DuplicateKeyError
 except ImportError:
     print("Error: pymongo not installed. Install with: pip install pymongo")
     sys.exit(1)
+
+from utils.mongodb_utils import connect_mongodb
 
 
 def parse_verse_number(verse_number: str) -> Tuple[int, int]:
@@ -48,62 +48,91 @@ def parse_verse_number(verse_number: str) -> Tuple[int, int]:
         raise ValueError(f"Failed to parse verse number '{verse_number}': {e}")
 
 
-def connect_mongodb(connection_string: str, database_name: str = "hitopadesa"):
+def parse_prose_number(prose_number: str) -> Tuple[int, int]:
     """
-    Connect to MongoDB and return database object.
+    Parse prose number format "chapter.prose_index" into chapter and prose index.
     
     Args:
-        connection_string: MongoDB connection URI
-        database_name: Name of the database to use
+        prose_number: String in format "chapter.prose_index" (e.g., "0.1", "2.3")
         
     Returns:
-        MongoDB database object
-        
-    Raises:
-        ConnectionFailure: If connection to MongoDB fails
+        Tuple of (chapter_number, prose_index)
     """
     try:
-        client = MongoClient(connection_string, serverSelectionTimeoutMS=5000)
-        # Test connection
-        client.admin.command('ping')
-        db = client[database_name]
-        print(f"✓ Connected to MongoDB database: {database_name}")
-        return db, client
-    except ConnectionFailure as e:
-        raise ConnectionFailure(f"Failed to connect to MongoDB: {e}")
+        parts = prose_number.split('.')
+        if len(parts) != 2:
+            raise ValueError(f"Invalid prose number format: {prose_number}")
+        chapter = int(parts[0])
+        prose_idx = int(parts[1])
+        return chapter, prose_idx
+    except (ValueError, IndexError) as e:
+        raise ValueError(f"Failed to parse prose number '{prose_number}': {e}")
 
 
-def group_verses_by_chapter(verses: List[Dict]) -> Dict[int, List[Dict]]:
+def group_items_by_chapter(items: List[Dict]) -> Dict[int, List[Dict]]:
     """
-    Group verses by chapter number.
+    Group verses and prose by chapter number.
     
     Args:
-        verses: List of verse dictionaries
+        items: List of item dictionaries (verses and prose)
         
     Returns:
-        Dictionary mapping chapter numbers to lists of verses
+        Dictionary mapping chapter numbers to lists of items
     """
     chapters = defaultdict(list)
     
-    for verse in verses:
-        verse_number = verse.get('verse_number', '')
-        if not verse_number:
-            print(f"Warning: Verse missing verse_number, skipping")
-            continue
+    for item in items:
+        item_type = item.get('type', 'unknown')
         
-        try:
-            chapter_num, verse_num = parse_verse_number(verse_number)
-            # Add chapter and verse info to verse document
-            verse['chapter_number'] = chapter_num
-            verse['verse_index'] = verse_num
-            chapters[chapter_num].append(verse)
-        except ValueError as e:
-            print(f"Warning: {e}, skipping verse")
+        if item_type == 'verse':
+            verse_number = item.get('verse_number', '')
+            if not verse_number:
+                print(f"Warning: Verse missing verse_number, skipping")
+                continue
+            
+            try:
+                chapter_num, verse_num = parse_verse_number(verse_number)
+                # Add chapter and verse info to verse document
+                item['chapter_number'] = chapter_num
+                item['verse_index'] = verse_num
+                chapters[chapter_num].append(item)
+            except ValueError as e:
+                print(f"Warning: {e}, skipping verse")
+                continue
+        
+        elif item_type == 'prose':
+            prose_number = item.get('prose_number', '')
+            chapter_number = item.get('chapter_number')
+            
+            if not prose_number and not chapter_number:
+                print(f"Warning: Prose missing prose_number and chapter_number, skipping")
+                continue
+            
+            try:
+                if prose_number:
+                    chapter_num, prose_idx = parse_prose_number(prose_number)
+                    item['chapter_number'] = chapter_num
+                    item['prose_index'] = prose_idx
+                elif chapter_number:
+                    chapter_num = chapter_number
+                    # Try to extract prose_index from prose_number if available
+                    if prose_number:
+                        _, prose_idx = parse_prose_number(prose_number)
+                        item['prose_index'] = prose_idx
+                    else:
+                        item['prose_index'] = 0  # Default if not available
+                
+                chapters[chapter_num].append(item)
+            except ValueError as e:
+                print(f"Warning: {e}, skipping prose")
+                continue
+        else:
+            print(f"Warning: Unknown item type '{item_type}', skipping")
             continue
     
-    # Sort verses within each chapter by verse_index
+    # Sort items within each chapter by sequence_index to preserve interleaved order
     for chapter_num in chapters:
-        chapters[chapter_num].sort(key=lambda v: v.get('verse_index', 0))
+        chapters[chapter_num].sort(key=lambda item: item.get('sequence_index', 0))
     
     return dict(chapters)
 
@@ -113,7 +142,7 @@ def create_chapter_metadata(chapters: Dict[int, List[Dict]]) -> List[Dict]:
     Create metadata documents for each chapter.
     
     Args:
-        chapters: Dictionary mapping chapter numbers to verse lists
+        chapters: Dictionary mapping chapter numbers to item lists (verses and prose)
         
     Returns:
         List of metadata documents
@@ -121,18 +150,25 @@ def create_chapter_metadata(chapters: Dict[int, List[Dict]]) -> List[Dict]:
     metadata = []
     
     for chapter_num in sorted(chapters.keys()):
-        verses = chapters[chapter_num]
-        if not verses:
+        items = chapters[chapter_num]
+        if not items:
             continue
         
-        verse_numbers = [v.get('verse_number', '') for v in verses]
-        verse_numbers = [v for v in verse_numbers if v]
+        verses = [item for item in items if item.get('type') == 'verse']
+        prose = [item for item in items if item.get('type') == 'prose']
+        
+        verse_numbers = [v.get('verse_number', '') for v in verses if v.get('verse_number')]
+        prose_numbers = [p.get('prose_number', '') for p in prose if p.get('prose_number')]
         
         metadata_doc = {
             "chapter_number": chapter_num,
             "verse_count": len(verses),
+            "prose_count": len(prose),
+            "total_count": len(items),
             "first_verse": verse_numbers[0] if verse_numbers else None,
             "last_verse": verse_numbers[-1] if verse_numbers else None,
+            "first_prose": prose_numbers[0] if prose_numbers else None,
+            "last_prose": prose_numbers[-1] if prose_numbers else None,
             "created_at": datetime.utcnow()
         }
         metadata.append(metadata_doc)
@@ -141,47 +177,53 @@ def create_chapter_metadata(chapters: Dict[int, List[Dict]]) -> List[Dict]:
 
 
 def import_to_mongodb(
-    json_path: str,
     mongodb_uri: str,
     database_name: str = "hitopadesa",
     clear_existing: bool = False
 ):
     """
-    Import Hitopadesa verses into MongoDB.
+    Import Hitopadesa verses and prose into MongoDB.
+    
+    Reads from hitopadesa_raw_translated collection and organizes into chapter collections.
     
     Args:
-        json_path: Path to hitopadesa_verses_translated.json
         mongodb_uri: MongoDB connection string
         database_name: Name of the database
         clear_existing: If True, clear existing collections before importing
     """
-    # Load verses from JSON
-    print(f"Loading verses from {json_path}...")
-    try:
-        with open(json_path, 'r', encoding='utf-8') as f:
-            verses = json.load(f)
-        print(f"✓ Loaded {len(verses)} verses")
-    except FileNotFoundError:
-        print(f"Error: File {json_path} not found")
-        sys.exit(1)
-    except json.JSONDecodeError as e:
-        print(f"Error: Failed to parse JSON file: {e}")
-        sys.exit(1)
-    
     # Connect to MongoDB
-    print(f"\nConnecting to MongoDB...")
+    print(f"Connecting to MongoDB...")
     try:
         db, client = connect_mongodb(mongodb_uri, database_name)
     except ConnectionFailure as e:
         print(f"Error: {e}")
         sys.exit(1)
     
-    # Group verses by chapter
-    print(f"\nGrouping verses by chapter...")
-    chapters = group_verses_by_chapter(verses)
+    # Load items from hitopadesa_raw_translated collection
+    print(f"Loading items from hitopadesa_raw_translated collection...")
+    translated_collection = db['hitopadesa_raw_translated']
+    all_items = list(translated_collection.find({}))
+    
+    if not all_items:
+        print("Error: No items found in hitopadesa_raw_translated collection")
+        print("Please run translate_verses.py first to populate the collection")
+        client.close()
+        sys.exit(1)
+    
+    verse_count = sum(1 for item in all_items if item.get('type') == 'verse')
+    prose_count = sum(1 for item in all_items if item.get('type') == 'prose')
+    
+    print(f"✓ Loaded {len(all_items)} items ({verse_count} verses, {prose_count} prose)")
+    
+    # Group items by chapter
+    print(f"\nGrouping items by chapter...")
+    chapters = group_items_by_chapter(all_items)
     print(f"✓ Found {len(chapters)} chapters")
     for chapter_num in sorted(chapters.keys()):
-        print(f"  Chapter {chapter_num}: {len(chapters[chapter_num])} verses")
+        items = chapters[chapter_num]
+        verse_count_ch = sum(1 for item in items if item.get('type') == 'verse')
+        prose_count_ch = sum(1 for item in items if item.get('type') == 'prose')
+        print(f"  Chapter {chapter_num}: {len(items)} items ({verse_count_ch} verses, {prose_count_ch} prose)")
     
     # Create metadata collection
     print(f"\nCreating metadata collection...")
@@ -209,40 +251,65 @@ def import_to_mongodb(
     total_errors = 0
     
     for chapter_num in sorted(chapters.keys()):
-        verses = chapters[chapter_num]
+        items = chapters[chapter_num]
         collection_name = f"hitopadesa_chapter_{chapter_num}"
         collection = db[collection_name]
         
         if clear_existing:
-            print(f"  Clearing existing verses in {collection_name}...")
+            print(f"  Clearing existing items in {collection_name}...")
             collection.delete_many({})
         
         # Prepare documents for insertion
         documents = []
-        for verse in verses:
-            # Ensure chapter_number and verse_index are set
-            if 'chapter_number' not in verse:
-                chapter_num_parsed, verse_num_parsed = parse_verse_number(verse.get('verse_number', ''))
-                verse['chapter_number'] = chapter_num_parsed
-                verse['verse_index'] = verse_num_parsed
-            documents.append(verse)
+        for item in items:
+            item_type = item.get('type')
+            
+            # Ensure chapter_number and indices are set
+            if item_type == 'verse':
+                if 'chapter_number' not in item:
+                    chapter_num_parsed, verse_num_parsed = parse_verse_number(item.get('verse_number', ''))
+                    item['chapter_number'] = chapter_num_parsed
+                    item['verse_index'] = verse_num_parsed
+            elif item_type == 'prose':
+                if 'chapter_number' not in item and item.get('prose_number'):
+                    chapter_num_parsed, prose_idx_parsed = parse_prose_number(item.get('prose_number', ''))
+                    item['chapter_number'] = chapter_num_parsed
+                    item['prose_index'] = prose_idx_parsed
+                elif 'prose_index' not in item and item.get('prose_number'):
+                    _, prose_idx_parsed = parse_prose_number(item.get('prose_number', ''))
+                    item['prose_index'] = prose_idx_parsed
+            
+            documents.append(item)
         
-        # Insert verses
+        # Insert items
         try:
             if documents:
                 result = collection.insert_many(documents, ordered=False)
                 imported_count = len(result.inserted_ids)
                 total_imported += imported_count
-                print(f"  ✓ Chapter {chapter_num}: Inserted {imported_count} verses into {collection_name}")
+                verse_count_ch = sum(1 for item in documents if item.get('type') == 'verse')
+                prose_count_ch = sum(1 for item in documents if item.get('type') == 'prose')
+                print(f"  ✓ Chapter {chapter_num}: Inserted {imported_count} items ({verse_count_ch} verses, {prose_count_ch} prose) into {collection_name}")
         except DuplicateKeyError:
-            print(f"  ⚠ Chapter {chapter_num}: Some verses already exist (skipping duplicates)")
+            print(f"  ⚠ Chapter {chapter_num}: Some items already exist (skipping duplicates)")
         except Exception as e:
-            print(f"  ✗ Chapter {chapter_num}: Error inserting verses: {e}")
+            print(f"  ✗ Chapter {chapter_num}: Error inserting items: {e}")
             total_errors += len(documents)
+    
+    total_verses_imported = sum(
+        sum(1 for item in chapters[ch] if item.get('type') == 'verse')
+        for ch in chapters.keys()
+    )
+    total_prose_imported = sum(
+        sum(1 for item in chapters[ch] if item.get('type') == 'prose')
+        for ch in chapters.keys()
+    )
     
     print(f"\n{'='*60}")
     print(f"Import Summary:")
-    print(f"  Total verses imported: {total_imported}")
+    print(f"  Total items imported: {total_imported}")
+    print(f"    - Verses: {total_verses_imported}")
+    print(f"    - Prose: {total_prose_imported}")
     print(f"  Total errors: {total_errors}")
     print(f"  Chapters processed: {len(chapters)}")
     print(f"{'='*60}")
@@ -260,7 +327,6 @@ def main():
         load_dotenv(dotenv_path=env_path)
     
     # Get configuration
-    json_path = 'hitopadesa_verses_translated.json'
     mongodb_uri = os.getenv('MONGODB_URI')
     database_name = os.getenv('MONGODB_DATABASE', 'hitopadesa')
     clear_existing = os.getenv('CLEAR_EXISTING', 'false').lower() == 'true'
@@ -275,12 +341,12 @@ def main():
     
     print("Hitopadesa MongoDB Import")
     print("=" * 60)
-    print(f"JSON file: {json_path}")
+    print(f"Source collection: hitopadesa_raw_translated")
     print(f"Database: {database_name}")
     print(f"Clear existing: {clear_existing}")
     print("=" * 60)
     
-    import_to_mongodb(json_path, mongodb_uri, database_name, clear_existing)
+    import_to_mongodb(mongodb_uri, database_name, clear_existing)
 
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@ Functions for processing batches of items with translations.
 import time
 from typing import List, Dict, Set, Optional
 
-from translator import translate_devanagari_complete
+from translators import translate_devanagari_complete
 from utils.item_utils import get_unique_id
 
 

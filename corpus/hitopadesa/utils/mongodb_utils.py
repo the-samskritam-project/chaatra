@@ -85,6 +85,7 @@ def write_batch_to_mongodb(
         documents.append(doc)
     
     inserted_count = 0
+    updated_count = 0
     skipped_count = 0
     
     for doc in documents:
@@ -92,13 +93,43 @@ def write_batch_to_mongodb(
             collection.insert_one(doc)
             inserted_count += 1
         except DuplicateKeyError:
-            skipped_count += 1
+            # Update existing document with new fields (like sequence numbers)
+            try:
+                update_fields = {}
+                
+                # Update sequence numbers if present
+                if 'sequence_index' in doc:
+                    update_fields['sequence_index'] = doc.get('sequence_index')
+                if 'chapter_sequence_index' in doc:
+                    update_fields['chapter_sequence_index'] = doc.get('chapter_sequence_index')
+                
+                # Update other metadata fields that might have changed
+                for field in ['type', 'verse_number', 'prose_number', 'chapter_number', 
+                             'original_iast', 'transliterated_devanagari']:
+                    if field in doc:
+                        update_fields[field] = doc.get(field)
+                
+                if update_fields:
+                    collection.update_one(
+                        {'_id': doc['_id']},
+                        {'$set': update_fields}
+                    )
+                    updated_count += 1
+                else:
+                    skipped_count += 1
+            except Exception as e:
+                print(f"  ⚠ Error updating {doc.get('_id')}: {e}")
+                skipped_count += 1
         except Exception as e:
             print(f"  ⚠ Error inserting {doc.get('_id')}: {e}")
+            skipped_count += 1
     
-    print(f"  Batch {batch_num}/{total_batches}: Inserted {inserted_count}, Skipped {skipped_count} (already exist)")
+    if updated_count > 0:
+        print(f"  Batch {batch_num}/{total_batches}: Inserted {inserted_count}, Updated {updated_count}, Skipped {skipped_count}")
+    else:
+        print(f"  Batch {batch_num}/{total_batches}: Inserted {inserted_count}, Skipped {skipped_count} (already exist)")
     
-    return inserted_count
+    return inserted_count + updated_count
 
 
 def write_translated_batch_to_mongodb(
@@ -147,14 +178,33 @@ def write_translated_batch_to_mongodb(
         except DuplicateKeyError:
             # Update existing document instead
             try:
+                # Build update document with all fields that should be updated
+                update_fields = {
+                    'translated_at': doc['translated_at'],
+                    'translation_model': doc['translation_model']
+                }
+                
+                # Update translation fields if present
+                if 'word_by_word_translation' in doc:
+                    update_fields['word_by_word_translation'] = doc.get('word_by_word_translation')
+                if 'full_translation' in doc:
+                    update_fields['full_translation'] = doc.get('full_translation')
+                
+                # Update sequence numbers if present (for skip-translation mode)
+                if 'sequence_index' in doc:
+                    update_fields['sequence_index'] = doc.get('sequence_index')
+                if 'chapter_sequence_index' in doc:
+                    update_fields['chapter_sequence_index'] = doc.get('chapter_sequence_index')
+                
+                # Update other metadata fields that might have changed
+                for field in ['type', 'verse_number', 'prose_number', 'chapter_number', 
+                             'original_iast', 'transliterated_devanagari']:
+                    if field in doc:
+                        update_fields[field] = doc.get(field)
+                
                 collection.update_one(
                     {'_id': doc['_id']},
-                    {'$set': {
-                        'word_by_word_translation': doc.get('word_by_word_translation'),
-                        'full_translation': doc.get('full_translation'),
-                        'translated_at': doc['translated_at'],
-                        'translation_model': doc['translation_model']
-                    }}
+                    {'$set': update_fields}
                 )
                 inserted_count += 1
             except Exception as e:
