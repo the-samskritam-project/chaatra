@@ -25,6 +25,7 @@ except ImportError:
     sys.exit(1)
 
 from utils.mongodb_utils import connect_mongodb
+from utils.item_utils import get_unique_id
 
 
 def parse_verse_number(verse_number: str) -> Tuple[int, int]:
@@ -261,7 +262,7 @@ def import_to_mongodb(
         
         # Prepare documents for insertion
         documents = []
-        for item in items:
+        for idx, item in enumerate(items, 1):
             item_type = item.get('type')
             
             # Ensure chapter_number and indices are set
@@ -279,22 +280,79 @@ def import_to_mongodb(
                     _, prose_idx_parsed = parse_prose_number(item.get('prose_number', ''))
                     item['prose_index'] = prose_idx_parsed
             
+            # Ensure sequence_index is preserved if it exists
+            # Don't set it to None - only preserve what's already there
+            # If missing, it will be None and we won't update it
+            # (sequence_index should come from the source items in hitopadesa_raw_translated)
+            
+            # Calculate chapter_sequence_index if missing (based on sorted order)
+            # Items are already sorted by sequence_index, so position in list = chapter sequence
+            if 'chapter_sequence_index' not in item or item.get('chapter_sequence_index') is None:
+                item['chapter_sequence_index'] = idx
+            
             documents.append(item)
         
-        # Insert items
-        try:
-            if documents:
-                result = collection.insert_many(documents, ordered=False)
-                imported_count = len(result.inserted_ids)
-                total_imported += imported_count
-                verse_count_ch = sum(1 for item in documents if item.get('type') == 'verse')
-                prose_count_ch = sum(1 for item in documents if item.get('type') == 'prose')
-                print(f"  ✓ Chapter {chapter_num}: Inserted {imported_count} items ({verse_count_ch} verses, {prose_count_ch} prose) into {collection_name}")
-        except DuplicateKeyError:
-            print(f"  ⚠ Chapter {chapter_num}: Some items already exist (skipping duplicates)")
-        except Exception as e:
-            print(f"  ✗ Chapter {chapter_num}: Error inserting items: {e}")
-            total_errors += len(documents)
+        # Insert or update items
+        inserted_count = 0
+        updated_count = 0
+        skipped_count = 0
+        
+        for doc in documents:
+            # Create unique ID for the document
+            unique_id = get_unique_id(doc)
+            doc['_id'] = unique_id
+            
+            try:
+                collection.insert_one(doc)
+                inserted_count += 1
+            except DuplicateKeyError:
+                # Update existing document with sequence numbers and other fields
+                try:
+                    update_fields = {}
+                    
+                    # Always update sequence numbers (they should be in doc from preparation above)
+                    # Only update sequence_index if it has a value (not None)
+                    # Always update chapter_sequence_index since we calculate it
+                    if doc.get('sequence_index') is not None:
+                        update_fields['sequence_index'] = doc.get('sequence_index')
+                    
+                    # Always update chapter_sequence_index (we calculate it above)
+                    if 'chapter_sequence_index' in doc and doc.get('chapter_sequence_index') is not None:
+                        update_fields['chapter_sequence_index'] = doc.get('chapter_sequence_index')
+                    
+                    # Update other metadata fields that might have changed
+                    for field in ['type', 'verse_number', 'prose_number', 'chapter_number',
+                                 'verse_index', 'prose_index', 'original_iast', 
+                                 'transliterated_devanagari', 'word_by_word_translation',
+                                 'full_translation']:
+                        if field in doc:
+                            update_fields[field] = doc.get(field)
+                    
+                    if update_fields:
+                        collection.update_one(
+                            {'_id': unique_id},
+                            {'$set': update_fields}
+                        )
+                        updated_count += 1
+                    else:
+                        skipped_count += 1
+                except Exception as e:
+                    print(f"  ⚠ Error updating {unique_id}: {e}")
+                    skipped_count += 1
+            except Exception as e:
+                print(f"  ⚠ Error inserting {unique_id}: {e}")
+                skipped_count += 1
+        
+        if documents:
+            verse_count_ch = sum(1 for item in documents if item.get('type') == 'verse')
+            prose_count_ch = sum(1 for item in documents if item.get('type') == 'prose')
+            if updated_count > 0:
+                print(f"  ✓ Chapter {chapter_num}: Inserted {inserted_count}, Updated {updated_count}, Skipped {skipped_count} items ({verse_count_ch} verses, {prose_count_ch} prose) into {collection_name}")
+            else:
+                print(f"  ✓ Chapter {chapter_num}: Inserted {inserted_count}, Skipped {skipped_count} items ({verse_count_ch} verses, {prose_count_ch} prose) into {collection_name}")
+        
+        total_imported += inserted_count + updated_count
+        total_errors += skipped_count
     
     total_verses_imported = sum(
         sum(1 for item in chapters[ch] if item.get('type') == 'verse')
