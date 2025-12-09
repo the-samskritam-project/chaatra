@@ -30,4 +30,12 @@ pre-processing/search_playground/v1/chroma_db/
 pre-processing/search_playground/v1/index.pkl
 
 # MongoDB data
-corpus/hitopadesa/mongodb_data/
+corpus/mongodb_data/
+corpus/*/mongodb_data/
+**/mongodb_data/**/*.wt
+**/mongodb_data/**/*.wt.tmp
+**/mongodb_data/mongod.lock
+**/mongodb_data/WiredTiger*
+**/mongodb_data/**/*.bson
+**/mongodb_data/journal/
+**/mongodb_data/diagnostic.data/
