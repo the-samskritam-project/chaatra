@@ -39,3 +39,12 @@ corpus/*/mongodb_data/
 **/mongodb_data/**/*.bson
 **/mongodb_data/journal/
 **/mongodb_data/diagnostic.data/
+
+# MongoDB backups (mongodump output)
+mongodb_backup/
+**/mongodb_backup/
+**/dump/
+*.bson
+*.metadata.json
+*.indexes.bson
+prelude.json
