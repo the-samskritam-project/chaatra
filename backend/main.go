@@ -59,6 +59,9 @@ func main() {
 	mux.HandleFunc("/v2/hitopadesa/chapters", h.HitopadesaChaptersHandler)
 	mux.HandleFunc("/v2/hitopadesa/verses", h.HitopadesaVersesHandler)
 	mux.HandleFunc("/v2/hitopadesa/verses/", h.HitopadesaUpdateVerseHandler)
+	mux.HandleFunc("/v2/pancatantra/chapters", h.PancatantraChaptersHandler)
+	mux.HandleFunc("/v2/pancatantra/verses", h.PancatantraVersesHandler)
+	mux.HandleFunc("/v2/pancatantra/verses/", h.PancatantraUpdateVerseHandler)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "https://chaatra-frontend-production.up.railway.app"},

@@ -15,6 +15,15 @@ import (
 var mongoClient *mongo.Client
 var mongoDB *mongo.Database
 
+// getDatabase returns the database for a given corpus name
+func getDatabase(corpusName string) *mongo.Database {
+	if mongoClient == nil {
+		return nil
+	}
+	// Use corpus name as database name
+	return mongoClient.Database(corpusName)
+}
+
 // HitopadesaChapterMetadata represents chapter metadata
 type HitopadesaChapterMetadata struct {
 	ChapterNumber int       `json:"chapter_number" bson:"chapter_number"`
@@ -235,6 +244,181 @@ func UpdateHitopadesaVerseTranslation(verseNumber string, editedTranslation stri
 
 	if result.MatchedCount == 0 {
 		return fmt.Errorf("verse not found: %s", verseNumber)
+	}
+
+	return nil
+}
+
+// GetPancatantraChapters returns all chapter metadata
+func GetPancatantraChapters() ([]HitopadesaChapterMetadata, error) {
+	if mongoClient == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Use pancatantra database
+	db := getDatabase("pancatantra")
+	if db == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+	collection := db.Collection("pancatantra_chapters")
+	sortOpt := bson.D{{Key: "chapter_number", Value: 1}}
+	cursor, err := collection.Find(ctx, bson.M{}, options.Find().SetSort(sortOpt))
+	if err != nil {
+		return nil, fmt.Errorf("failed to query chapters: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var chapters []HitopadesaChapterMetadata
+	if err := cursor.All(ctx, &chapters); err != nil {
+		return nil, fmt.Errorf("failed to decode chapters: %w", err)
+	}
+
+	return chapters, nil
+}
+
+// GetPancatantraVerses returns all verses for a given chapter
+func GetPancatantraVerses(chapterNumber int) ([]HitopadesaVerse, error) {
+	if mongoClient == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Use pancatantra database
+	db := getDatabase("pancatantra")
+	if db == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+	collectionName := fmt.Sprintf("pancatantra_chapter_%d", chapterNumber)
+	collection := db.Collection(collectionName)
+
+	// Sort by chapter_sequence_index to preserve interleaved order of verses and prose
+	// Fallback to verse_index/prose_index if chapter_sequence_index is missing
+	sortOpt := bson.D{
+		{Key: "chapter_sequence_index", Value: 1},
+		{Key: "verse_index", Value: 1},
+		{Key: "prose_index", Value: 1},
+	}
+	cursor, err := collection.Find(ctx, bson.M{}, options.Find().SetSort(sortOpt))
+	if err != nil {
+		return nil, fmt.Errorf("failed to query verses for chapter %d: %w", chapterNumber, err)
+	}
+	defer cursor.Close(ctx)
+
+	var verses []HitopadesaVerse
+	if err := cursor.All(ctx, &verses); err != nil {
+		return nil, fmt.Errorf("failed to decode verses: %w", err)
+	}
+
+	// Infer type if missing and normalize data
+	verseCount := 0
+	proseCount := 0
+	for i := range verses {
+		// Infer type from available fields if missing
+		if verses[i].Type == "" {
+			// First, check _id field (most reliable - format: "verse_X.Y" or "prose_X.Y")
+			if verses[i].ID != nil {
+				if idStr, ok := verses[i].ID.(string); ok {
+					if len(idStr) >= 6 && idStr[:6] == "prose_" {
+						verses[i].Type = "prose"
+					} else if len(idStr) >= 6 && idStr[:6] == "verse_" {
+						verses[i].Type = "verse"
+					}
+				}
+			}
+
+			// If still not set, check verse_number/prose_number
+			if verses[i].Type == "" {
+				if verses[i].VerseNumber != "" {
+					verses[i].Type = "verse"
+				} else if verses[i].ProseNumber != "" {
+					verses[i].Type = "prose"
+				}
+			}
+
+			// If still not set, check verse_index vs prose_index
+			if verses[i].Type == "" {
+				if verses[i].VerseIndex > 0 {
+					verses[i].Type = "verse"
+				} else if verses[i].ProseIndex > 0 {
+					verses[i].Type = "prose"
+				} else {
+					// Last resort: default to verse
+					verses[i].Type = "verse"
+				}
+			}
+		}
+
+		// Count for logging
+		if verses[i].Type == "verse" {
+			verseCount++
+		} else if verses[i].Type == "prose" {
+			proseCount++
+		}
+	}
+	log.Printf("GetPancatantraVerses chapter %d: returned %d items (%d verses, %d prose)", chapterNumber, len(verses), verseCount, proseCount)
+
+	return verses, nil
+}
+
+// UpdatePancatantraVerseTranslation appends a new edited translation to a verse
+func UpdatePancatantraVerseTranslation(verseNumber string, editedTranslation string) error {
+	if mongoClient == nil {
+		return fmt.Errorf("MongoDB not initialized")
+	}
+
+	// Parse verse number to get chapter number
+	// Format: "chapter.verse" (e.g., "0.1")
+	var chapterNumber int
+	_, err := fmt.Sscanf(verseNumber, "%d.", &chapterNumber)
+	if err != nil {
+		return fmt.Errorf("invalid verse number format: %w", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Use pancatantra database
+	db := getDatabase("pancatantra")
+	if db == nil {
+		return fmt.Errorf("MongoDB not initialized")
+	}
+	collectionName := fmt.Sprintf("pancatantra_chapter_%d", chapterNumber)
+	collection := db.Collection(collectionName)
+
+	// Create the edited translation entry with current timestamp
+	editedEntry := EditedTranslation{
+		Translation: editedTranslation,
+		EditedAt:    time.Now(),
+	}
+
+	// Use $push to append to the edited_translations array
+	filter := bson.M{"verse_number": verseNumber}
+	update := bson.M{
+		"$push": bson.M{
+			"edited_translations": editedEntry,
+		},
+	}
+
+	result, err := collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return fmt.Errorf("failed to update verse translation: %w", err)
+	}
+
+	if result.MatchedCount == 0 {
+		// Try prose_number as fallback
+		filter = bson.M{"prose_number": verseNumber}
+		result, err = collection.UpdateOne(ctx, filter, update)
+		if err != nil {
+			return fmt.Errorf("failed to update verse translation: %w", err)
+		}
+		if result.MatchedCount == 0 {
+			return fmt.Errorf("verse not found: %s", verseNumber)
+		}
 	}
 
 	return nil

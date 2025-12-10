@@ -7,11 +7,14 @@ import Flashcards from './components/flashcards/Flashcards';
 import RamayanaSearch from './components/ramayana/RamayanaSearch';
 import RamayanaExplore from './components/ramayana/RamayanaExplore';
 import Hitopadesa from './components/hitopadesa/Hitopadesa';
+import Pancatantra from './components/pancatantra/Pancatantra';
 import Footer from './components/Footer';
 
 function App() {
   // Check if Hitopadesa tab should be visible
   const showHitopadesa = process.env.REACT_APP_SHOW_HITOPADESA === 'true';
+  // Pancatantra is always visible (or can be controlled via env var if needed)
+  const showPancatantra = process.env.REACT_APP_SHOW_PANCATANTRA !== 'false';
 
   return (
     <div>
@@ -37,6 +40,7 @@ function App() {
                 <Tab>Ramayana</Tab>
                 <Tab>Explore</Tab>
                 {showHitopadesa && <Tab>Hitopadesa</Tab>}
+                {showPancatantra && <Tab>Pancatantra</Tab>}
               </TabList>
             </div>
           </div>
@@ -61,6 +65,11 @@ function App() {
             {showHitopadesa && (
               <TabPanel>
                 <Hitopadesa />
+              </TabPanel>
+            )}
+            {showPancatantra && (
+              <TabPanel>
+                <Pancatantra />
               </TabPanel>
             )}
           </div>
