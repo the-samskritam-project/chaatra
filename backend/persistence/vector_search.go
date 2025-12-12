@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -110,16 +111,21 @@ func SemanticSearch(
 		}
 		cursor.Close(ctx)
 
+		log.Printf("Found %d results from collection %s", len(results), collectionName)
 		allResults = append(allResults, results...)
 	}
 
-	// Sort all results by score (descending) and limit
+	// Sort all results by score (descending) across all collections
+	sort.Slice(allResults, func(i, j int) bool {
+		return allResults[i].Score > allResults[j].Score
+	})
+
+	// Limit to requested number of results
 	if len(allResults) > limit {
-		// Simple sort by score (assuming results are roughly sorted already)
-		// For better sorting, we'd need to implement a proper sort
 		allResults = allResults[:limit]
 	}
 
+	log.Printf("Returning %d total results (from %d collections)", len(allResults), len(collections))
 	return allResults, nil
 }
 
