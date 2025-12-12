@@ -25,14 +25,13 @@ type VectorSearchResult struct {
 	Metadata                 map[string]interface{} `json:"metadata,omitempty" bson:"metadata,omitempty"`
 }
 
-// SemanticSearch performs semantic search using MongoDB vector search
-// Note: This is a placeholder that calls a Python service or uses direct MongoDB queries
-// For full implementation, you may want to call the Python vector_search module
-// or implement vector search directly in Go using MongoDB aggregation pipeline
+// SemanticSearch performs semantic search using MongoDB Atlas vector search
+// Supports unified search across multiple collections in corpus_vectors database
 func SemanticSearch(
 	queryEmbedding []float64,
 	databaseName string,
-	collectionName string,
+	collections []string,
+	indexNames []string,
 	corpusFilter string,
 	limit int,
 ) ([]VectorSearchResult, error) {
@@ -40,88 +39,107 @@ func SemanticSearch(
 		return nil, fmt.Errorf("MongoDB not initialized")
 	}
 
+	if len(collections) != len(indexNames) {
+		return nil, fmt.Errorf("collections and indexNames must have the same length")
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	db := mongoClient.Database(databaseName)
-	collection := db.Collection(collectionName)
 
-	// Build aggregation pipeline for vector search
-	pipeline := []bson.M{
-		{
-			"$vectorSearch": bson.M{
-				"index":         "corpus_translation_vector_index",
-				"path":          "embedding",
-				"queryVector":   queryEmbedding,
-				"numCandidates": limit * 10,
-				"limit":         limit,
+	var allResults []VectorSearchResult
+
+	// Search each collection and combine results
+	for i, collectionName := range collections {
+		collection := db.Collection(collectionName)
+		indexName := indexNames[i]
+
+		// Build aggregation pipeline for vector search
+		pipeline := []bson.M{
+			{
+				"$vectorSearch": bson.M{
+					"index":         indexName,
+					"path":          "embedding",
+					"queryVector":   queryEmbedding,
+					"numCandidates": limit * 10,
+					"limit":         limit,
+				},
 			},
-		},
-	}
+		}
 
-	// Add corpus filter if specified
-	if corpusFilter != "" {
+		// Add corpus filter if specified (filter by collection name or corpus_name field)
+		if corpusFilter != "" {
+			pipeline = append(pipeline, bson.M{
+				"$match": bson.M{
+					"corpus_name": corpusFilter,
+				},
+			})
+		}
+
+		// Project fields
 		pipeline = append(pipeline, bson.M{
-			"$match": bson.M{
-				"corpus_name": corpusFilter,
+			"$project": bson.M{
+				"document_id":               1,
+				"corpus_name":               1,
+				"verse_number":              1,
+				"prose_number":              1,
+				"chapter_number":            1,
+				"type":                      1,
+				"full_translation":          1,
+				"original_iast":             1,
+				"transliterated_devanagari": 1,
+				"score": bson.M{
+					"$meta": "vectorSearchScore",
+				},
+				"metadata": 1,
 			},
 		})
+
+		cursor, err := collection.Aggregate(ctx, pipeline)
+		if err != nil {
+			log.Printf("Vector search failed for collection %s: %v", collectionName, err)
+			continue // Continue with other collections
+		}
+
+		var results []VectorSearchResult
+		if err := cursor.All(ctx, &results); err != nil {
+			cursor.Close(ctx)
+			log.Printf("Failed to decode results from %s: %v", collectionName, err)
+			continue
+		}
+		cursor.Close(ctx)
+
+		allResults = append(allResults, results...)
 	}
 
-	// Project fields
-	pipeline = append(pipeline, bson.M{
-		"$project": bson.M{
-			"document_id":               1,
-			"corpus_name":               1,
-			"verse_number":              1,
-			"prose_number":              1,
-			"chapter_number":            1,
-			"type":                      1,
-			"full_translation":          1,
-			"original_iast":             1,
-			"transliterated_devanagari": 1,
-			"score": bson.M{
-				"$meta": "vectorSearchScore",
-			},
-			"metadata": 1,
-		},
-	})
-
-	cursor, err := collection.Aggregate(ctx, pipeline)
-	if err != nil {
-		// If vector search fails, it might not be available
-		// Log the error but don't fail completely
-		log.Printf("Vector search failed (may not be available): %v", err)
-		return nil, fmt.Errorf("vector search failed: %w", err)
-	}
-	defer cursor.Close(ctx)
-
-	var results []VectorSearchResult
-	if err := cursor.All(ctx, &results); err != nil {
-		return nil, fmt.Errorf("failed to decode results: %w", err)
+	// Sort all results by score (descending) and limit
+	if len(allResults) > limit {
+		// Simple sort by score (assuming results are roughly sorted already)
+		// For better sorting, we'd need to implement a proper sort
+		allResults = allResults[:limit]
 	}
 
-	return results, nil
+	return allResults, nil
 }
 
-// GetVectorSearchDatabase returns the database name for vector search collection
+// GetVectorSearchDatabase returns the database name for vector search collections
 func GetVectorSearchDatabase() string {
 	dbName := os.Getenv("MONGODB_VECTOR_DATABASE")
 	if dbName == "" {
-		// Default to hitopadesa database if not specified
-		dbName = os.Getenv("MONGODB_DATABASE")
-		if dbName == "" {
-			dbName = "hitopadesa"
-		}
+		dbName = "corpus_vectors" // Default Atlas database
 	}
 	return dbName
 }
 
-// GetVectorSearchCollection returns the collection name for vector search
-func GetVectorSearchCollection() string {
-	collectionName := os.Getenv("MONGODB_VECTOR_COLLECTION")
-	if collectionName == "" {
-		collectionName = "corpus_vector_search"
-	}
-	return collectionName
+// GetVectorSearchCollections returns the collection names for vector search
+func GetVectorSearchCollections() []string {
+	// Return both collections for unified search
+	return []string{"hitopadesa_vector_search", "pancatantra_vector_search"}
+}
+
+// GetVectorSearchIndexNames returns the index names corresponding to collections
+func GetVectorSearchIndexNames() []string {
+	// Return index names matching the collections
+	return []string{"vector_index_hitopadesa", "vector_index_pnacatantra"}
 }

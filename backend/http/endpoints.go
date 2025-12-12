@@ -7,11 +7,13 @@ import (
 	"chaatra/service"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var Dictionary map[string]*parser.DictionaryEntry
@@ -471,10 +473,62 @@ func PancatantraUpdateVerseHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// generateEmbedding generates an embedding vector for text using OpenAI API
+func generateEmbedding(text string) ([]float64, error) {
+	apiKey := os.Getenv("OPENAI_API_KEY")
+	if apiKey == "" {
+		return nil, fmt.Errorf("OPENAI_API_KEY environment variable not set")
+	}
+
+	// Prepare request to OpenAI embeddings API
+	requestBody := map[string]interface{}{
+		"input": text,
+		"model": "text-embedding-3-small",
+	}
+
+	jsonData, err := json.Marshal(requestBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", "https://api.openai.com/v1/embeddings", strings.NewReader(string(jsonData)))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to call OpenAI API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("OpenAI API error (status %d): %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	var result struct {
+		Data []struct {
+			Embedding []float64 `json:"embedding"`
+		} `json:"data"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	if len(result.Data) == 0 {
+		return nil, fmt.Errorf("no embedding data in response")
+	}
+
+	return result.Data[0].Embedding, nil
+}
+
 // SemanticSearchHandler handles semantic search requests
-// Note: This endpoint requires query embedding to be generated externally
-// For a complete implementation, you would call the Python vector_search module
-// via a service bridge or implement embedding generation in Go
 func SemanticSearchHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet && r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -518,16 +572,22 @@ func SemanticSearchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// For now, return an error indicating that embedding generation is required
-	// In a full implementation, you would:
-	// 1. Call a Python service to generate the query embedding
-	// 2. Or use a Go embedding library
-	// 3. Then call the vector search function
-	http.Error(w, "Semantic search requires query embedding generation. Please use the Python vector_search module or implement embedding generation in Go.", http.StatusNotImplemented)
+	// Generate embedding for the query
+	queryEmbedding, err := generateEmbedding(query)
+	if err != nil {
+		log.Printf("Failed to generate embedding: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to generate embedding: %v", err), http.StatusInternalServerError)
+		return
+	}
 
-	// TODO: Implement full semantic search with embedding generation
-	// Example implementation:
-	// 1. Generate query embedding (via Python service or Go library)
-	// 2. Call service.PerformSemanticSearch(queryEmbedding, corpusFilter, limit)
-	// 3. Return results
+	// Perform semantic search
+	results, err := service.PerformSemanticSearch(queryEmbedding, corpusFilter, limit)
+	if err != nil {
+		log.Printf("Semantic search failed: %v", err)
+		http.Error(w, fmt.Sprintf("Search failed: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(results)
 }

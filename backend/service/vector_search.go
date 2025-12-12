@@ -28,10 +28,7 @@ type SemanticSearchResult struct {
 }
 
 // PerformSemanticSearch performs semantic search using vector embeddings
-// Note: This function requires query embedding to be generated externally
-// (e.g., via Python service or embedding API call)
-// For a complete implementation, you would call the Python vector_search module
-// or implement embedding generation in Go
+// Supports unified search across multiple collections
 func PerformSemanticSearch(
 	queryEmbedding []float64,
 	corpusFilter string,
@@ -45,12 +42,14 @@ func PerformSemanticSearch(
 	}
 
 	databaseName := persistence.GetVectorSearchDatabase()
-	collectionName := persistence.GetVectorSearchCollection()
+	collections := persistence.GetVectorSearchCollections()
+	indexNames := persistence.GetVectorSearchIndexNames()
 
 	results, err := persistence.SemanticSearch(
 		queryEmbedding,
 		databaseName,
-		collectionName,
+		collections,
+		indexNames,
 		corpusFilter,
 		limit,
 	)
