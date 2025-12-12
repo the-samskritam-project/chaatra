@@ -470,3 +470,64 @@ func PancatantraUpdateVerseHandler(w http.ResponseWriter, r *http.Request) {
 		"message": "Translation updated successfully",
 	})
 }
+
+// SemanticSearchHandler handles semantic search requests
+// Note: This endpoint requires query embedding to be generated externally
+// For a complete implementation, you would call the Python vector_search module
+// via a service bridge or implement embedding generation in Go
+func SemanticSearchHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var query string
+	var corpusFilter string
+	var limit int = 10
+
+	if r.Method == http.MethodGet {
+		query = r.URL.Query().Get("q")
+		corpusFilter = r.URL.Query().Get("corpus")
+		if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
+			if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
+				limit = parsedLimit
+			}
+		}
+	} else {
+		// POST request with JSON body
+		var requestBody struct {
+			Query        string `json:"query"`
+			CorpusFilter string `json:"corpus_filter,omitempty"`
+			Limit        int    `json:"limit,omitempty"`
+		}
+
+		if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+			http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
+			return
+		}
+
+		query = requestBody.Query
+		corpusFilter = requestBody.CorpusFilter
+		if requestBody.Limit > 0 {
+			limit = requestBody.Limit
+		}
+	}
+
+	if query == "" {
+		http.Error(w, "query parameter is required (use ?q=your_query for GET or {\"query\": \"your_query\"} for POST)", http.StatusBadRequest)
+		return
+	}
+
+	// For now, return an error indicating that embedding generation is required
+	// In a full implementation, you would:
+	// 1. Call a Python service to generate the query embedding
+	// 2. Or use a Go embedding library
+	// 3. Then call the vector search function
+	http.Error(w, "Semantic search requires query embedding generation. Please use the Python vector_search module or implement embedding generation in Go.", http.StatusNotImplemented)
+
+	// TODO: Implement full semantic search with embedding generation
+	// Example implementation:
+	// 1. Generate query embedding (via Python service or Go library)
+	// 2. Call service.PerformSemanticSearch(queryEmbedding, corpusFilter, limit)
+	// 3. Return results
+}

@@ -122,6 +122,75 @@ def import_to_mongo_command(corpus_name: str, args):
     )
 
 
+def generate_embeddings_command(corpus_name: str, args):
+    """Execute embedding generation command."""
+    from processor.generate_embeddings import generate_embeddings_for_corpus
+    
+    mongodb_uri = args.mongodb_uri or os.getenv('MONGODB_URI')
+    if not mongodb_uri:
+        print("Error: MONGODB_URI must be provided or set as environment variable")
+        sys.exit(1)
+    
+    api_key = args.api_key or os.getenv('LANGCHAIN_API_KEY') or os.getenv('OPENAI_API_KEY')
+    if not api_key:
+        print("Error: LANGCHAIN_API_KEY or OPENAI_API_KEY must be provided or set as environment variable")
+        sys.exit(1)
+    
+    generate_embeddings_for_corpus(
+        corpus_name=corpus_name,
+        mongodb_uri=mongodb_uri,
+        database_name=args.database,
+        vector_database=args.vector_database,
+        vector_collection=args.vector_collection,
+        batch_size=args.batch_size,
+        skip_existing=not args.no_skip_existing,
+        provider=args.provider,
+        model_name=getattr(args, 'embedding_model', None),
+        api_key=api_key
+    )
+
+
+def vector_search_command(args):
+    """Execute vector search command."""
+    from processor.search.vector_search import search_semantic
+    
+    mongodb_uri = args.mongodb_uri or os.getenv('MONGODB_URI')
+    if not mongodb_uri:
+        print("Error: MONGODB_URI must be provided or set as environment variable")
+        sys.exit(1)
+    
+    if not args.query:
+        print("Error: Query string is required")
+        sys.exit(1)
+    
+    api_key = args.api_key or os.getenv('LANGCHAIN_API_KEY') or os.getenv('OPENAI_API_KEY')
+    
+    embedding_model = getattr(args, 'embedding_model', None)
+    results = search_semantic(
+        query=args.query,
+        mongodb_uri=mongodb_uri,
+        database_name=args.database,
+        collection_name=args.collection,
+        corpus_filter=args.corpus,
+        limit=args.limit,
+        provider=args.provider,
+        model_name=embedding_model,
+        api_key=api_key
+    )
+    
+    print(f"\nFound {len(results)} results:")
+    print("=" * 80)
+    for i, result in enumerate(results, 1):
+        print(f"\n{i}. Score: {result.get('score', 0):.4f}")
+        print(f"   Corpus: {result.get('corpus_name')}")
+        verse_num = result.get('verse_number') or result.get('prose_number', 'N/A')
+        print(f"   Verse/Prose: {verse_num}")
+        print(f"   Chapter: {result.get('chapter_number')}")
+        print(f"   Translation: {result.get('full_translation', '')[:200]}...")
+        if result.get('original_iast'):
+            print(f"   Sanskrit: {result.get('original_iast')[:100]}...")
+
+
 def main():
     """Main CLI entry point."""
     # Load environment variables
@@ -146,17 +215,26 @@ Examples:
   # Import to MongoDB
   python command_processor.py import_to_mongo hitopadesa
   python command_processor.py import_to_mongo pancatantra --clear-existing
+  
+  # Generate embeddings
+  python command_processor.py generate_embeddings hitopadesa
+  python command_processor.py generate_embeddings pancatantra --batch-size 50
+  
+  # Vector search
+  python command_processor.py vector_search --query "wisdom and knowledge" --limit 5
+  python command_processor.py vector_search --query "moral lessons" --corpus hitopadesa
         """
     )
     
     parser.add_argument(
         'command',
-        choices=['transliterate', 'translate', 'import_to_mongo'],
+        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search'],
         help='Command to execute'
     )
     parser.add_argument(
         'corpus',
-        help='Corpus name (e.g., hitopadesa, pancatantra)'
+        nargs='?',
+        help='Corpus name (e.g., hitopadesa, pancatantra). Not required for vector_search command.'
     )
     
     # Common arguments
@@ -210,14 +288,59 @@ Examples:
         help='Clear existing collections before importing'
     )
     
+    # Embedding generation arguments
+    parser.add_argument(
+        '--vector-database',
+        help='Database name for vector collection (defaults to corpus database)'
+    )
+    parser.add_argument(
+        '--vector-collection',
+        default='corpus_vector_search',
+        help='Vector collection name (default: corpus_vector_search)'
+    )
+    parser.add_argument(
+        '--no-skip-existing',
+        action='store_true',
+        help='Regenerate embeddings for existing documents'
+    )
+    parser.add_argument(
+        '--provider',
+        help='Embedding provider (openai, huggingface)'
+    )
+    parser.add_argument(
+        '--embedding-model',
+        help='Embedding model name (e.g., text-embedding-3-small)'
+    )
+    
+    # Vector search arguments
+    parser.add_argument(
+        '--query',
+        help='Search query string (required for vector_search command)'
+    )
+    parser.add_argument(
+        '--collection',
+        default='corpus_vector_search',
+        help='Vector search collection name (default: corpus_vector_search)'
+    )
+    parser.add_argument(
+        '--limit',
+        type=int,
+        default=10,
+        help='Maximum number of search results (default: 10)'
+    )
+    
     args = parser.parse_args()
     
-    # Validate corpus name
-    try:
-        get_corpus_config(args.corpus)
-    except ValueError as e:
-        print(f"Error: {e}")
-        sys.exit(1)
+    # Validate corpus name (not required for vector_search)
+    if args.command != 'vector_search':
+        if not args.corpus:
+            print("Error: Corpus name is required for this command")
+            sys.exit(1)
+        try:
+            get_corpus_config(args.corpus)
+        except ValueError as e:
+            print(f"Error: {e}")
+            sys.exit(1)
     
     # Execute command
     try:
@@ -227,6 +350,10 @@ Examples:
             translate_command(args.corpus, args)
         elif args.command == 'import_to_mongo':
             import_to_mongo_command(args.corpus, args)
+        elif args.command == 'generate_embeddings':
+            generate_embeddings_command(args.corpus, args)
+        elif args.command == 'vector_search':
+            vector_search_command(args)
     except KeyboardInterrupt:
         print("\n\n⚠ Process interrupted by user")
         sys.exit(1)
