@@ -8,6 +8,7 @@ import RamayanaSearch from './components/ramayana/RamayanaSearch';
 import RamayanaExplore from './components/ramayana/RamayanaExplore';
 import Hitopadesa from './components/hitopadesa/Hitopadesa';
 import Pancatantra from './components/pancatantra/Pancatantra';
+import ThematicSearch from './components/thematic/ThematicSearch';
 import Footer from './components/Footer';
 
 function App() {
@@ -41,6 +42,7 @@ function App() {
                 <Tab>Explore</Tab>
                 {showHitopadesa && <Tab>Hitopadesa</Tab>}
                 {showPancatantra && <Tab>Pancatantra</Tab>}
+                <Tab>Thematic Search</Tab>
               </TabList>
             </div>
           </div>
@@ -72,6 +74,9 @@ function App() {
                 <Pancatantra />
               </TabPanel>
             )}
+            <TabPanel>
+              <ThematicSearch />
+            </TabPanel>
           </div>
         </Tabs>
       </div>
