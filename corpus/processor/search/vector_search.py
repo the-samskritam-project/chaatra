@@ -109,10 +109,32 @@ def search_semantic(
     
     # Get database name from env if not provided
     if database_name is None:
-        database_name = os.getenv('MONGODB_VECTOR_DATABASE') or os.getenv('MONGODB_DATABASE', 'hitopadesa')
+        # If corpus filter is provided, try that database first, then fall back to default
+        if corpus_filter:
+            # Try the corpus database first (embeddings might be stored there)
+            test_db = client[corpus_filter]
+            test_coll = test_db[collection_name]
+            if test_coll.count_documents({'corpus_name': corpus_filter}) > 0:
+                database_name = corpus_filter
+            else:
+                # Fall back to default database
+                database_name = os.getenv('MONGODB_VECTOR_DATABASE') or os.getenv('MONGODB_DATABASE', 'hitopadesa')
+        else:
+            database_name = os.getenv('MONGODB_VECTOR_DATABASE') or os.getenv('MONGODB_DATABASE', 'hitopadesa')
     
     db = client[database_name]
     collection = db[collection_name]
+    
+    # If corpus filter is set but no results in current database, try the corpus database
+    if corpus_filter and collection.count_documents({'corpus_name': corpus_filter}) == 0:
+        # Try searching in the corpus-specific database
+        corpus_db = client[corpus_filter]
+        corpus_collection = corpus_db[collection_name]
+        if corpus_collection.count_documents({'corpus_name': corpus_filter}) > 0:
+            # Switch to corpus database
+            db = corpus_db
+            collection = corpus_collection
+            database_name = corpus_filter
     
     # Generate query embedding
     query_embedding = generate_embedding(query, provider=provider, model_name=model_name, api_key=api_key)

@@ -323,6 +323,10 @@ Examples:
         help='Vector search collection name (default: corpus_vector_search)'
     )
     parser.add_argument(
+        '--corpus',
+        help='Filter results by corpus name (e.g., hitopadesa, pancatantra)'
+    )
+    parser.add_argument(
         '--limit',
         type=int,
         default=10,
