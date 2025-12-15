@@ -6,6 +6,8 @@ full translations, produce a concise summary plus 3-5 thematic labels,
 and write back to the interval document.
 """
 
+import json
+import re
 import time
 from typing import List, Optional, Dict, Any
 
@@ -21,11 +23,12 @@ from processor.classification.mongo_utils import chapter_collections
 PROMPT_TEMPLATE = """You are given an interval of a Sanskrit story with its English translations.
 Summarize the interval and extract thematic labels (not the narrative-function labels).
 
-Provide:
+Provide ONLY JSON (no markdown, no code fences, no prose), with keys:
 - summary: 2-4 sentences, concise, capturing key actions/ideas.
 - themes: 3-5 concise thematic labels (lowercase, dash-separated if multiword), reflecting motifs, topics, or situational themes (e.g., loyalty, betrayal, cleverness, caution, fate, royal-counsel, friendship, deception, greed, duty, karma).
 
 Rules:
+- Output must be plain JSON, no ``` fences or extra text.
 - Base everything only on the provided text.
 - Do not invent missing context.
 - Keep themes short (1-3 words), lowercase.
@@ -33,8 +36,7 @@ Rules:
 
 Text:
 {interval_text}
-
-Return JSON with keys: summary, themes (array of strings)."""
+"""
 
 
 def summarize_intervals(
@@ -101,6 +103,10 @@ def summarize_intervals(
                     print(f"✗ Error summarizing interval {interval_doc.get('_id')}: {exc}")
                     continue
 
+                if not summary or not themes:
+                    print(f"⚠ Parsed empty summary/themes for interval {interval_doc.get('_id')}, skipping update")
+                    continue
+
                 intervals_coll.update_one(
                     {"_id": interval_doc.get("_id")},
                     {
@@ -147,23 +153,19 @@ def _build_interval_text(db, corpus_name: str, chapter_lookup: Dict[int, str], i
 
 
 def _parse_response(content: str):
-    import json
+    raw = content.strip()
+    # strip code fences if present
+    raw = re.sub(r"^```\\w*\\s*", "", raw)
+    raw = re.sub(r"```\\s*$", "", raw)
 
-    try:
-        data = json.loads(content)
-        summary = data.get("summary", "").strip()
-        themes = data.get("themes", [])
-        if isinstance(themes, str):
-            themes = [themes]
-        themes = [t.strip().lower() for t in themes if t]
-        return summary, themes
-    except Exception:
-        # Fallback: attempt to split lines
-        lines = [ln.strip() for ln in content.splitlines() if ln.strip()]
-        summary = ""
-        themes: List[str] = []
-        if lines:
-            summary = lines[0]
-            if len(lines) > 1:
-                themes = [ln.strip().lower() for ln in lines[1:]]
-        return summary, themes
+    # extract JSON between first { and last }
+    if "{" in raw and "}" in raw:
+        raw = raw[raw.find("{"): raw.rfind("}") + 1]
+
+    data = json.loads(raw)
+    summary = str(data.get("summary", "")).strip()
+    themes = data.get("themes", [])
+    if isinstance(themes, str):
+        themes = [themes]
+    themes = [t.strip().lower() for t in themes if t and isinstance(t, str)]
+    return summary, themes
