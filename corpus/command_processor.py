@@ -223,12 +223,15 @@ Examples:
   # Vector search
   python command_processor.py vector_search --query "wisdom and knowledge" --limit 5
   python command_processor.py vector_search --query "moral lessons" --corpus hitopadesa
+  
+  # Classify verses
+  python command_processor.py classify_verses pancatantra --start-chapter 1 --end-chapter 2
         """
     )
     
     parser.add_argument(
         'command',
-        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search'],
+        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses'],
         help='Command to execute'
     )
     parser.add_argument(
@@ -333,6 +336,33 @@ Examples:
         help='Maximum number of search results (default: 10)'
     )
     
+    # Classification arguments
+    parser.add_argument(
+        '--label-field',
+        default='narrative_label',
+        help='Document field name to store the label (default: narrative_label)'
+    )
+    parser.add_argument(
+        '--start-chapter',
+        type=int,
+        help='First chapter number to process (inclusive)'
+    )
+    parser.add_argument(
+        '--end-chapter',
+        type=int,
+        help='Last chapter number to process (inclusive)'
+    )
+    parser.add_argument(
+        '--max-per-chapter',
+        type=int,
+        help='Maximum number of verses to classify per chapter'
+    )
+    parser.add_argument(
+        '--force',
+        action='store_true',
+        help='Overwrite existing labels (default: skip labeled verses)'
+    )
+    
     args = parser.parse_args()
     
     # Validate corpus name (not required for vector_search)
@@ -358,6 +388,31 @@ Examples:
             generate_embeddings_command(args.corpus, args)
         elif args.command == 'vector_search':
             vector_search_command(args)
+        elif args.command == 'classify_verses':
+            from processor.classify_verses import classify_verses
+            
+            mongodb_uri = args.mongodb_uri or os.getenv('MONGODB_URI')
+            if not mongodb_uri:
+                print("Error: MONGODB_URI must be provided or set as environment variable")
+                sys.exit(1)
+            
+            api_key = args.api_key or os.getenv('LANGCHAIN_API_KEY') or os.getenv('OPENAI_API_KEY')
+            if not api_key:
+                print("Error: OPENAI_API_KEY or LANGCHAIN_API_KEY must be provided or set as environment variable")
+                sys.exit(1)
+            
+            classify_verses(
+                corpus_name=args.corpus,
+                mongodb_uri=mongodb_uri,
+                database_name=args.database,
+                label_field=args.label_field,
+                start_chapter=args.start_chapter,
+                end_chapter=args.end_chapter,
+                max_per_chapter=args.max_per_chapter,
+                force=args.force,
+                api_key=api_key,
+                model=args.model
+            )
     except KeyboardInterrupt:
         print("\n\n⚠ Process interrupted by user")
         sys.exit(1)
