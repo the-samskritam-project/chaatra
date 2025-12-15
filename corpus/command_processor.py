@@ -226,12 +226,15 @@ Examples:
   
   # Classify verses
   python command_processor.py classify_verses pancatantra --start-chapter 1 --end-chapter 2
+
+  # Build intervals (split on transitions)
+  python command_processor.py build_intervals pancatantra --start-chapter 1 --end-chapter 2
         """
     )
     
     parser.add_argument(
         'command',
-        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses'],
+        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals'],
         help='Command to execute'
     )
     parser.add_argument(
@@ -362,6 +365,37 @@ Examples:
         action='store_true',
         help='Overwrite existing labels (default: skip labeled verses)'
     )
+
+    # Interval building arguments
+    parser.add_argument(
+        '--output-collection',
+        help='Target collection for intervals (default: {corpus}_intervals)'
+    )
+    parser.add_argument(
+        '--interval-label-field',
+        default='narrative_label',
+        help='Label field to split intervals on (default: narrative_label)'
+    )
+    parser.add_argument(
+        '--interval-start-chapter',
+        type=int,
+        help='First chapter number for interval building (inclusive)'
+    )
+    parser.add_argument(
+        '--interval-end-chapter',
+        type=int,
+        help='Last chapter number for interval building (inclusive)'
+    )
+    parser.add_argument(
+        '--interval-max-per-chapter',
+        type=int,
+        help='Max docs to read per chapter when building intervals'
+    )
+    parser.add_argument(
+        '--verses-only',
+        action='store_true',
+        help='When set, include only type=verse docs in intervals (default: include all)'
+    )
     
     args = parser.parse_args()
     
@@ -412,6 +446,25 @@ Examples:
                 force=args.force,
                 api_key=api_key,
                 model=args.model
+            )
+        elif args.command == 'build_intervals':
+            from processor.build_intervals import build_intervals
+            
+            mongodb_uri = args.mongodb_uri or os.getenv('MONGODB_URI')
+            if not mongodb_uri:
+                print("Error: MONGODB_URI must be provided or set as environment variable")
+                sys.exit(1)
+            
+            build_intervals(
+                corpus_name=args.corpus,
+                mongodb_uri=mongodb_uri,
+                database_name=args.database,
+                output_collection=args.output_collection,
+                label_field=args.interval_label_field,
+                start_chapter=args.interval_start_chapter,
+                end_chapter=args.interval_end_chapter,
+                max_per_chapter=args.interval_max_per_chapter,
+                verses_only=args.verses_only
             )
     except KeyboardInterrupt:
         print("\n\n⚠ Process interrupted by user")
