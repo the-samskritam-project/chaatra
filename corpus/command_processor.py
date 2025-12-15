@@ -396,6 +396,11 @@ Examples:
         action='store_true',
         help='When set, include only type=verse docs in intervals (default: include all)'
     )
+    parser.add_argument(
+        '--keep-output',
+        action='store_true',
+        help='Do not drop the output interval collection before writing (default: drop first)'
+    )
     
     args = parser.parse_args()
     
@@ -464,7 +469,8 @@ Examples:
                 start_chapter=args.interval_start_chapter,
                 end_chapter=args.interval_end_chapter,
                 max_per_chapter=args.interval_max_per_chapter,
-                verses_only=args.verses_only
+                verses_only=args.verses_only,
+                clear_output=not args.keep_output
             )
     except KeyboardInterrupt:
         print("\n\n⚠ Process interrupted by user")

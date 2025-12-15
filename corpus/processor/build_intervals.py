@@ -32,6 +32,7 @@ def build_intervals(
     end_chapter: Optional[int] = None,
     max_per_chapter: Optional[int] = None,
     verses_only: bool = False,
+    clear_output: bool = True,
 ):
     """
     Build intervals for a corpus by splitting on transition labels.
@@ -40,6 +41,10 @@ def build_intervals(
     target_collection = output_collection or f"{corpus_name}_intervals"
 
     try:
+        if clear_output:
+            db.drop_collection(target_collection)
+            print(f"Dropped existing collection: {target_collection}")
+
         collections = chapter_collections(
             db.list_collection_names(),
             corpus_name=corpus_name,
