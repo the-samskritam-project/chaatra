@@ -62,6 +62,7 @@ func main() {
 	mux.HandleFunc("/v2/pancatantra/chapters", h.PancatantraChaptersHandler)
 	mux.HandleFunc("/v2/pancatantra/verses", h.PancatantraVersesHandler)
 	mux.HandleFunc("/v2/pancatantra/verses/", h.PancatantraUpdateVerseHandler)
+	mux.HandleFunc("/v2/pancatantra/wordcloud", h.PancatantraWordCloudHandler)
 	mux.HandleFunc("/v2/search/semantic", h.SemanticSearchHandler)
 
 	c := cors.New(cors.Options{

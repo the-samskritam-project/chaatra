@@ -1,0 +1,134 @@
+.themes-wrapper {
+  width: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.themes-header {
+  text-align: center;
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.themes-header h2 {
+  color: #007bff;
+  font-size: 2rem;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.themes-header p {
+  color: #6d4c41;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.themes-error {
+  color: #c62828;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding: 12px;
+  background: #ffebee;
+  border-radius: 6px;
+  border-left: 4px solid #c62828;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.themes-loading,
+.themes-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #757575;
+  font-style: italic;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.themes-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 30px;
+}
+
+.theme-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #e3f2fd;
+  border: 1px solid #90caf9;
+  border-radius: 6px;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.theme-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.theme-name {
+  font-weight: 500;
+  color: #007bff;
+  font-size: 1rem;
+  text-transform: capitalize;
+}
+
+.theme-count {
+  background-color: #007bff;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 40px;
+  text-align: center;
+}
+
+.themes-stats {
+  text-align: center;
+  padding: 20px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 1200px;
+  color: #3e2723;
+}
+
+.themes-stats p {
+  margin: 8px 0;
+  font-size: 0.95rem;
+}
+
+.themes-stats p:first-child {
+  font-weight: 600;
+  color: #007bff;
+}
+
+@media (max-width: 768px) {
+  .themes-wrapper {
+    padding: 15px;
+  }
+
+  .themes-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .themes-list {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .themes-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

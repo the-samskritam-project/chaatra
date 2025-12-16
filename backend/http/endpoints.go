@@ -473,6 +473,24 @@ func PancatantraUpdateVerseHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// PancatantraWordCloudHandler returns word cloud data
+func PancatantraWordCloudHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	wordCloudData, err := service.GetPancatantraWordCloudData()
+	if err != nil {
+		log.Printf("Error getting Pancatantra word cloud data: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to get word cloud data: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(wordCloudData)
+}
+
 // generateEmbedding generates an embedding vector for text using OpenAI API
 func generateEmbedding(text string) ([]float64, error) {
 	apiKey := os.Getenv("OPENAI_API_KEY")

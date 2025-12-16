@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -247,6 +248,130 @@ func UpdateHitopadesaVerseTranslation(verseNumber string, editedTranslation stri
 	}
 
 	return nil
+}
+
+// GetPancatantraThemeCounts returns theme frequency counts from intervals
+func GetPancatantraThemeCounts() (map[string]int, error) {
+	if mongoClient == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Use pancatantra database
+	db := getDatabase("pancatantra")
+	if db == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+
+	collection := db.Collection("pancatantra_intervals")
+
+	// Count total documents first
+	totalDocs, err := collection.CountDocuments(ctx, bson.M{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to count intervals: %w", err)
+	}
+	log.Printf("GetPancatantraThemeCounts: found %d total documents in pancatantra_intervals", totalDocs)
+
+	cursor, err := collection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to query intervals: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	themeCounts := make(map[string]int)
+	processedDocs := 0
+	docsWithThemes := 0
+	docsWithoutThemes := 0
+
+	// Iterate through all intervals
+	for cursor.Next(ctx) {
+		processedDocs++
+		var interval bson.M
+		if err := cursor.Decode(&interval); err != nil {
+			log.Printf("Error decoding interval: %v", err)
+			continue
+		}
+
+		// Extract interval_themes array
+		themes, ok := interval["interval_themes"]
+		if !ok {
+			docsWithoutThemes++
+			continue
+		}
+		docsWithThemes++
+
+		// Debug: log the type and value of themes (only for first few documents)
+		if processedDocs <= 3 {
+			log.Printf("Debug: themes type=%T, value=%v", themes, themes)
+		}
+
+		// Handle different possible types for themes
+		var themesList []interface{}
+		switch v := themes.(type) {
+		case []interface{}:
+			themesList = v
+		case []string:
+			for _, s := range v {
+				themesList = append(themesList, s)
+			}
+		case bson.A: // MongoDB array type
+			themesList = []interface{}(v)
+		case nil:
+			// Empty or null themes
+			continue
+		default:
+			// Log unexpected type
+			if processedDocs <= 3 {
+				log.Printf("Debug: unexpected themes type %T, value=%v", v, v)
+			}
+			continue
+		}
+
+		// Debug: log themesList length (only for first few documents)
+		if processedDocs <= 3 {
+			log.Printf("Debug: themesList length=%d", len(themesList))
+		}
+
+		// Count each theme (simple count - each occurrence = 1)
+		for i, theme := range themesList {
+			// Debug: log theme type and value (only for first document)
+			if processedDocs == 1 && i < 3 {
+				log.Printf("Debug: theme[%d] type=%T, value=%v", i, theme, theme)
+			}
+
+			var themeStr string
+			switch v := theme.(type) {
+			case string:
+				themeStr = v
+			case bson.E:
+				// Handle BSON element
+				if str, ok := v.Value.(string); ok {
+					themeStr = str
+				} else {
+					continue
+				}
+			default:
+				// Try to convert to string
+				themeStr = fmt.Sprintf("%v", v)
+			}
+
+			// Normalize theme: lowercase and trim spaces
+			normalized := strings.ToLower(strings.TrimSpace(themeStr))
+			if normalized != "" {
+				themeCounts[normalized]++
+			}
+		}
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, fmt.Errorf("cursor error: %w", err)
+	}
+
+	log.Printf("GetPancatantraThemeCounts: processed %d documents, %d with themes, %d without themes, found %d unique themes",
+		processedDocs, docsWithThemes, docsWithoutThemes, len(themeCounts))
+	return themeCounts, nil
 }
 
 // GetPancatantraChapters returns all chapter metadata
