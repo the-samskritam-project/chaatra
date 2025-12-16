@@ -234,7 +234,7 @@ Examples:
     
     parser.add_argument(
         'command',
-        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals'],
+        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs'],
         help='Command to execute'
     )
     parser.add_argument(
@@ -444,6 +444,13 @@ Examples:
         default=0.0,
         help='Delay between API calls (seconds)'
     )
+
+    # Interval theme docs creation arguments
+    parser.add_argument(
+        '--require-summarized',
+        action='store_true',
+        help='Skip intervals missing interval_summary or interval_themes'
+    )
     
     args = parser.parse_args()
     
@@ -542,6 +549,22 @@ Examples:
                 delay=args.summary_delay,
                 api_key=api_key,
                 model=args.model
+            )
+        elif args.command == 'create_interval_theme_docs':
+            from processor.create_interval_theme_docs import create_interval_theme_docs
+            
+            mongodb_uri = args.mongodb_uri or os.getenv('MONGODB_URI')
+            if not mongodb_uri:
+                print("Error: MONGODB_URI must be provided or set as environment variable")
+                sys.exit(1)
+            
+            create_interval_theme_docs(
+                corpus_name=args.corpus,
+                mongodb_uri=mongodb_uri,
+                database_name=args.database,
+                intervals_collection=args.intervals_collection,
+                require_summarized=args.require_summarized,
+                batch_size=args.batch_size
             )
     except KeyboardInterrupt:
         print("\n\n⚠ Process interrupted by user")
