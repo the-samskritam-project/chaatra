@@ -234,7 +234,7 @@ Examples:
     
     parser.add_argument(
         'command',
-        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings'],
+        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings', 'cluster_interval_themes'],
         help='Command to execute'
     )
     parser.add_argument(
@@ -451,11 +451,33 @@ Examples:
         action='store_true',
         help='Skip intervals missing interval_summary or interval_themes'
     )
+
+    # Interval theme clustering arguments
+    parser.add_argument(
+        '--source-collection',
+        help='Source collection for clustering (default: {corpus}_interval_theme_docs)'
+    )
+    parser.add_argument(
+        '--target-collection',
+        help='Target collection for clusters (default: {corpus}_theme_clusters)'
+    )
+    parser.add_argument(
+        '--min-cluster-size',
+        type=int,
+        default=5,
+        help='Minimum cluster size for HDBSCAN (default: 5)'
+    )
+    parser.add_argument(
+        '--min-samples',
+        type=int,
+        default=5,
+        help='Minimum samples for HDBSCAN (default: 5)'
+    )
     
     args = parser.parse_args()
     
-    # Validate corpus name (not required for vector_search or generate_interval_theme_embeddings)
-    if args.command not in ['vector_search', 'generate_interval_theme_embeddings']:
+    # Validate corpus name (not required for vector_search, generate_interval_theme_embeddings, or cluster_interval_themes)
+    if args.command not in ['vector_search', 'generate_interval_theme_embeddings', 'cluster_interval_themes']:
         if not args.corpus:
             print("Error: Corpus name is required for this command")
             sys.exit(1)
@@ -587,6 +609,28 @@ Examples:
                 collection_name=collection_name,
                 batch_size=args.batch_size,
                 api_key=api_key
+            )
+        elif args.command == 'cluster_interval_themes':
+            from processor.cluster_interval_themes import cluster_interval_themes
+            
+            mongodb_uri = args.mongodb_uri or os.getenv('MONGODB_URI')
+            if not mongodb_uri:
+                print("Error: MONGODB_URI must be provided or set as environment variable")
+                sys.exit(1)
+            
+            # Use corpus name if provided, otherwise default to pancatantra
+            corpus_name = args.corpus or "pancatantra"
+            database_name = args.database or corpus_name
+            source_collection = args.source_collection or f"{corpus_name}_interval_theme_docs"
+            target_collection = args.target_collection or f"{corpus_name}_theme_clusters"
+            
+            cluster_interval_themes(
+                mongodb_uri=mongodb_uri,
+                database_name=database_name,
+                source_collection=source_collection,
+                target_collection=target_collection,
+                min_cluster_size=args.min_cluster_size,
+                min_samples=args.min_samples
             )
     except KeyboardInterrupt:
         print("\n\n⚠ Process interrupted by user")
