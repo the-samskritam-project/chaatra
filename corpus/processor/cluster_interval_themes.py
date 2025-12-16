@@ -116,19 +116,17 @@ def cluster_interval_themes(
     print(f"  Noise points: {num_noise}")
     print(f"  Total points: {len(cluster_labels)}")
     
-    # Group interval_ids by cluster label (exclude -1 noise points)
+    # Group interval_ids by cluster label
     clusters_dict: Dict[int, List[Any]] = defaultdict(list)
+    noise_points = []
     
     for label, doc_id in zip(cluster_labels, doc_ids):
-        if label >= 0:  # Ignore noise points (-1)
+        if label >= 0:
             clusters_dict[label].append(doc_id)
+        else:  # label == -1 (noise points)
+            noise_points.append(doc_id)
     
-    if not clusters_dict:
-        print("\nNo clusters found (all points are noise).")
-        client.close()
-        return
-    
-    # Create cluster documents
+    # Create cluster documents for regular clusters
     cluster_docs = []
     for cluster_id, interval_ids in clusters_dict.items():
         cluster_doc = {
@@ -137,6 +135,20 @@ def cluster_interval_themes(
             "size": int(len(interval_ids))  # Convert to Python int
         }
         cluster_docs.append(cluster_doc)
+    
+    # Create single-point clusters for noise points
+    # Start cluster IDs from max_cluster_id + 1, or 0 if no clusters
+    max_cluster_id = max(clusters_dict.keys()) if clusters_dict else -1
+    next_cluster_id = max_cluster_id + 1
+    
+    for noise_doc_id in noise_points:
+        cluster_doc = {
+            "cluster_id": int(next_cluster_id),
+            "interval_ids": [noise_doc_id],  # Single interval
+            "size": 1
+        }
+        cluster_docs.append(cluster_doc)
+        next_cluster_id += 1
     
     # Sort by cluster_id for consistency
     cluster_docs.sort(key=lambda x: x["cluster_id"])
@@ -167,14 +179,17 @@ def cluster_interval_themes(
     
     # Summary
     total_intervals_clustered = sum(doc["size"] for doc in cluster_docs)
+    multi_point_clusters = len([d for d in cluster_docs if d["size"] > 1])
+    single_point_clusters = len([d for d in cluster_docs if d["size"] == 1])
+    
     print("\n" + "=" * 60)
     print("Clustering Summary:")
     print(f"  Total documents processed: {len(documents)}")
     print(f"  Valid embeddings: {len(embeddings_list)}")
-    print(f"  Clusters found: {num_clusters}")
-    print(f"  Intervals clustered: {total_intervals_clustered}")
-    print(f"  Noise points (ignored): {num_noise}")
-    print(f"  Cluster documents written: {len(cluster_docs)}")
+    print(f"  Multi-point clusters: {multi_point_clusters}")
+    print(f"  Single-point clusters (noise): {single_point_clusters}")
+    print(f"  Total cluster documents: {len(cluster_docs)}")
+    print(f"  Total intervals in clusters: {total_intervals_clustered}")
     print("=" * 60)
     
     client.close()
