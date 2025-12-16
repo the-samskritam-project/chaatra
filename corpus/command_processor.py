@@ -234,7 +234,7 @@ Examples:
     
     parser.add_argument(
         'command',
-        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs'],
+        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings'],
         help='Command to execute'
     )
     parser.add_argument(
@@ -454,8 +454,8 @@ Examples:
     
     args = parser.parse_args()
     
-    # Validate corpus name (not required for vector_search)
-    if args.command != 'vector_search':
+    # Validate corpus name (not required for vector_search or generate_interval_theme_embeddings)
+    if args.command not in ['vector_search', 'generate_interval_theme_embeddings']:
         if not args.corpus:
             print("Error: Corpus name is required for this command")
             sys.exit(1)
@@ -565,6 +565,28 @@ Examples:
                 intervals_collection=args.intervals_collection,
                 require_summarized=args.require_summarized,
                 batch_size=args.batch_size
+            )
+        elif args.command == 'generate_interval_theme_embeddings':
+            from processor.generate_interval_theme_embeddings import generate_interval_theme_embeddings
+            
+            mongodb_uri = args.mongodb_uri or os.getenv('MONGODB_URI')
+            if not mongodb_uri:
+                print("Error: MONGODB_URI must be provided or set as environment variable")
+                sys.exit(1)
+            
+            # Use corpus name if provided, otherwise default to pancatantra
+            corpus_name = args.corpus or "pancatantra"
+            database_name = args.database or corpus_name
+            collection_name = f"{corpus_name}_interval_theme_docs"
+            
+            api_key = args.api_key or os.getenv('LANGCHAIN_API_KEY') or os.getenv('OPENAI_API_KEY')
+            
+            generate_interval_theme_embeddings(
+                mongodb_uri=mongodb_uri,
+                database_name=database_name,
+                collection_name=collection_name,
+                batch_size=args.batch_size,
+                api_key=api_key
             )
     except KeyboardInterrupt:
         print("\n\n⚠ Process interrupted by user")
