@@ -234,7 +234,7 @@ Examples:
     
     parser.add_argument(
         'command',
-        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings', 'cluster_interval_themes'],
+        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes'],
         help='Command to execute'
     )
     parser.add_argument(
@@ -473,11 +473,32 @@ Examples:
         default=5,
         help='Minimum samples for HDBSCAN (default: 5)'
     )
+
+    # Theme node generation arguments
+    parser.add_argument(
+        '--clusters-collection',
+        help='Source clusters collection (default: {corpus}_theme_clusters)'
+    )
+    parser.add_argument(
+        '--theme-nodes-collection',
+        help='Target theme nodes collection (default: {corpus}_theme_nodes)'
+    )
+    parser.add_argument(
+        '--theme-nodes-delay',
+        type=float,
+        default=0.0,
+        help='Delay between API calls for theme node generation (seconds, default: 0.0)'
+    )
+    parser.add_argument(
+        '--theme-nodes-force',
+        action='store_true',
+        help='Overwrite existing theme nodes'
+    )
     
     args = parser.parse_args()
     
-    # Validate corpus name (not required for vector_search, generate_interval_theme_embeddings, or cluster_interval_themes)
-    if args.command not in ['vector_search', 'generate_interval_theme_embeddings', 'cluster_interval_themes']:
+    # Validate corpus name (not required for vector_search, generate_interval_theme_embeddings, cluster_interval_themes, or generate_theme_nodes)
+    if args.command not in ['vector_search', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes']:
         if not args.corpus:
             print("Error: Corpus name is required for this command")
             sys.exit(1)
@@ -631,6 +652,34 @@ Examples:
                 target_collection=target_collection,
                 min_cluster_size=args.min_cluster_size,
                 min_samples=args.min_samples
+            )
+        elif args.command == 'generate_theme_nodes':
+            from processor.generate_theme_nodes import generate_theme_nodes
+            
+            mongodb_uri = args.mongodb_uri or os.getenv('MONGODB_URI')
+            if not mongodb_uri:
+                print("Error: MONGODB_URI must be provided or set as environment variable")
+                sys.exit(1)
+            
+            # Use corpus name if provided, otherwise default to pancatantra
+            corpus_name = args.corpus or "pancatantra"
+            database_name = args.database or corpus_name
+            
+            api_key = args.api_key or os.getenv('LANGCHAIN_API_KEY') or os.getenv('OPENAI_API_KEY')
+            if not api_key:
+                print("Error: OPENAI_API_KEY or LANGCHAIN_API_KEY must be provided or set as environment variable")
+                sys.exit(1)
+            
+            generate_theme_nodes(
+                mongodb_uri=mongodb_uri,
+                database_name=database_name,
+                clusters_collection=args.clusters_collection or f"{corpus_name}_theme_clusters",
+                intervals_collection=f"{corpus_name}_interval_theme_docs",
+                target_collection=args.theme_nodes_collection or f"{corpus_name}_theme_nodes",
+                api_key=api_key,
+                model=args.model,
+                delay=args.theme_nodes_delay,
+                force=args.theme_nodes_force
             )
     except KeyboardInterrupt:
         print("\n\n⚠ Process interrupted by user")
