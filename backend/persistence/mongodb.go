@@ -563,7 +563,8 @@ type PancatantraInterval struct {
 
 // GetPancatantraIntervalByVerse finds the interval containing a given verse or prose number
 // Ignores intervals with more than 25 prose shlokas
-func GetPancatantraIntervalByVerse(verseNumber string) (*PancatantraInterval, error) {
+// itemType should be "verse" or "prose" to search in the appropriate array
+func GetPancatantraIntervalByVerse(verseNumber string, itemType string) (*PancatantraInterval, error) {
 	if mongoClient == nil {
 		return nil, fmt.Errorf("MongoDB not initialized")
 	}
@@ -578,16 +579,26 @@ func GetPancatantraIntervalByVerse(verseNumber string) (*PancatantraInterval, er
 
 	collection := db.Collection("pancatantra_intervals")
 
-	// Find interval where verse_numbers or prose_numbers contains the verse number
+	// Default to "verse" if type is not provided (backward compatibility)
+	if itemType == "" {
+		itemType = "verse"
+	}
+
+	// Build filter based on item type - search only in the appropriate array
+	var typeFilter bson.M
+	if itemType == "verse" {
+		typeFilter = bson.M{"verse_numbers": verseNumber}
+	} else if itemType == "prose" {
+		typeFilter = bson.M{"prose_numbers": verseNumber}
+	} else {
+		return nil, fmt.Errorf("invalid item type: %s (must be 'verse' or 'prose')", itemType)
+	}
+
+	// Find interval where the appropriate array contains the verse number
 	// and prose_numbers array has at most 25 elements
 	filter := bson.M{
 		"$and": []bson.M{
-			{
-				"$or": []bson.M{
-					{"verse_numbers": verseNumber},
-					{"prose_numbers": verseNumber},
-				},
-			},
+			typeFilter,
 			{
 				"$expr": bson.M{
 					"$lte": []interface{}{bson.M{"$size": "$prose_numbers"}, 25},

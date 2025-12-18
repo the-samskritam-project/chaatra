@@ -124,9 +124,15 @@ type VerseContextItem struct {
 }
 
 // GetPancatantraVerseContext returns interval and verse context for a given verse number
-func GetPancatantraVerseContext(verseNumber string) (*PancatantraVerseContext, error) {
+// itemType should be "verse" or "prose" to search in the appropriate interval array
+func GetPancatantraVerseContext(verseNumber string, itemType string) (*PancatantraVerseContext, error) {
 	if verseNumber == "" {
 		return nil, fmt.Errorf("verse number is required")
+	}
+
+	// Default to "verse" if type is not provided (backward compatibility)
+	if itemType == "" {
+		itemType = "verse"
 	}
 
 	// Parse chapter number from verse number (format: "chapter.verse")
@@ -137,7 +143,7 @@ func GetPancatantraVerseContext(verseNumber string) (*PancatantraVerseContext, e
 	}
 
 	// Find the interval containing this verse (may be nil if not found or > 25 prose shlokas)
-	interval, err := persistence.GetPancatantraIntervalByVerse(verseNumber)
+	interval, err := persistence.GetPancatantraIntervalByVerse(verseNumber, itemType)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find interval: %w", err)
 	}

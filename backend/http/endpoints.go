@@ -504,9 +504,15 @@ func PancatantraVerseContextHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	context, err := service.GetPancatantraVerseContext(verseNumber)
+	// Get type parameter (optional, defaults to "verse" for backward compatibility)
+	itemType := r.URL.Query().Get("type")
+	if itemType == "" {
+		itemType = "verse"
+	}
+
+	context, err := service.GetPancatantraVerseContext(verseNumber, itemType)
 	if err != nil {
-		log.Printf("Error getting Pancatantra verse context for %s: %v", verseNumber, err)
+		log.Printf("Error getting Pancatantra verse context for %s (type: %s): %v", verseNumber, itemType, err)
 		http.Error(w, fmt.Sprintf("Failed to get verse context: %v", err), http.StatusInternalServerError)
 		return
 	}

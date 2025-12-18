@@ -189,13 +189,16 @@ function Pancatantra() {
       return;
     }
 
+    // Extract type from suggestion (default to "verse" for backward compatibility)
+    const itemType = suggestion.type || 'verse';
+
     setIsLoadingContext(true);
     setContextError('');
     setVerseContext(null);
 
     try {
       const response = await fetch(
-        `${apiUrl}/v2/pancatantra/verse-context?verse_number=${encodeURIComponent(verseNumber)}`
+        `${apiUrl}/v2/pancatantra/verse-context?verse_number=${encodeURIComponent(verseNumber)}&type=${encodeURIComponent(itemType)}`
       );
 
       if (!response.ok) {
