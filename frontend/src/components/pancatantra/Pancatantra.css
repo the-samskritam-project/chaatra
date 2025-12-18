@@ -237,6 +237,81 @@
   margin: 0;
 }
 
+/* Themes section */
+.pancatantra-search-themes {
+  padding: 1.5rem;
+}
+
+.pancatantra-search-themes-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.pancatantra-search-themes-header h3 {
+  margin: 0 0 0.5rem 0;
+  color: #3e2723;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.pancatantra-search-themes-header p {
+  margin: 0;
+  color: #757575;
+  font-size: 0.9rem;
+}
+
+.pancatantra-search-themes-loading {
+  text-align: center;
+  padding: 2rem;
+  color: #757575;
+}
+
+.pancatantra-search-themes-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.pancatantra-search-theme-item {
+  background: #fff;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.pancatantra-search-theme-item:hover {
+  border-color: #8d6e63;
+  background-color: #f5f5f5;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pancatantra-search-theme-item:focus {
+  outline: none;
+  border-color: #5d4037;
+  box-shadow: 0 0 0 3px rgba(93, 64, 55, 0.1);
+}
+
+.pancatantra-search-theme-name {
+  color: #3e2723;
+  font-weight: 500;
+}
+
+.pancatantra-search-theme-count {
+  color: #8d6e63;
+  font-size: 0.85rem;
+  background: #f5f5f5;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .pancatantra-search-modal {

@@ -6,7 +6,9 @@ function Pancatantra() {
   const [apiUrl, setApiUrl] = useState('');
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
+  const [themes, setThemes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingThemes, setIsLoadingThemes] = useState(false);
   const [error, setError] = useState('');
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -116,6 +118,13 @@ function Pancatantra() {
     }
   }, [showSearchModal, suggestions, selectedIndex]);
 
+  // Fetch themes when modal opens
+  useEffect(() => {
+    if (showSearchModal && apiUrl) {
+      fetchThemes();
+    }
+  }, [showSearchModal, apiUrl]);
+
   // Focus input when modal opens
   useEffect(() => {
     if (showSearchModal && inputRef.current) {
@@ -123,12 +132,39 @@ function Pancatantra() {
     }
   }, [showSearchModal]);
 
+  const fetchThemes = async () => {
+    if (!apiUrl) return;
+    setIsLoadingThemes(true);
+    try {
+      const response = await fetch(`${apiUrl}/v2/pancatantra/wordcloud`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch themes: ${response.statusText}`);
+      }
+      const data = await response.json();
+      const themesArray = Array.isArray(data) ? data : (data ? [data] : []);
+      setThemes(themesArray);
+    } catch (err) {
+      console.error('Error fetching themes:', err);
+      setThemes([]);
+    } finally {
+      setIsLoadingThemes(false);
+    }
+  };
+
   const handleOpenModal = () => {
     setShowSearchModal(true);
     setQuery('');
     setSuggestions([]);
     setSelectedIndex(-1);
     setError('');
+  };
+
+  const handleThemeClick = (themeText) => {
+    setQuery(themeText);
+    setSelectedIndex(-1);
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
   };
 
   const handleCloseModal = () => {
@@ -253,8 +289,37 @@ function Pancatantra() {
                 </div>
               )}
               {!query.trim() && (
-                <div className="pancatantra-search-empty">
-                  <p>Enter a theme to find relevant verses and prose from Pancatantra.</p>
+                <div className="pancatantra-search-themes">
+                  <div className="pancatantra-search-themes-header">
+                    <h3>Popular Themes</h3>
+                    <p>Click on a theme to search</p>
+                  </div>
+                  {isLoadingThemes && (
+                    <div className="pancatantra-search-themes-loading">
+                      Loading themes...
+                    </div>
+                  )}
+                  {!isLoadingThemes && themes.length > 0 && (
+                    <div className="pancatantra-search-themes-list">
+                      {themes.map((theme, index) => (
+                        <button
+                          key={index}
+                          className="pancatantra-search-theme-item"
+                          onClick={() => handleThemeClick(theme.text)}
+                        >
+                          <span className="pancatantra-search-theme-name">
+                            {theme.text.charAt(0).toUpperCase() + theme.text.slice(1)}
+                          </span>
+                          <span className="pancatantra-search-theme-count">{theme.value}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {!isLoadingThemes && themes.length === 0 && (
+                    <div className="pancatantra-search-empty">
+                      <p>No themes available.</p>
+                    </div>
+                  )}
                 </div>
               )}
               {query.trim() && !isLoading && suggestions.length === 0 && (
