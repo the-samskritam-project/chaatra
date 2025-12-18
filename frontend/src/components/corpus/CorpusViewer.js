@@ -4,7 +4,7 @@ import '../hitopadesa/Hitopadesa.css';
 
 const VERSES_PER_PAGE = 10;
 
-function CorpusViewer({ corpusName }) {
+function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick }) {
   const [apiUrl, setApiUrl] = useState('');
   const [chapters, setChapters] = useState([]);
   const [selectedChapter, setSelectedChapter] = useState(null);
@@ -147,6 +147,16 @@ function CorpusViewer({ corpusName }) {
               )}
             </span>
           </div>
+        )}
+        {showSearchIcon && onSearchClick && (
+          <button
+            className="pancatantra-search-icon-button"
+            onClick={onSearchClick}
+            aria-label="Search"
+            title="Search by theme"
+          >
+            🔍
+          </button>
         )}
       </div>
 

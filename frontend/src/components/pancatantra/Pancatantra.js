@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import CorpusViewer from '../corpus/CorpusViewer';
-import '../thematic/ThematicSearch.css';
+import './Pancatantra.css';
 
 function Pancatantra() {
   const [apiUrl, setApiUrl] = useState('');
@@ -8,9 +8,9 @@ function Pancatantra() {
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const dropdownRef = useRef(null);
+  const modalRef = useRef(null);
   const inputRef = useRef(null);
   const debounceTimerRef = useRef(null);
 
@@ -23,7 +23,6 @@ function Pancatantra() {
   useEffect(() => {
     if (!apiUrl || !query.trim()) {
       setSuggestions([]);
-      setShowDropdown(false);
       return;
     }
 
@@ -48,12 +47,10 @@ function Pancatantra() {
 
         const data = await response.json();
         setSuggestions(data);
-        setShowDropdown(data.length > 0);
       } catch (err) {
         console.error('Thematic search error:', err);
         setError('Unable to fetch suggestions. Please try again.');
         setSuggestions([]);
-        setShowDropdown(false);
       } finally {
         setIsLoading(false);
       }
@@ -66,31 +63,36 @@ function Pancatantra() {
     };
   }, [query, apiUrl]);
 
-  // Handle click outside to close dropdown
+  // Handle click outside to close modal
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target) &&
-        inputRef.current &&
-        !inputRef.current.contains(event.target)
+        modalRef.current &&
+        !modalRef.current.contains(event.target)
       ) {
-        setShowDropdown(false);
+        handleCloseModal();
       }
     };
 
-    if (showDropdown) {
+    if (showSearchModal) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => {
         document.removeEventListener('mousedown', handleClickOutside);
       };
     }
-  }, [showDropdown]);
+  }, [showSearchModal]);
 
-  // Handle keyboard navigation
+  // Handle keyboard navigation and Escape key
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (!showDropdown || suggestions.length === 0) return;
+      if (!showSearchModal) return;
+
+      if (e.key === 'Escape') {
+        handleCloseModal();
+        return;
+      }
+
+      if (suggestions.length === 0) return;
 
       if (e.key === 'ArrowDown') {
         e.preventDefault();
@@ -103,24 +105,42 @@ function Pancatantra() {
       } else if (e.key === 'Enter' && selectedIndex >= 0) {
         e.preventDefault();
         handleSuggestionClick(suggestions[selectedIndex]);
-      } else if (e.key === 'Escape') {
-        setShowDropdown(false);
-        setSelectedIndex(-1);
       }
     };
 
-    if (showDropdown) {
+    if (showSearchModal) {
       document.addEventListener('keydown', handleKeyDown);
       return () => {
         document.removeEventListener('keydown', handleKeyDown);
       };
     }
-  }, [showDropdown, suggestions, selectedIndex]);
+  }, [showSearchModal, suggestions, selectedIndex]);
+
+  // Focus input when modal opens
+  useEffect(() => {
+    if (showSearchModal && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [showSearchModal]);
+
+  const handleOpenModal = () => {
+    setShowSearchModal(true);
+    setQuery('');
+    setSuggestions([]);
+    setSelectedIndex(-1);
+    setError('');
+  };
+
+  const handleCloseModal = () => {
+    setShowSearchModal(false);
+    setQuery('');
+    setSuggestions([]);
+    setSelectedIndex(-1);
+    setError('');
+  };
 
   const handleSuggestionClick = (suggestion) => {
-    setShowDropdown(false);
-    setSelectedIndex(-1);
-    // You can add navigation or modal display here
+    // For now, nothing happens as per user requirement
     console.log('Selected suggestion:', suggestion);
   };
 
@@ -139,84 +159,113 @@ function Pancatantra() {
 
   return (
     <div>
-      <div className="thematic-search-container">
-        <div className="thematic-search-wrapper">
-          <div className="thematic-search-input-container" ref={dropdownRef}>
-            <input
-              ref={inputRef}
-              type="text"
-              className="thematic-search-input"
-              placeholder="Search by theme (e.g., friendship, wisdom, courage)..."
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setSelectedIndex(-1);
-              }}
-              onFocus={() => {
-                if (suggestions.length > 0) {
-                  setShowDropdown(true);
-                }
-              }}
-            />
-            {isLoading && (
-              <div className="thematic-search-loading">Searching...</div>
+      <CorpusViewer 
+        corpusName="pancatantra" 
+        showSearchIcon={true}
+        onSearchClick={handleOpenModal}
+      />
+      
+      {showSearchModal && (
+        <div className="pancatantra-search-modal-overlay">
+          <div 
+            className={`pancatantra-search-modal ${suggestions.length > 0 ? 'has-results' : ''}`} 
+            ref={modalRef}
+          >
+            <div className="pancatantra-search-modal-header">
+              <div className="pancatantra-search-input-container">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  className="pancatantra-search-input"
+                  placeholder="Search by theme (e.g., friendship, wisdom, courage)..."
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setSelectedIndex(-1);
+                  }}
+                />
+                {isLoading && (
+                  <div className="pancatantra-search-loading">Searching...</div>
+                )}
+              </div>
+              <button
+                className="pancatantra-search-close-button"
+                onClick={handleCloseModal}
+                aria-label="Close search"
+              >
+                ×
+              </button>
+            </div>
+
+            {error && (
+              <div className="pancatantra-search-error">{error}</div>
             )}
-            {showDropdown && suggestions.length > 0 && (
-              <div className="thematic-search-dropdown">
-                {suggestions.map((suggestion, index) => (
-                  <div
-                    key={`${suggestion.corpus_name}-${getItemIdentifier(suggestion)}-${index}`}
-                    className={`thematic-search-dropdown-item ${
-                      index === selectedIndex ? 'selected' : ''
-                    }`}
-                    onClick={() => handleSuggestionClick(suggestion)}
-                    onMouseEnter={() => setSelectedIndex(index)}
-                  >
-                    <div className="thematic-search-item-header">
-                      <span className="thematic-search-corpus">
-                        {getCorpusDisplayName(suggestion.corpus_name)}
-                      </span>
-                      <span className="thematic-search-item-id">
-                        {getItemType(suggestion).charAt(0).toUpperCase() +
-                          getItemType(suggestion).slice(1)}{' '}
-                        {getItemIdentifier(suggestion)}
-                      </span>
-                      {suggestion.chapter_number !== undefined && (
-                        <span className="thematic-search-chapter">
-                          Chapter {suggestion.chapter_number}
+
+            <div className="pancatantra-search-modal-content">
+              {suggestions.length > 0 && (
+                <div className="pancatantra-search-results">
+                  {suggestions.map((suggestion, index) => (
+                    <div
+                      key={`${suggestion.corpus_name}-${getItemIdentifier(suggestion)}-${index}`}
+                      className={`pancatantra-search-result-item ${
+                        index === selectedIndex ? 'selected' : ''
+                      }`}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      onMouseEnter={() => setSelectedIndex(index)}
+                    >
+                      <div className="pancatantra-search-item-header">
+                        <span className="pancatantra-search-corpus">
+                          {getCorpusDisplayName(suggestion.corpus_name)}
                         </span>
+                        <span className="pancatantra-search-item-id">
+                          {getItemType(suggestion).charAt(0).toUpperCase() +
+                            getItemType(suggestion).slice(1)}{' '}
+                          {getItemIdentifier(suggestion)}
+                        </span>
+                        {suggestion.chapter_number !== undefined && (
+                          <span className="pancatantra-search-chapter">
+                            Chapter {suggestion.chapter_number}
+                          </span>
+                        )}
+                        {suggestion.score && (
+                          <span className="pancatantra-search-score">
+                            {(suggestion.score * 100).toFixed(1)}% match
+                          </span>
+                        )}
+                      </div>
+                      {suggestion.transliterated_devanagari && (
+                        <div className="pancatantra-search-devanagari">
+                          {suggestion.transliterated_devanagari}
+                        </div>
                       )}
-                      {suggestion.score && (
-                        <span className="thematic-search-score">
-                          {(suggestion.score * 100).toFixed(1)}% match
-                        </span>
+                      {suggestion.original_iast && (
+                        <div className="pancatantra-search-iast">
+                          {suggestion.original_iast}
+                        </div>
+                      )}
+                      {suggestion.full_translation && (
+                        <div className="pancatantra-search-translation">
+                          {suggestion.full_translation}
+                        </div>
                       )}
                     </div>
-                    {suggestion.transliterated_devanagari && (
-                      <div className="thematic-search-devanagari">
-                        {suggestion.transliterated_devanagari}
-                      </div>
-                    )}
-                    {suggestion.original_iast && (
-                      <div className="thematic-search-iast">
-                        {suggestion.original_iast}
-                      </div>
-                    )}
-                    {suggestion.full_translation && (
-                      <div className="thematic-search-translation">
-                        {suggestion.full_translation}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+              {!query.trim() && (
+                <div className="pancatantra-search-empty">
+                  <p>Enter a theme to find relevant verses and prose from Pancatantra.</p>
+                </div>
+              )}
+              {query.trim() && !isLoading && suggestions.length === 0 && (
+                <div className="pancatantra-search-empty">
+                  <p>No results found. Try a different search term.</p>
+                </div>
+              )}
+            </div>
           </div>
-
-          {error && <div className="thematic-search-error">{error}</div>}
         </div>
-      </div>
-      <CorpusViewer corpusName="pancatantra" />
+      )}
     </div>
   );
 }
