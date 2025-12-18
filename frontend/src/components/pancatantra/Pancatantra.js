@@ -12,6 +12,9 @@ function Pancatantra() {
   const [error, setError] = useState('');
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [verseContext, setVerseContext] = useState(null);
+  const [isLoadingContext, setIsLoadingContext] = useState(false);
+  const [contextError, setContextError] = useState('');
   const modalRef = useRef(null);
   const inputRef = useRef(null);
   const debounceTimerRef = useRef(null);
@@ -157,6 +160,8 @@ function Pancatantra() {
     setSuggestions([]);
     setSelectedIndex(-1);
     setError('');
+    setVerseContext(null);
+    setContextError('');
   };
 
   const handleThemeClick = (themeText) => {
@@ -173,11 +178,43 @@ function Pancatantra() {
     setSuggestions([]);
     setSelectedIndex(-1);
     setError('');
+    setVerseContext(null);
+    setContextError('');
   };
 
-  const handleSuggestionClick = (suggestion) => {
-    // For now, nothing happens as per user requirement
-    console.log('Selected suggestion:', suggestion);
+  const handleSuggestionClick = async (suggestion) => {
+    const verseNumber = suggestion.verse_number || suggestion.prose_number;
+    if (!verseNumber) {
+      console.error('No verse number found in suggestion');
+      return;
+    }
+
+    setIsLoadingContext(true);
+    setContextError('');
+    setVerseContext(null);
+
+    try {
+      const response = await fetch(
+        `${apiUrl}/v2/pancatantra/verse-context?verse_number=${encodeURIComponent(verseNumber)}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Request failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setVerseContext(data);
+    } catch (err) {
+      console.error('Error fetching verse context:', err);
+      setContextError('Unable to fetch verse context. Please try again.');
+    } finally {
+      setIsLoadingContext(false);
+    }
+  };
+
+  const handleBackToResults = () => {
+    setVerseContext(null);
+    setContextError('');
   };
 
   const getItemIdentifier = (item) => {
@@ -204,7 +241,7 @@ function Pancatantra() {
       {showSearchModal && (
         <div className="pancatantra-search-modal-overlay">
           <div 
-            className={`pancatantra-search-modal ${suggestions.length > 0 ? 'has-results' : ''}`} 
+            className={`pancatantra-search-modal ${(suggestions.length > 0 || verseContext) ? 'has-results' : ''}`} 
             ref={modalRef}
           >
             <div className="pancatantra-search-modal-header">
@@ -238,7 +275,91 @@ function Pancatantra() {
             )}
 
             <div className="pancatantra-search-modal-content">
-              {suggestions.length > 0 && (
+              {verseContext ? (
+                <div className="pancatantra-verse-context">
+                  {isLoadingContext && (
+                    <div className="pancatantra-context-loading">Loading context...</div>
+                  )}
+                  {contextError && (
+                    <div className="pancatantra-search-error">{contextError}</div>
+                  )}
+                  {!isLoadingContext && verseContext && (
+                    <>
+                      <button
+                        className="pancatantra-back-button"
+                        onClick={handleBackToResults}
+                      >
+                        ← Back to Results
+                      </button>
+                      {verseContext.interval ? (
+                        <>
+                          <div className="pancatantra-interval-summary">
+                            <h3>Interval Summary</h3>
+                            <p>{verseContext.interval.summary}</p>
+                          </div>
+                          {verseContext.interval.themes && verseContext.interval.themes.length > 0 && (
+                            <div className="pancatantra-interval-themes">
+                              <h3>Themes</h3>
+                              <div className="pancatantra-themes-list">
+                                {verseContext.interval.themes.map((theme, index) => (
+                                  <span key={index} className="pancatantra-theme-tag">
+                                    {theme.charAt(0).toUpperCase() + theme.slice(1)}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="pancatantra-no-interval-message">
+                          <p>No interval found for this verse (or interval has more than 25 prose shlokas).</p>
+                        </div>
+                      )}
+                      {verseContext.verses && (
+                        <div className="pancatantra-context-verses">
+                          <h3>Verses</h3>
+                          {verseContext.verses.map((verse, index) => {
+                            if (!verse) return null;
+                            const isTarget = index === 1;
+                            return (
+                              <div
+                                key={index}
+                                className={`pancatantra-context-verse ${isTarget ? 'target' : ''}`}
+                              >
+                                <div className="pancatantra-context-verse-header">
+                                  <span className="pancatantra-context-verse-label">
+                                    {index === 0 ? 'Previous' : index === 1 ? 'Target' : 'Next'}
+                                  </span>
+                                  <span className="pancatantra-context-verse-number">
+                                    {verse.verse_number || verse.prose_number}
+                                  </span>
+                                </div>
+                                {verse.transliterated_devanagari && (
+                                  <div className="pancatantra-context-devanagari">
+                                    {verse.transliterated_devanagari}
+                                  </div>
+                                )}
+                                {verse.original_iast && (
+                                  <div className="pancatantra-context-iast">
+                                    {verse.original_iast}
+                                  </div>
+                                )}
+                                {verse.full_translation && (
+                                  <div className="pancatantra-context-translation">
+                                    {verse.full_translation}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {suggestions.length > 0 && (
                 <div className="pancatantra-search-results">
                   {suggestions.map((suggestion, index) => (
                     <div
@@ -322,10 +443,12 @@ function Pancatantra() {
                   )}
                 </div>
               )}
-              {query.trim() && !isLoading && suggestions.length === 0 && (
-                <div className="pancatantra-search-empty">
-                  <p>No results found. Try a different search term.</p>
-                </div>
+                  {query.trim() && !isLoading && suggestions.length === 0 && (
+                    <div className="pancatantra-search-empty">
+                      <p>No results found. Try a different search term.</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

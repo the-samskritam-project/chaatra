@@ -98,3 +98,86 @@ func GetPancatantraWordCloudData() ([]WordCloudItem, error) {
 
 	return items, nil
 }
+
+// PancatantraVerseContext represents the context for a verse including interval and adjacent verses
+type PancatantraVerseContext struct {
+	Interval *PancatantraIntervalResponse `json:"interval"`
+	Verses   []*VerseContextItem          `json:"verses"` // [previous, target, next]
+}
+
+// PancatantraIntervalResponse represents interval data for API response
+type PancatantraIntervalResponse struct {
+	Summary       string   `json:"summary"`
+	Themes        []string `json:"themes"`
+	ChapterNumber int      `json:"chapter_number"`
+	IntervalIndex int      `json:"interval_index"`
+}
+
+// VerseContextItem represents a verse in the context (can be nil for missing adjacent verses)
+type VerseContextItem struct {
+	VerseNumber              string `json:"verse_number,omitempty"`
+	ProseNumber              string `json:"prose_number,omitempty"`
+	Type                     string `json:"type,omitempty"`
+	TransliteratedDevanagari string `json:"transliterated_devanagari,omitempty"`
+	OriginalIast             string `json:"original_iast,omitempty"`
+	FullTranslation          string `json:"full_translation,omitempty"`
+}
+
+// GetPancatantraVerseContext returns interval and verse context for a given verse number
+func GetPancatantraVerseContext(verseNumber string) (*PancatantraVerseContext, error) {
+	if verseNumber == "" {
+		return nil, fmt.Errorf("verse number is required")
+	}
+
+	// Parse chapter number from verse number (format: "chapter.verse")
+	var chapterNumber int
+	_, err := fmt.Sscanf(verseNumber, "%d.", &chapterNumber)
+	if err != nil {
+		return nil, fmt.Errorf("invalid verse number format: %w", err)
+	}
+
+	// Find the interval containing this verse (may be nil if not found or > 25 prose shlokas)
+	interval, err := persistence.GetPancatantraIntervalByVerse(verseNumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find interval: %w", err)
+	}
+
+	// Get verses with context (always fetch verses even if no interval found)
+	verses, err := persistence.GetPancatantraVersesWithContext(chapterNumber, verseNumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get verses with context: %w", err)
+	}
+
+	// Convert interval to response format (may be nil)
+	var intervalResp *PancatantraIntervalResponse
+	if interval != nil {
+		intervalResp = &PancatantraIntervalResponse{
+			Summary:       interval.IntervalSummary,
+			Themes:        interval.IntervalThemes,
+			ChapterNumber: interval.ChapterNumber,
+			IntervalIndex: interval.IntervalIndex,
+		}
+	}
+
+	// Convert verses to response format
+	verseItems := make([]*VerseContextItem, 3)
+	for i, verse := range verses {
+		if verse == nil {
+			verseItems[i] = nil
+			continue
+		}
+		verseItems[i] = &VerseContextItem{
+			VerseNumber:              verse.VerseNumber,
+			ProseNumber:              verse.ProseNumber,
+			Type:                     verse.Type,
+			TransliteratedDevanagari: verse.TransliteratedDevanagari,
+			OriginalIast:             verse.OriginalIast,
+			FullTranslation:          verse.FullTranslation,
+		}
+	}
+
+	return &PancatantraVerseContext{
+		Interval: intervalResp,
+		Verses:   verseItems,
+	}, nil
+}

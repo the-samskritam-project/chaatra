@@ -548,3 +548,104 @@ func UpdatePancatantraVerseTranslation(verseNumber string, editedTranslation str
 
 	return nil
 }
+
+// PancatantraInterval represents an interval document
+type PancatantraInterval struct {
+	ID              interface{} `bson:"_id"`
+	CorpusName      string      `bson:"corpus_name"`
+	ChapterNumber   int         `bson:"chapter_number"`
+	IntervalIndex   int         `bson:"interval_index"`
+	VerseNumbers    []string    `bson:"verse_numbers"`
+	ProseNumbers    []string    `bson:"prose_numbers"`
+	IntervalSummary string      `bson:"interval_summary"`
+	IntervalThemes  []string    `bson:"interval_themes"`
+}
+
+// GetPancatantraIntervalByVerse finds the interval containing a given verse or prose number
+// Ignores intervals with more than 25 prose shlokas
+func GetPancatantraIntervalByVerse(verseNumber string) (*PancatantraInterval, error) {
+	if mongoClient == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	db := getDatabase("pancatantra")
+	if db == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+
+	collection := db.Collection("pancatantra_intervals")
+
+	// Find interval where verse_numbers or prose_numbers contains the verse number
+	// and prose_numbers array has at most 25 elements
+	filter := bson.M{
+		"$and": []bson.M{
+			{
+				"$or": []bson.M{
+					{"verse_numbers": verseNumber},
+					{"prose_numbers": verseNumber},
+				},
+			},
+			{
+				"$expr": bson.M{
+					"$lte": []interface{}{bson.M{"$size": "$prose_numbers"}, 25},
+				},
+			},
+		},
+	}
+
+	var interval PancatantraInterval
+	err := collection.FindOne(ctx, filter).Decode(&interval)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil // Return nil instead of error when no interval found
+		}
+		return nil, fmt.Errorf("failed to query interval: %w", err)
+	}
+
+	return &interval, nil
+}
+
+// GetPancatantraVersesWithContext returns the target verse plus the previous and next verses
+func GetPancatantraVersesWithContext(chapterNumber int, verseNumber string) ([]*HitopadesaVerse, error) {
+	// Get all verses from the chapter
+	allVerses, err := GetPancatantraVerses(chapterNumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get verses: %w", err)
+	}
+
+	// Find the index of the target verse
+	targetIndex := -1
+	for i, verse := range allVerses {
+		if verse.VerseNumber == verseNumber || verse.ProseNumber == verseNumber {
+			targetIndex = i
+			break
+		}
+	}
+
+	if targetIndex == -1 {
+		return nil, fmt.Errorf("verse not found: %s in chapter %d", verseNumber, chapterNumber)
+	}
+
+	// Build result array: [previous, target, next]
+	result := make([]*HitopadesaVerse, 3)
+	result[1] = &allVerses[targetIndex] // target verse
+
+	// Previous verse (if exists)
+	if targetIndex > 0 {
+		result[0] = &allVerses[targetIndex-1]
+	} else {
+		result[0] = nil
+	}
+
+	// Next verse (if exists)
+	if targetIndex < len(allVerses)-1 {
+		result[2] = &allVerses[targetIndex+1]
+	} else {
+		result[2] = nil
+	}
+
+	return result, nil
+}

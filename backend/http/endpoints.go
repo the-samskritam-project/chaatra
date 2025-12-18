@@ -491,6 +491,30 @@ func PancatantraWordCloudHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(wordCloudData)
 }
 
+// PancatantraVerseContextHandler returns interval and verse context for a given verse
+func PancatantraVerseContextHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	verseNumber := r.URL.Query().Get("verse_number")
+	if verseNumber == "" {
+		http.Error(w, "verse_number parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	context, err := service.GetPancatantraVerseContext(verseNumber)
+	if err != nil {
+		log.Printf("Error getting Pancatantra verse context for %s: %v", verseNumber, err)
+		http.Error(w, fmt.Sprintf("Failed to get verse context: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(context)
+}
+
 // generateEmbedding generates an embedding vector for text using OpenAI API
 func generateEmbedding(text string) ([]float64, error) {
 	apiKey := os.Getenv("OPENAI_API_KEY")
