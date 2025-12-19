@@ -10,8 +10,12 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
   const splitDevanagariLines = (text) => {
     if (!text) return [];
     
-    // For Bhagavad Gita, split verses on | or Devanagari danda (।, ॥) to create two-line display
-    if (corpusName === 'bhagavad_gita') {
+    // Get verse type to determine if this is a verse or commentary
+    const verseType = verse.type || (verse.verse_number ? 'verse' : 'prose');
+    const isVerse = verseType === 'original_verse' || verseType === 'verse';
+    
+    // For Bhagavad Gita, split verses (not commentary) on | or Devanagari danda (।, ॥) to create two-line display
+    if (corpusName === 'bhagavad_gita' && isVerse) {
       // First, check if text already has newlines (might be split already)
       const hasNewlines = text.includes('\n');
       const hasPipe = text.includes('|');
@@ -80,7 +84,7 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
       return [text.replace(/[।॥]+$/, '').replace(/\|\|?$/, '').trim()];
     }
     
-    // For other corpora, split by newlines
+    // For commentary or other corpora, split by newlines only (don't split on danda)
     return text.split('\n').filter((line) => line.trim());
   };
 
