@@ -4,7 +4,6 @@ import { Tabs, TabList, Tab, TabPanel } from 'react-tabs';
 import './tabs.css';
 import Dictionary from './components/dictionary/Dictionary';
 import Flashcards from './components/flashcards/Flashcards';
-import RamayanaSearch from './components/ramayana/RamayanaSearch';
 import RamayanaExplore from './components/ramayana/RamayanaExplore';
 import Hitopadesa from './components/hitopadesa/Hitopadesa';
 import Pancatantra from './components/pancatantra/Pancatantra';
@@ -20,7 +19,7 @@ function App() {
   return (
     <div>
       <div className="tabs-container">
-        <Tabs defaultIndex={3}>
+        <Tabs defaultIndex={2}>
           <div className="tabs-section">
             <div className="heading">
               <span className="devanagari">छात्रः</span>
@@ -39,7 +38,6 @@ function App() {
                   Flash cards
                 </Tab>
                 <Tab>Ramayana</Tab>
-                <Tab>Explore</Tab>
                 {showHitopadesa && <Tab>Hitopadesa</Tab>}
                 {showPancatantra && <Tab>Pancatantra</Tab>}
                 <Tab>Bhagavad Gita</Tab>
@@ -54,10 +52,6 @@ function App() {
 
             <TabPanel>
               <Flashcards />
-            </TabPanel>
-
-            <TabPanel>
-              <RamayanaSearch />
             </TabPanel>
 
             <TabPanel>

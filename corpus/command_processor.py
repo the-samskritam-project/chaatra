@@ -225,6 +225,33 @@ def vector_search_command(args):
             print(f"   Sanskrit: {result.get('original_iast')[:100]}...")
 
 
+def process_bhagavad_gita_command(corpus_name: str, args):
+    """Execute process_bhagavad_gita command."""
+    corpus_name_lower = corpus_name.lower()
+    if corpus_name_lower != 'bhagavad_gita':
+        print("Error: process_bhagavad_gita command only works with bhagavad_gita corpus")
+        sys.exit(1)
+    
+    from processor.process_bhagavad_gita import process_bhagavad_gita_verses
+    
+    # Get API base URL from arg or environment variable, default to localhost
+    api_base_url = args.api_url or os.getenv('API_BASE_URL') or 'http://localhost:8081'
+    
+    # Get chapter range
+    start_chapter = getattr(args, 'process_start_chapter', None)
+    end_chapter = getattr(args, 'process_end_chapter', None)
+    
+    # Get delay (default 0.5 seconds)
+    delay = getattr(args, 'process_delay', 0.5)
+    
+    process_bhagavad_gita_verses(
+        api_base_url=api_base_url,
+        start_chapter=start_chapter,
+        end_chapter=end_chapter,
+        delay=delay
+    )
+
+
 def main():
     """Main CLI entry point."""
     # Load environment variables
@@ -264,12 +291,17 @@ Examples:
 
   # Build intervals (split on transitions)
   python command_processor.py build_intervals pancatantra --start-chapter 1 --end-chapter 2
+
+  # Process Bhagavad Gita (splits and translations)
+  python command_processor.py process_bhagavad_gita bhagavad_gita
+  python command_processor.py process_bhagavad_gita bhagavad_gita --process-start-chapter 1 --process-end-chapter 5
+  python command_processor.py process_bhagavad_gita bhagavad_gita --api-url http://localhost:8081 --process-delay 3.0
         """
     )
     
     parser.add_argument(
         'command',
-        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes'],
+        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita'],
         help='Command to execute'
     )
     parser.add_argument(
@@ -518,6 +550,27 @@ Examples:
         '--theme-nodes-collection',
         help='Target theme nodes collection (default: {corpus}_theme_nodes)'
     )
+    # Process Bhagavad Gita arguments
+    parser.add_argument(
+        '--api-url',
+        help='API base URL (default: http://localhost:8081, or API_BASE_URL env var)'
+    )
+    parser.add_argument(
+        '--process-start-chapter',
+        type=int,
+        help='First chapter to process for process_bhagavad_gita (inclusive)'
+    )
+    parser.add_argument(
+        '--process-end-chapter',
+        type=int,
+        help='Last chapter to process for process_bhagavad_gita (inclusive)'
+    )
+    parser.add_argument(
+        '--process-delay',
+        type=float,
+        default=0.5,
+        help='Delay between API calls in seconds for process_bhagavad_gita (default: 0.5)'
+    )
     parser.add_argument(
         '--theme-nodes-delay',
         type=float,
@@ -532,8 +585,9 @@ Examples:
     
     args = parser.parse_args()
     
-    # Validate corpus name (not required for vector_search, generate_interval_theme_embeddings, cluster_interval_themes, or generate_theme_nodes)
-    if args.command not in ['vector_search', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes']:
+    # Validate corpus name (not required for vector_search, generate_interval_theme_embeddings, cluster_interval_themes, generate_theme_nodes)
+    # process_bhagavad_gita requires corpus but validation is done in the command function
+    if args.command not in ['vector_search', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita']:
         if not args.corpus:
             print("Error: Corpus name is required for this command")
             sys.exit(1)
@@ -541,6 +595,14 @@ Examples:
             get_corpus_config(args.corpus)
         except ValueError as e:
             print(f"Error: {e}")
+            sys.exit(1)
+    elif args.command == 'process_bhagavad_gita':
+        # Validate corpus for process_bhagavad_gita
+        if not args.corpus:
+            print("Error: Corpus name is required for process_bhagavad_gita command")
+            sys.exit(1)
+        if args.corpus.lower() != 'bhagavad_gita':
+            print("Error: process_bhagavad_gita command only works with bhagavad_gita corpus")
             sys.exit(1)
     
     # Execute command
@@ -688,6 +750,8 @@ Examples:
                 min_cluster_size=args.min_cluster_size,
                 min_samples=args.min_samples
             )
+        elif args.command == 'process_bhagavad_gita':
+            process_bhagavad_gita_command(args.corpus, args)
         elif args.command == 'generate_theme_nodes':
             from processor.generate_theme_nodes import generate_theme_nodes
             
