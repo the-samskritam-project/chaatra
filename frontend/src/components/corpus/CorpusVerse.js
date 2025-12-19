@@ -6,6 +6,9 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
   const [editValue, setEditValue] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [isSplitting, setIsSplitting] = useState(false);
+  const [splitError, setSplitError] = useState('');
+  const [splitResult, setSplitResult] = useState(null);
 
   const splitDevanagariLines = (text) => {
     if (!text) return [];
@@ -166,6 +169,56 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
     }
   };
 
+  const handleSplit = async () => {
+    if (!verse.verse_number) {
+      setSplitError('Verse number is required');
+      return;
+    }
+
+    setIsSplitting(true);
+    setSplitError('');
+
+    try {
+      const response = await fetch(`${apiUrl}/v2/bhagavad_gita/verses/${verse.verse_number}/split`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(errorData || 'Failed to split verse');
+      }
+
+      const data = await response.json();
+      setSplitResult({
+        uncompounded_shloka: data.uncompounded_shloka,
+        word_by_word_translation: data.word_by_word_translation || []
+      });
+
+      // Call parent callback to refresh verses (to get updated data from server)
+      if (onUpdate) {
+        onUpdate();
+      }
+    } catch (err) {
+      console.error('Error splitting verse:', err);
+      setSplitError(err.message || 'Failed to split verse. Please try again.');
+    } finally {
+      setIsSplitting(false);
+    }
+  };
+
+  // Load existing split results from verse data
+  useEffect(() => {
+    if (verse.split_shloka) {
+      setSplitResult({
+        uncompounded_shloka: verse.split_shloka,
+        word_by_word_translation: verse.split_word_by_word_translation || []
+      });
+    }
+  }, [verse.split_shloka, verse.split_word_by_word_translation]);
+
   const formatDate = (dateString) => {
     if (!dateString) return '';
     try {
@@ -237,6 +290,16 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
           <span className="hitopadesa-verse-type">{getTypeLabel()}</span>
         )}
         <span className="hitopadesa-verse-id">{getItemNumber()}</span>
+        {corpusName === 'bhagavad_gita' && verse.type === 'original_verse' && (
+          <button
+            className="hitopadesa-split-button"
+            onClick={handleSplit}
+            disabled={isSplitting || !!verse.split_shloka}
+            type="button"
+          >
+            {isSplitting ? 'Splitting...' : 'Split'}
+          </button>
+        )}
         {verse.chapter_sequence_index && (
           <span className="hitopadesa-sequence-number">#{verse.chapter_sequence_index}</span>
         )}
@@ -260,6 +323,40 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
           {corpusName !== 'bhagavad_gita' && verse.original_iast && (
             <div className="hitopadesa-iast">{verse.original_iast}</div>
           )}
+
+          {/* Split results display */}
+          {(splitResult || verse.split_shloka) && (() => {
+            const splitText = splitResult?.uncompounded_shloka || verse.split_shloka || '';
+            const splitLines = splitDevanagariLines(splitText);
+            return (
+              <div className="hitopadesa-split-results">
+                <div className="hitopadesa-split-header">Split Shloka (Uncompounded):</div>
+                <div className="hitopadesa-split-shloka">
+                  {splitLines.map((line, idx) => (
+                    <div key={`split-line-${getItemNumber()}-${idx}`} className="hitopadesa-line">
+                      {line}
+                    </div>
+                  ))}
+                </div>
+                {(splitResult?.word_by_word_translation?.length > 0 || verse.split_word_by_word_translation?.length > 0) && (
+                  <div className="hitopadesa-split-word-by-word">
+                    <div className="hitopadesa-split-header">Word-by-Word Translation:</div>
+                    <div className="hitopadesa-word-list">
+                      {(splitResult?.word_by_word_translation || verse.split_word_by_word_translation || []).map((item, idx) => (
+                        <span key={`split-word-${getItemNumber()}-${idx}`} className="hitopadesa-word-item">
+                          <span className="hitopadesa-word">{item.word}</span>
+                          <span className="hitopadesa-word-translation">({item.translation})</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {splitError && (
+                  <div className="hitopadesa-split-error">{splitError}</div>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         <div className="hitopadesa-verse-column-right">

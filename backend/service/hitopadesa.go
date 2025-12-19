@@ -2,6 +2,7 @@ package service
 
 import (
 	"chaatra/persistence"
+	"context"
 	"fmt"
 	"sort"
 )
@@ -215,4 +216,37 @@ func UpdateBhagavadGitaVerseTranslation(verseNumber string, editedTranslation st
 		return fmt.Errorf("edited translation cannot be empty")
 	}
 	return persistence.UpdateBhagavadGitaVerseTranslation(verseNumber, editedTranslation)
+}
+
+// SplitBhagavadGitaVerse splits sandhis in a Bhagavad Gita verse and stores the results
+func SplitBhagavadGitaVerse(ctx context.Context, verseNumber string, devanagariText string) (*SplitResult, error) {
+	if verseNumber == "" {
+		return nil, fmt.Errorf("verse number is required")
+	}
+	if devanagariText == "" {
+		return nil, fmt.Errorf("devanagari text is required")
+	}
+
+	// Call the sandhi split service
+	splitResult, err := SplitSandhi(ctx, devanagariText, verseNumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to split sandhi: %w", err)
+	}
+
+	// Convert SplitResult to persistence types
+	wordTranslations := make([]persistence.WordTranslation, len(splitResult.WordByWordTranslation))
+	for i, wt := range splitResult.WordByWordTranslation {
+		wordTranslations[i] = persistence.WordTranslation{
+			Word:        wt.Word,
+			Translation: wt.Translation,
+		}
+	}
+
+	// Persist the results
+	err = persistence.UpdateBhagavadGitaVerseSplit(verseNumber, splitResult.UncompoundedShloka, wordTranslations)
+	if err != nil {
+		return nil, fmt.Errorf("failed to persist split results: %w", err)
+	}
+
+	return splitResult, nil
 }

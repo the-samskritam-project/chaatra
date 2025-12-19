@@ -570,9 +570,27 @@ func BhagavadGitaVersesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // BhagavadGitaUpdateVerseHandler handles updating a verse's or commentary's translation
+// Also handles split requests (POST to /verses/{id}/split)
 func BhagavadGitaUpdateVerseHandler(w http.ResponseWriter, r *http.Request) {
+	// Handle OPTIONS for CORS preflight
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	// Check if this is a split request (POST to path ending with /split)
+	isSplitRequest := r.Method == http.MethodPost && strings.HasSuffix(r.URL.Path, "/split")
+
+	if isSplitRequest {
+		log.Printf("Routing to split handler: method=%s, path=%s", r.Method, r.URL.Path)
+		BhagavadGitaSplitVerseHandler(w, r)
+		return
+	}
+
+	// Only allow PUT for update requests
 	if r.Method != http.MethodPut {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		log.Printf("Method not allowed in update handler: method=%s, path=%s, isSplitRequest=%v", r.Method, r.URL.Path, isSplitRequest)
+		http.Error(w, fmt.Sprintf("Method not allowed. Expected PUT for updates or POST to /split for splitting. Got: %s", r.Method), http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -614,6 +632,73 @@ func BhagavadGitaUpdateVerseHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{
 		"status":  "success",
 		"message": "Translation updated successfully",
+	})
+}
+
+// BhagavadGitaSplitVerseHandler handles splitting sandhis in a verse
+func BhagavadGitaSplitVerseHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract verse number or ID from URL path
+	// Expected format: /v2/bhagavad_gita/verses/{verse_number_or_id}/split
+	path := strings.TrimPrefix(r.URL.Path, "/v2/bhagavad_gita/verses/")
+	path = strings.TrimSuffix(path, "/split")
+	verseNumber := strings.TrimSpace(path)
+
+	if verseNumber == "" {
+		http.Error(w, "verse number or ID is required in URL path", http.StatusBadRequest)
+		return
+	}
+
+	// Parse verse number to get chapter number
+	var chapterNumber int
+	_, err := fmt.Sscanf(verseNumber, "%d.", &chapterNumber)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Invalid verse number format: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	// Fetch the verse from MongoDB to get Devanagari text
+	verses, err := service.GetBhagavadGitaVerses(chapterNumber)
+	if err != nil {
+		log.Printf("Error fetching verses for chapter %d: %v", chapterNumber, err)
+		http.Error(w, fmt.Sprintf("Failed to fetch verse: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Find the verse by verse_number
+	var verse *persistence.HitopadesaVerse
+	for i := range verses {
+		if verses[i].VerseNumber == verseNumber {
+			verse = &verses[i]
+			break
+		}
+	}
+
+	if verse == nil {
+		http.Error(w, fmt.Sprintf("Verse not found: %s", verseNumber), http.StatusNotFound)
+		return
+	}
+
+	if verse.TransliteratedDevanagari == "" {
+		http.Error(w, "Verse has no Devanagari text", http.StatusBadRequest)
+		return
+	}
+
+	// Call service layer to perform split
+	ctx := r.Context()
+	splitResult, err := service.SplitBhagavadGitaVerse(ctx, verseNumber, verse.TransliteratedDevanagari)
+	if err != nil {
+		log.Printf("Error splitting verse %s: %v", verseNumber, err)
+		http.Error(w, fmt.Sprintf("Failed to split verse: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Return the split results
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":                   "success",
+		"uncompounded_shloka":      splitResult.UncompoundedShloka,
+		"word_by_word_translation": splitResult.WordByWordTranslation,
 	})
 }
 

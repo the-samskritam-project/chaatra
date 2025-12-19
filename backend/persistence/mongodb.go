@@ -48,20 +48,23 @@ type EditedTranslation struct {
 
 // HitopadesaVerse represents a verse or prose document
 type HitopadesaVerse struct {
-	ID                       interface{}         `json:"_id,omitempty" bson:"_id,omitempty"` // MongoDB _id field
-	Type                     string              `json:"type" bson:"type"`                   // "verse" or "prose"
-	VerseNumber              string              `json:"verse_number,omitempty" bson:"verse_number,omitempty"`
-	ProseNumber              string              `json:"prose_number,omitempty" bson:"prose_number,omitempty"`
-	ChapterNumber            int                 `json:"chapter_number" bson:"chapter_number"`
-	VerseIndex               int                 `json:"verse_index,omitempty" bson:"verse_index,omitempty"`                       // For verses
-	ProseIndex               int                 `json:"prose_index,omitempty" bson:"prose_index,omitempty"`                       // For prose
-	SequenceIndex            *int                `json:"sequence_index,omitempty" bson:"sequence_index,omitempty"`                 // Global sequence index
-	ChapterSequenceIndex     int                 `json:"chapter_sequence_index,omitempty" bson:"chapter_sequence_index,omitempty"` // Sequence within chapter
-	OriginalIast             string              `json:"original_iast" bson:"original_iast"`
-	TransliteratedDevanagari string              `json:"transliterated_devanagari" bson:"transliterated_devanagari"`
-	WordByWordTranslation    []WordTranslation   `json:"word_by_word_translation" bson:"word_by_word_translation"`
-	FullTranslation          string              `json:"full_translation" bson:"full_translation"`
-	EditedTranslations       []EditedTranslation `json:"edited_translations" bson:"edited_translations"`
+	ID                         interface{}         `json:"_id,omitempty" bson:"_id,omitempty"` // MongoDB _id field
+	Type                       string              `json:"type" bson:"type"`                   // "verse" or "prose"
+	VerseNumber                string              `json:"verse_number,omitempty" bson:"verse_number,omitempty"`
+	ProseNumber                string              `json:"prose_number,omitempty" bson:"prose_number,omitempty"`
+	ChapterNumber              int                 `json:"chapter_number" bson:"chapter_number"`
+	VerseIndex                 int                 `json:"verse_index,omitempty" bson:"verse_index,omitempty"`                       // For verses
+	ProseIndex                 int                 `json:"prose_index,omitempty" bson:"prose_index,omitempty"`                       // For prose
+	SequenceIndex              *int                `json:"sequence_index,omitempty" bson:"sequence_index,omitempty"`                 // Global sequence index
+	ChapterSequenceIndex       int                 `json:"chapter_sequence_index,omitempty" bson:"chapter_sequence_index,omitempty"` // Sequence within chapter
+	OriginalIast               string              `json:"original_iast" bson:"original_iast"`
+	TransliteratedDevanagari   string              `json:"transliterated_devanagari" bson:"transliterated_devanagari"`
+	WordByWordTranslation      []WordTranslation   `json:"word_by_word_translation" bson:"word_by_word_translation"`
+	FullTranslation            string              `json:"full_translation" bson:"full_translation"`
+	EditedTranslations         []EditedTranslation `json:"edited_translations" bson:"edited_translations"`
+	SplitShloka                string              `json:"split_shloka,omitempty" bson:"split_shloka,omitempty"`                                     // Uncompounded version
+	SplitWordByWordTranslation []WordTranslation   `json:"split_word_by_word_translation,omitempty" bson:"split_word_by_word_translation,omitempty"` // Word-by-word from split
+	SplitAt                    *time.Time          `json:"split_at,omitempty" bson:"split_at,omitempty"`                                             // Timestamp when split was performed
 }
 
 // InitMongoDB initializes MongoDB connection
@@ -853,6 +856,70 @@ func UpdateBhagavadGitaVerseTranslation(verseNumber string, editedTranslation st
 		result, err = collection.UpdateOne(ctx, filter, update)
 		if err != nil {
 			return fmt.Errorf("failed to update translation: %w", err)
+		}
+		if result.MatchedCount == 0 {
+			return fmt.Errorf("verse or commentary not found: %s", verseNumber)
+		}
+	}
+
+	return nil
+}
+
+// UpdateBhagavadGitaVerseSplit updates a verse with split sandhi results
+func UpdateBhagavadGitaVerseSplit(verseNumber string, splitShloka string, splitWordByWord []WordTranslation) error {
+	if mongoClient == nil {
+		return fmt.Errorf("MongoDB not initialized")
+	}
+
+	// Parse verse number to get chapter number
+	// Format: "chapter.verse" (e.g., "1.1") or "commentary_chapter_sequence"
+	var chapterNumber int
+	var err error
+
+	// Try to parse as verse number (N.M format)
+	_, err = fmt.Sscanf(verseNumber, "%d.", &chapterNumber)
+	if err != nil {
+		// Try to parse as commentary ID (commentary_N_sequence)
+		_, err = fmt.Sscanf(verseNumber, "commentary_%d_", &chapterNumber)
+		if err != nil {
+			return fmt.Errorf("invalid verse number or ID format: %w", err)
+		}
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Use bhagavad_gita_shankara_bhasya database
+	db := getDatabase("bhagavad_gita_shankara_bhasya")
+	if db == nil {
+		return fmt.Errorf("MongoDB not initialized")
+	}
+	collectionName := fmt.Sprintf("chapter_%d", chapterNumber)
+	collection := db.Collection(collectionName)
+
+	now := time.Now()
+
+	// Update with split results
+	filter := bson.M{"verse_number": verseNumber}
+	update := bson.M{
+		"$set": bson.M{
+			"split_shloka":                   splitShloka,
+			"split_word_by_word_translation": splitWordByWord,
+			"split_at":                       now,
+		},
+	}
+
+	result, err := collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return fmt.Errorf("failed to update split: %w", err)
+	}
+
+	if result.MatchedCount == 0 {
+		// Try _id field as fallback (for commentary)
+		filter = bson.M{"_id": verseNumber}
+		result, err = collection.UpdateOne(ctx, filter, update)
+		if err != nil {
+			return fmt.Errorf("failed to update split: %w", err)
 		}
 		if result.MatchedCount == 0 {
 			return fmt.Errorf("verse or commentary not found: %s", verseNumber)
