@@ -9,6 +9,78 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
 
   const splitDevanagariLines = (text) => {
     if (!text) return [];
+    
+    // For Bhagavad Gita, split verses on | or Devanagari danda (।, ॥) to create two-line display
+    if (corpusName === 'bhagavad_gita') {
+      // First, check if text already has newlines (might be split already)
+      const hasNewlines = text.includes('\n');
+      const hasPipe = text.includes('|');
+      const hasDanda = text.includes('।') || text.includes('॥');
+      
+      if (hasNewlines) {
+        // Text is already split by newlines - clean each line and return
+        const lines = text.split('\n')
+          .map(p => p.replace(/\|\|?$/, '').replace(/^\|/, '').replace(/[।॥]+$/, '').trim())
+          .filter(p => p && p.length > 0);
+        return lines.length > 0 ? lines : [text.trim()];
+      }
+      
+      // Try splitting on Devanagari danda first (। or ॥)
+      if (hasDanda) {
+        // Replace any newlines with spaces
+        let cleanText = text.replace(/\n/g, ' ');
+        // Split on single danda (।) and keep the danda with the first part
+        // Pattern: "text। text॥" should become ["text।", "text॥"]
+        const parts = cleanText.split(/(।)/);
+        const result = [];
+        let current = '';
+        
+        for (let i = 0; i < parts.length; i++) {
+          if (parts[i] === '।') {
+            // Found a danda - add it to current and push as a line
+            current += '।';
+            if (current.trim()) {
+              result.push(current.trim());
+              current = '';
+            }
+          } else if (parts[i].trim()) {
+            current += parts[i];
+          }
+        }
+        
+        // Add remaining text (which may have ॥ at the end)
+        if (current.trim()) {
+          result.push(current.trim());
+        }
+        
+        // Return if we got at least 2 parts
+        if (result.length >= 2) {
+          return result;
+        }
+      }
+      
+      // Try splitting on pipe character
+      if (hasPipe) {
+        // Remove trailing || if present
+        let cleanText = text.replace(/\|\|$/, '').trim();
+        // Replace any newlines with spaces
+        cleanText = cleanText.replace(/\n/g, ' ');
+        // Split on | separator
+        const parts = cleanText.split('|')
+          .map(p => p.trim())
+          .filter(p => p && p.length > 0);
+        
+        // Return parts if we have at least 2, otherwise return as single line
+        if (parts.length >= 2) {
+          return parts;
+        }
+      }
+      
+      // Fallback: return as single line (remove any trailing punctuation)
+      return [text.replace(/[।॥]+$/, '').replace(/\|\|?$/, '').trim()];
+    }
+    
+    // For other corpora, split by newlines
     return text.split('\n').filter((line) => line.trim());
   };
 
@@ -137,10 +209,29 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
     });
   }, [verse]);
 
+  // Get background class based on type
+  const getBackgroundClass = () => {
+    const type = verse.type || (verse.verse_number ? 'verse' : 'prose');
+    if (type === 'original_verse') {
+      return 'hitopadesa-verse-original';
+    }
+    if (type === 'commentary') {
+      return 'hitopadesa-verse-commentary';
+    }
+    return '';
+  };
+
+  const backgroundClass = getBackgroundClass();
+  const verseClassName = backgroundClass 
+    ? `hitopadesa-verse ${backgroundClass}`
+    : 'hitopadesa-verse';
+
   return (
-    <div className="hitopadesa-verse">
+    <div className={verseClassName}>
       <div className="hitopadesa-verse-header">
-        <span className="hitopadesa-verse-type">{getTypeLabel()}</span>
+        {corpusName !== 'bhagavad_gita' && (
+          <span className="hitopadesa-verse-type">{getTypeLabel()}</span>
+        )}
         <span className="hitopadesa-verse-id">{getItemNumber()}</span>
         {verse.chapter_sequence_index && (
           <span className="hitopadesa-sequence-number">#{verse.chapter_sequence_index}</span>
@@ -149,17 +240,20 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
 
       <div className="hitopadesa-verse-content">
         <div className="hitopadesa-verse-column-left">
-          {verse.transliterated_devanagari && (
-            <div className="hitopadesa-devanagari">
-              {splitDevanagariLines(verse.transliterated_devanagari).map((line, idx) => (
-                <div key={`devanagari-${getItemNumber()}-${idx}`} className="hitopadesa-line">
-                  {line}
-                </div>
-              ))}
-            </div>
-          )}
+          {verse.transliterated_devanagari && (() => {
+            const lines = splitDevanagariLines(verse.transliterated_devanagari);
+            return (
+              <div className="hitopadesa-devanagari">
+                {lines.map((line, idx) => (
+                  <div key={`devanagari-${getItemNumber()}-${idx}`} className="hitopadesa-line">
+                    {line}
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
 
-          {verse.original_iast && (
+          {corpusName !== 'bhagavad_gita' && verse.original_iast && (
             <div className="hitopadesa-iast">{verse.original_iast}</div>
           )}
         </div>

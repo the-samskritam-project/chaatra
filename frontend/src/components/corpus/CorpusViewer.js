@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import CorpusVerse from './CorpusVerse';
 import '../hitopadesa/Hitopadesa.css';
 
@@ -13,6 +13,7 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
   const [isLoadingVerses, setIsLoadingVerses] = useState(false);
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [filter, setFilter] = useState(corpusName === 'bhagavad_gita' ? 'verses' : 'all'); // 'all', 'verses', 'commentary'
 
   useEffect(() => {
     const url = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8081';
@@ -21,14 +22,29 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
 
   useEffect(() => {
     fetchChapters();
+    // Reset filter to default when corpus changes
+    if (corpusName === 'bhagavad_gita') {
+      setFilter('verses');
+    } else {
+      setFilter('all');
+    }
   }, [apiUrl, corpusName]);
 
   useEffect(() => {
     if (selectedChapter !== null) {
       fetchVerses(selectedChapter);
       setCurrentPage(1); // Reset to first page when chapter changes
+      // Reset filter to default when chapter changes for bhagavad_gita
+      if (corpusName === 'bhagavad_gita') {
+        setFilter('verses');
+      }
     }
   }, [selectedChapter, apiUrl, corpusName]);
+
+  useEffect(() => {
+    // Reset to first page when filter changes
+    setCurrentPage(1);
+  }, [filter]);
 
   const fetchChapters = async () => {
     if (!apiUrl || !corpusName) return;
@@ -100,11 +116,32 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
     setSelectedChapter(chapterNum);
   };
 
+  // Filter logic
+  const filteredVerses = useMemo(() => {
+    if (filter === 'all') return verses;
+    
+    return verses.filter((verse) => {
+      const type = verse.type || (verse.verse_number ? 'verse' : 'prose');
+      
+      if (filter === 'verses') {
+        // For Bhagavad Gita: original_verse, for others: verse
+        return type === 'original_verse' || type === 'verse';
+      }
+      
+      if (filter === 'commentary') {
+        // For Bhagavad Gita: commentary, for others: prose
+        return type === 'commentary' || type === 'prose';
+      }
+      
+      return true;
+    });
+  }, [verses, filter]);
+
   // Pagination logic
-  const totalPages = Math.ceil(verses.length / versesPerPage);
+  const totalPages = Math.ceil(filteredVerses.length / versesPerPage);
   const startIndex = (currentPage - 1) * versesPerPage;
   const endIndex = startIndex + versesPerPage;
-  const currentVerses = verses.slice(startIndex, endIndex);
+  const currentVerses = filteredVerses.slice(startIndex, endIndex);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -148,6 +185,43 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
             </span>
           </div>
         )}
+        {corpusName === 'bhagavad_gita' && (
+          <div className="hitopadesa-filter-controls">
+            <label>Filter:</label>
+            <div className="hitopadesa-filter-buttons">
+              <button
+                type="button"
+                className={`hitopadesa-filter-button ${filter === 'all' ? 'active' : ''}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setFilter('all');
+                }}
+              >
+                All
+              </button>
+              <button
+                type="button"
+                className={`hitopadesa-filter-button ${filter === 'verses' ? 'active' : ''}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setFilter('verses');
+                }}
+              >
+                Verses
+              </button>
+              <button
+                type="button"
+                className={`hitopadesa-filter-button ${filter === 'commentary' ? 'active' : ''}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setFilter('commentary');
+                }}
+              >
+                Commentary
+              </button>
+            </div>
+          </div>
+        )}
         {showSearchIcon && onSearchClick && (
           <button
             className="pancatantra-search-icon-button"
@@ -170,14 +244,20 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
         <div className="hitopadesa-empty">No verses found for this chapter.</div>
       )}
 
+      {!isLoadingVerses && verses.length > 0 && filteredVerses.length === 0 && (
+        <div className="hitopadesa-empty">No items match the selected filter.</div>
+      )}
+
       {!isLoadingVerses && currentVerses.length > 0 && (
         <>
           <div className="hitopadesa-verses">
-            {currentVerses.map((verse) => {
-              // Use chapter_sequence_index for key if available, otherwise fallback to verse_number or prose_number
-              const key = verse.chapter_sequence_index 
-                ? `item-${verse.chapter_sequence_index}` 
-                : (verse.verse_number || verse.prose_number || `verse-${verse.verse_index}`);
+            {currentVerses.map((verse, index) => {
+              // Use chapter_sequence_index for key if available, otherwise fallback to verse_number or prose_number or index
+              const key = verse.sequence_number 
+                ? `item-${verse.sequence_number}` 
+                : (verse.chapter_sequence_index 
+                  ? `item-${verse.chapter_sequence_index}` 
+                  : (verse.verse_number || verse.prose_number || verse._id || `verse-${index}`));
               return (
                 <CorpusVerse 
                   key={key} 

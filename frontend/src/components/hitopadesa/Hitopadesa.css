@@ -56,6 +56,51 @@
   font-size: 0.95rem;
 }
 
+.hitopadesa-filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hitopadesa-filter-controls label {
+  font-weight: 600;
+  color: #007bff;
+  font-size: 1rem;
+}
+
+.hitopadesa-filter-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.hitopadesa-filter-button {
+  padding: 8px 16px;
+  border: 2px solid #d7ccc8;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: #fff;
+  color: #3e2723;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.hitopadesa-filter-button:hover {
+  border-color: #8d6e63;
+  background: #f5f5f5;
+}
+
+.hitopadesa-filter-button.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.hitopadesa-filter-button.active:hover {
+  background: #0056b3;
+  border-color: #0056b3;
+}
+
 .hitopadesa-error {
   color: #c62828;
   font-weight: 600;
@@ -93,6 +138,14 @@
 .hitopadesa-verse:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
+}
+
+.hitopadesa-verse-original {
+  /* No background - use default white */
+}
+
+.hitopadesa-verse-commentary {
+  background: #f5f5f5;
 }
 
 .hitopadesa-verse-header {
