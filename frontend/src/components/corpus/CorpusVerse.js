@@ -9,6 +9,10 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
   const [isSplitting, setIsSplitting] = useState(false);
   const [splitError, setSplitError] = useState('');
   const [splitResult, setSplitResult] = useState(null);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translationError, setTranslationError] = useState('');
+  const [localTranslation, setLocalTranslation] = useState(null);
+  const [isAITranslated, setIsAITranslated] = useState(false);
 
   const splitDevanagariLines = (text) => {
     if (!text) return [];
@@ -93,6 +97,9 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
 
   // Get the translation to display
   const getDisplayTranslation = () => {
+    // Use local translation if available (just generated), otherwise use verse data
+    const translationText = localTranslation || verse.full_translation;
+    
     if (verse.edited_translations && verse.edited_translations.length > 0) {
       const lastEdit = verse.edited_translations[verse.edited_translations.length - 1];
       return {
@@ -102,13 +109,29 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
       };
     }
     return {
-      text: verse.full_translation,
+      text: translationText,
       isEdited: false,
       editedAt: null
     };
   };
 
+  // Recompute display translation on every render to pick up localTranslation changes
   const displayTranslation = getDisplayTranslation();
+  
+  // Debug: log when translation should be visible
+  useEffect(() => {
+    console.log('Display translation check:', {
+      hasLocalTranslation: !!localTranslation,
+      hasVerseTranslation: !!verse.full_translation,
+      hasAITranslatedAt: !!verse.ai_translated_at,
+      isAITranslated: isAITranslated,
+      displayText: displayTranslation.text,
+      displayTextLength: displayTranslation.text?.length || 0,
+      isEdited: displayTranslation.isEdited,
+      shouldShowLabel: !!(verse.ai_translated_at || isAITranslated) && !displayTranslation.isEdited,
+      shouldShow: !!(displayTranslation.text || isEditing || localTranslation)
+    });
+  }, [localTranslation, verse.full_translation, verse.ai_translated_at, isAITranslated, displayTranslation.text, displayTranslation.isEdited, isEditing]);
 
   // Initialize edit value when entering edit mode
   useEffect(() => {
@@ -218,6 +241,76 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
       });
     }
   }, [verse.split_shloka, verse.split_word_by_word_translation]);
+
+  // Clear local translation when verse prop updates with new translation from server
+  useEffect(() => {
+    // Only clear if verse has translation from server (after refresh)
+    // Don't clear immediately - let it persist until server data arrives
+    if (verse.full_translation && localTranslation && verse.full_translation === localTranslation) {
+      // Translation matches what we have locally, safe to clear
+      setLocalTranslation(null);
+      // Keep isAITranslated true if verse has ai_translated_at
+      if (!verse.ai_translated_at) {
+        setIsAITranslated(false);
+      }
+    }
+    // If verse has ai_translated_at, mark as AI translated
+    if (verse.ai_translated_at) {
+      setIsAITranslated(true);
+    }
+  }, [verse.full_translation, verse.ai_translated_at, localTranslation]);
+
+  const handleTranslate = async () => {
+    if (!verse.verse_number) {
+      setTranslationError('Verse number is required');
+      return;
+    }
+
+    setIsTranslating(true);
+    setTranslationError('');
+
+    try {
+      const response = await fetch(`${apiUrl}/v2/bhagavad_gita/verses/${verse.verse_number}/translate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(errorData || 'Failed to translate verse');
+      }
+
+      const data = await response.json();
+      console.log('Translation response:', data);
+      console.log('Translation text:', data.translation);
+      
+      // Update local state immediately with the translation
+      if (data.translation && data.translation.trim()) {
+        console.log('Setting local translation:', data.translation.substring(0, 100));
+        setLocalTranslation(data.translation.trim());
+        setIsAITranslated(true); // Mark as AI translated
+      } else {
+        console.error('No translation in response or translation is empty:', data);
+        throw new Error('No translation in response');
+      }
+      
+      // Call parent callback to refresh verses (to get updated data from server)
+      // Don't await - let it happen in background, keep local translation visible
+      if (onUpdate) {
+        // Refresh in background - localTranslation will persist until server data arrives
+        onUpdate().catch(err => {
+          console.error('Error refreshing verses:', err);
+        });
+      }
+    } catch (err) {
+      console.error('Error translating verse:', err);
+      setTranslationError(err.message || 'Failed to translate verse. Please try again.');
+    } finally {
+      setIsTranslating(false);
+    }
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -373,7 +466,24 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
             </div>
           )}
 
-          {(displayTranslation.text || isEditing) && (
+          {/* Translation section with AI translate button */}
+          <div className="hitopadesa-translation-section">
+            {corpusName === 'bhagavad_gita' && verse.type === 'original_verse' && (
+              <button
+                className="hitopadesa-translate-button"
+                onClick={handleTranslate}
+                disabled={isTranslating || !!verse.full_translation}
+                type="button"
+              >
+                {isTranslating ? 'Translating...' : 'Translate'}
+              </button>
+            )}
+            {translationError && (
+              <div className="hitopadesa-translation-error">{translationError}</div>
+            )}
+          </div>
+
+          {(displayTranslation.text || isEditing || localTranslation) && (
             <div className="hitopadesa-translation">
               {isEditing ? (
                 <div className="hitopadesa-translation-edit">
@@ -404,6 +514,9 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
                 </div>
               ) : (
                 <div>
+                  {(verse.ai_translated_at || isAITranslated) && !displayTranslation.isEdited && (
+                    <span className="hitopadesa-ai-translated-label">Translated with AI</span>
+                  )}
                   {displayTranslation.isEdited && (
                     <span className="hitopadesa-edited-label">Edited</span>
                   )}
@@ -412,7 +525,7 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
                     onClick={handleEditClick}
                     title="Click to edit"
                   >
-                    {displayTranslation.text}
+                    {displayTranslation.text || localTranslation || 'No translation available'}
                   </p>
                   {displayTranslation.isEdited && displayTranslation.editedAt && (
                     <div className="hitopadesa-edited-date">

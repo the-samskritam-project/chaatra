@@ -570,11 +570,17 @@ func BhagavadGitaVersesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // BhagavadGitaUpdateVerseHandler handles updating a verse's or commentary's translation
-// Also handles split requests (POST to /verses/{id}/split)
+// Also handles split requests (POST to /verses/{id}/split) and translate requests (POST to /verses/{id}/translate)
 func BhagavadGitaUpdateVerseHandler(w http.ResponseWriter, r *http.Request) {
 	// Handle OPTIONS for CORS preflight
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	// Check if this is a translate request (POST to path ending with /translate)
+	if r.Method == http.MethodPost && strings.HasSuffix(r.URL.Path, "/translate") {
+		BhagavadGitaTranslateVerseHandler(w, r)
 		return
 	}
 
@@ -699,6 +705,77 @@ func BhagavadGitaSplitVerseHandler(w http.ResponseWriter, r *http.Request) {
 		"status":                   "success",
 		"uncompounded_shloka":      splitResult.UncompoundedShloka,
 		"word_by_word_translation": splitResult.WordByWordTranslation,
+	})
+}
+
+// BhagavadGitaTranslateVerseHandler handles generating AI translation for a verse
+func BhagavadGitaTranslateVerseHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Extract verse number or ID from URL path
+	// Expected format: /v2/bhagavad_gita/verses/{verse_number_or_id}/translate
+	path := strings.TrimPrefix(r.URL.Path, "/v2/bhagavad_gita/verses/")
+	path = strings.TrimSuffix(path, "/translate")
+	verseNumber := strings.TrimSpace(path)
+
+	if verseNumber == "" {
+		http.Error(w, "verse number or ID is required in URL path", http.StatusBadRequest)
+		return
+	}
+
+	// Parse verse number to get chapter number
+	var chapterNumber int
+	_, err := fmt.Sscanf(verseNumber, "%d.", &chapterNumber)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Invalid verse number format: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	// Fetch the verse from MongoDB to get Devanagari text
+	verses, err := service.GetBhagavadGitaVerses(chapterNumber)
+	if err != nil {
+		log.Printf("Error fetching verses for chapter %d: %v", chapterNumber, err)
+		http.Error(w, fmt.Sprintf("Failed to fetch verse: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Find the verse by verse_number
+	var verse *persistence.HitopadesaVerse
+	for i := range verses {
+		if verses[i].VerseNumber == verseNumber {
+			verse = &verses[i]
+			break
+		}
+	}
+
+	if verse == nil {
+		http.Error(w, fmt.Sprintf("Verse not found: %s", verseNumber), http.StatusNotFound)
+		return
+	}
+
+	if verse.TransliteratedDevanagari == "" {
+		http.Error(w, "Verse has no Devanagari text", http.StatusBadRequest)
+		return
+	}
+
+	// Call service layer to generate translation
+	ctx := r.Context()
+	translation, err := service.GenerateBhagavadGitaVerseTranslation(ctx, verseNumber, verse.TransliteratedDevanagari)
+	if err != nil {
+		log.Printf("Error translating verse %s: %v", verseNumber, err)
+		http.Error(w, fmt.Sprintf("Failed to translate verse: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Return the translation
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":      "success",
+		"translation": translation,
 	})
 }
 

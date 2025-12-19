@@ -250,3 +250,27 @@ func SplitBhagavadGitaVerse(ctx context.Context, verseNumber string, devanagariT
 
 	return splitResult, nil
 }
+
+// GenerateBhagavadGitaVerseTranslation generates an AI translation for a Bhagavad Gita verse
+func GenerateBhagavadGitaVerseTranslation(ctx context.Context, verseNumber string, devanagariText string) (string, error) {
+	if verseNumber == "" {
+		return "", fmt.Errorf("verse number is required")
+	}
+	if devanagariText == "" {
+		return "", fmt.Errorf("devanagari text is required")
+	}
+
+	// Call the AI translation service
+	translation, err := GenerateTranslation(ctx, devanagariText, verseNumber)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate translation: %w", err)
+	}
+
+	// Persist the translation
+	err = persistence.UpdateBhagavadGitaVerseAITranslation(verseNumber, translation)
+	if err != nil {
+		return "", fmt.Errorf("failed to persist translation: %w", err)
+	}
+
+	return translation, nil
+}
