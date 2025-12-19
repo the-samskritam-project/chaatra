@@ -114,6 +114,16 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
   // Get the type label
   const getTypeLabel = () => {
     const type = verse.type || (verse.verse_number ? 'verse' : 'prose');
+    
+    // Handle Bhagavad Gita specific types
+    if (type === 'original_verse') {
+      return 'Original Verse';
+    }
+    if (type === 'commentary') {
+      return 'Commentary';
+    }
+    
+    // Handle standard types
     return type.charAt(0).toUpperCase() + type.slice(1);
   };
 

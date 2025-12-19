@@ -660,3 +660,204 @@ func GetPancatantraVersesWithContext(chapterNumber int, verseNumber string) ([]*
 
 	return result, nil
 }
+
+// GetBhagavadGitaChapters returns all chapter metadata by discovering chapter collections
+func GetBhagavadGitaChapters() ([]HitopadesaChapterMetadata, error) {
+	if mongoClient == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Use bhagavad_gita_shankara_bhasya database
+	db := getDatabase("bhagavad_gita_shankara_bhasya")
+	if db == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+
+	// List all collections to find chapter_N collections
+	collections, err := db.ListCollectionNames(ctx, bson.M{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list collections: %w", err)
+	}
+
+	var chapters []HitopadesaChapterMetadata
+	chapterMap := make(map[int]bool)
+
+	// Find all chapter collections (format: chapter_N)
+	for _, collName := range collections {
+		var chapterNum int
+		if _, err := fmt.Sscanf(collName, "chapter_%d", &chapterNum); err == nil {
+			chapterMap[chapterNum] = true
+		}
+	}
+
+	// For each chapter, get metadata
+	for chapterNum := range chapterMap {
+		collection := db.Collection(fmt.Sprintf("chapter_%d", chapterNum))
+
+		// Count total items
+		count, err := collection.CountDocuments(ctx, bson.M{})
+		if err != nil {
+			log.Printf("Error counting documents in chapter %d: %v", chapterNum, err)
+			continue
+		}
+
+		// Get first and last verse numbers
+		var firstVerse, lastVerse string
+		var firstItem, lastItem HitopadesaVerse
+
+		// Get first item by sequence_number
+		firstCursor := collection.FindOne(ctx, bson.M{}, options.FindOne().SetSort(bson.D{{Key: "sequence_number", Value: 1}}))
+		if firstCursor.Err() == nil {
+			firstCursor.Decode(&firstItem)
+			if firstItem.VerseNumber != "" {
+				firstVerse = firstItem.VerseNumber
+			}
+		}
+
+		// Get last item by sequence_number
+		lastCursor := collection.FindOne(ctx, bson.M{}, options.FindOne().SetSort(bson.D{{Key: "sequence_number", Value: -1}}))
+		if lastCursor.Err() == nil {
+			lastCursor.Decode(&lastItem)
+			if lastItem.VerseNumber != "" {
+				lastVerse = lastItem.VerseNumber
+			}
+		}
+
+		chapters = append(chapters, HitopadesaChapterMetadata{
+			ChapterNumber: chapterNum,
+			VerseCount:    int(count),
+			FirstVerse:    firstVerse,
+			LastVerse:     lastVerse,
+			CreatedAt:     time.Now(),
+		})
+	}
+
+	// Sort by chapter number
+	for i := 0; i < len(chapters)-1; i++ {
+		for j := i + 1; j < len(chapters); j++ {
+			if chapters[i].ChapterNumber > chapters[j].ChapterNumber {
+				chapters[i], chapters[j] = chapters[j], chapters[i]
+			}
+		}
+	}
+
+	return chapters, nil
+}
+
+// GetBhagavadGitaVerses returns all items (verses and commentary) for a given chapter
+func GetBhagavadGitaVerses(chapterNumber int) ([]HitopadesaVerse, error) {
+	if mongoClient == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Use bhagavad_gita_shankara_bhasya database
+	db := getDatabase("bhagavad_gita_shankara_bhasya")
+	if db == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+	collectionName := fmt.Sprintf("chapter_%d", chapterNumber)
+	collection := db.Collection(collectionName)
+
+	// Sort by sequence_number to preserve order
+	sortOpt := bson.D{
+		{Key: "sequence_number", Value: 1},
+	}
+	cursor, err := collection.Find(ctx, bson.M{}, options.Find().SetSort(sortOpt))
+	if err != nil {
+		return nil, fmt.Errorf("failed to query items for chapter %d: %w", chapterNumber, err)
+	}
+	defer cursor.Close(ctx)
+
+	var verses []HitopadesaVerse
+	if err := cursor.All(ctx, &verses); err != nil {
+		return nil, fmt.Errorf("failed to decode items: %w", err)
+	}
+
+	// Count verses and commentary
+	verseCount := 0
+	commentaryCount := 0
+	for i := range verses {
+		// Keep original_verse and commentary types as-is
+		if verses[i].Type == "original_verse" {
+			verseCount++
+		} else if verses[i].Type == "commentary" {
+			commentaryCount++
+		}
+	}
+	log.Printf("GetBhagavadGitaVerses chapter %d: returned %d items (%d verses, %d commentary)", chapterNumber, len(verses), verseCount, commentaryCount)
+
+	return verses, nil
+}
+
+// UpdateBhagavadGitaVerseTranslation appends a new edited translation to a verse or commentary
+func UpdateBhagavadGitaVerseTranslation(verseNumber string, editedTranslation string) error {
+	if mongoClient == nil {
+		return fmt.Errorf("MongoDB not initialized")
+	}
+
+	// Parse verse number to get chapter number
+	// Format: "chapter.verse" (e.g., "1.1") or "commentary_chapter_sequence"
+	var chapterNumber int
+	var err error
+
+	// Try to parse as verse number (N.M format)
+	_, err = fmt.Sscanf(verseNumber, "%d.", &chapterNumber)
+	if err != nil {
+		// Try to parse as commentary ID (commentary_N_sequence)
+		_, err = fmt.Sscanf(verseNumber, "commentary_%d_", &chapterNumber)
+		if err != nil {
+			return fmt.Errorf("invalid verse number or ID format: %w", err)
+		}
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Use bhagavad_gita_shankara_bhasya database
+	db := getDatabase("bhagavad_gita_shankara_bhasya")
+	if db == nil {
+		return fmt.Errorf("MongoDB not initialized")
+	}
+	collectionName := fmt.Sprintf("chapter_%d", chapterNumber)
+	collection := db.Collection(collectionName)
+
+	// Create the edited translation entry with current timestamp
+	editedEntry := EditedTranslation{
+		Translation: editedTranslation,
+		EditedAt:    time.Now(),
+	}
+
+	// Use $push to append to the edited_translations array
+	// Try verse_number first
+	filter := bson.M{"verse_number": verseNumber}
+	update := bson.M{
+		"$push": bson.M{
+			"edited_translations": editedEntry,
+		},
+	}
+
+	result, err := collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return fmt.Errorf("failed to update translation: %w", err)
+	}
+
+	if result.MatchedCount == 0 {
+		// Try _id field as fallback (for commentary)
+		filter = bson.M{"_id": verseNumber}
+		result, err = collection.UpdateOne(ctx, filter, update)
+		if err != nil {
+			return fmt.Errorf("failed to update translation: %w", err)
+		}
+		if result.MatchedCount == 0 {
+			return fmt.Errorf("verse or commentary not found: %s", verseNumber)
+		}
+	}
+
+	return nil
+}

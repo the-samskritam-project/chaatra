@@ -64,6 +64,9 @@ func main() {
 	mux.HandleFunc("/v2/pancatantra/verses/", h.PancatantraUpdateVerseHandler)
 	mux.HandleFunc("/v2/pancatantra/wordcloud", h.PancatantraWordCloudHandler)
 	mux.HandleFunc("/v2/pancatantra/verse-context", h.PancatantraVerseContextHandler)
+	mux.HandleFunc("/v2/bhagavad_gita/chapters", h.BhagavadGitaChaptersHandler)
+	mux.HandleFunc("/v2/bhagavad_gita/verses", h.BhagavadGitaVersesHandler)
+	mux.HandleFunc("/v2/bhagavad_gita/verses/", h.BhagavadGitaUpdateVerseHandler)
 	mux.HandleFunc("/v2/search/semantic", h.SemanticSearchHandler)
 
 	c := cors.New(cors.Options{

@@ -187,3 +187,32 @@ func GetPancatantraVerseContext(verseNumber string, itemType string) (*Pancatant
 		Verses:   verseItems,
 	}, nil
 }
+
+// GetBhagavadGitaChapters returns all chapter metadata
+func GetBhagavadGitaChapters() ([]persistence.HitopadesaChapterMetadata, error) {
+	chapters, err := persistence.GetBhagavadGitaChapters()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get chapters: %w", err)
+	}
+	return chapters, nil
+}
+
+// GetBhagavadGitaVerses returns all items (verses and commentary) for a given chapter
+func GetBhagavadGitaVerses(chapterNumber int) ([]persistence.HitopadesaVerse, error) {
+	verses, err := persistence.GetBhagavadGitaVerses(chapterNumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get verses for chapter %d: %w", chapterNumber, err)
+	}
+	return verses, nil
+}
+
+// UpdateBhagavadGitaVerseTranslation updates a verse or commentary with a new edited translation
+func UpdateBhagavadGitaVerseTranslation(verseNumber string, editedTranslation string) error {
+	if verseNumber == "" {
+		return fmt.Errorf("verse number or ID is required")
+	}
+	if editedTranslation == "" {
+		return fmt.Errorf("edited translation cannot be empty")
+	}
+	return persistence.UpdateBhagavadGitaVerseTranslation(verseNumber, editedTranslation)
+}

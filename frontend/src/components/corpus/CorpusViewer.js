@@ -4,7 +4,7 @@ import '../hitopadesa/Hitopadesa.css';
 
 const VERSES_PER_PAGE = 10;
 
-function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick }) {
+function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, versesPerPage = 10 }) {
   const [apiUrl, setApiUrl] = useState('');
   const [chapters, setChapters] = useState([]);
   const [selectedChapter, setSelectedChapter] = useState(null);
@@ -101,9 +101,9 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick }) {
   };
 
   // Pagination logic
-  const totalPages = Math.ceil(verses.length / VERSES_PER_PAGE);
-  const startIndex = (currentPage - 1) * VERSES_PER_PAGE;
-  const endIndex = startIndex + VERSES_PER_PAGE;
+  const totalPages = Math.ceil(verses.length / versesPerPage);
+  const startIndex = (currentPage - 1) * versesPerPage;
+  const endIndex = startIndex + versesPerPage;
   const currentVerses = verses.slice(startIndex, endIndex);
 
   const handlePageChange = (page) => {
