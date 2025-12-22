@@ -296,12 +296,16 @@ Examples:
   python command_processor.py process_bhagavad_gita bhagavad_gita
   python command_processor.py process_bhagavad_gita bhagavad_gita --process-start-chapter 1 --process-end-chapter 5
   python command_processor.py process_bhagavad_gita bhagavad_gita --api-url http://localhost:8081 --process-delay 3.0
+  
+  # Summarise Bhagavad Gita chapters
+  python command_processor.py summarise_bhagavad_gita
+  python command_processor.py summarise_bhagavad_gita --clear-existing
         """
     )
     
     parser.add_argument(
         'command',
-        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita'],
+        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'summarise_bhagavad_gita'],
         help='Command to execute'
     )
     parser.add_argument(
@@ -586,8 +590,8 @@ Examples:
     args = parser.parse_args()
     
     # Validate corpus name (not required for vector_search, generate_interval_theme_embeddings, cluster_interval_themes, generate_theme_nodes)
-    # process_bhagavad_gita requires corpus but validation is done in the command function
-    if args.command not in ['vector_search', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita']:
+    # process_bhagavad_gita and summarise_bhagavad_gita require corpus but validation is done in the command function
+    if args.command not in ['vector_search', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'summarise_bhagavad_gita']:
         if not args.corpus:
             print("Error: Corpus name is required for this command")
             sys.exit(1)
@@ -752,6 +756,19 @@ Examples:
             )
         elif args.command == 'process_bhagavad_gita':
             process_bhagavad_gita_command(args.corpus, args)
+        elif args.command == 'summarise_bhagavad_gita':
+            from processor.summarise_bhagavad_gita import summarise_bhagavad_gita
+            
+            mongodb_uri = args.mongodb_uri or os.getenv('MONGODB_URI')
+            if not mongodb_uri:
+                print("Error: MONGODB_URI must be provided or set as environment variable")
+                sys.exit(1)
+            
+            summarise_bhagavad_gita(
+                mongodb_uri=mongodb_uri,
+                database_name=args.database or 'bhagavad_gita_shankara_bhasya',
+                clear_existing=args.clear_existing
+            )
         elif args.command == 'generate_theme_nodes':
             from processor.generate_theme_nodes import generate_theme_nodes
             
