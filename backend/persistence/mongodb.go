@@ -665,7 +665,7 @@ func GetPancatantraVersesWithContext(chapterNumber int, verseNumber string) ([]*
 	return result, nil
 }
 
-// GetBhagavadGitaChapters returns all chapter metadata by discovering chapter collections
+// GetBhagavadGitaChapters returns all chapter metadata from the chapters_metadata collection
 func GetBhagavadGitaChapters() ([]HitopadesaChapterMetadata, error) {
 	if mongoClient == nil {
 		return nil, fmt.Errorf("MongoDB not initialized")
@@ -680,72 +680,18 @@ func GetBhagavadGitaChapters() ([]HitopadesaChapterMetadata, error) {
 		return nil, fmt.Errorf("MongoDB not initialized")
 	}
 
-	// List all collections to find chapter_N collections
-	collections, err := db.ListCollectionNames(ctx, bson.M{})
+	// Read from chapters_metadata collection
+	collection := db.Collection("chapters_metadata")
+	sortOpt := bson.D{{Key: "chapter_number", Value: 1}}
+	cursor, err := collection.Find(ctx, bson.M{}, options.Find().SetSort(sortOpt))
 	if err != nil {
-		return nil, fmt.Errorf("failed to list collections: %w", err)
+		return nil, fmt.Errorf("failed to query chapters_metadata: %w", err)
 	}
+	defer cursor.Close(ctx)
 
 	var chapters []HitopadesaChapterMetadata
-	chapterMap := make(map[int]bool)
-
-	// Find all chapter collections (format: chapter_N)
-	for _, collName := range collections {
-		var chapterNum int
-		if _, err := fmt.Sscanf(collName, "chapter_%d", &chapterNum); err == nil {
-			chapterMap[chapterNum] = true
-		}
-	}
-
-	// For each chapter, get metadata
-	for chapterNum := range chapterMap {
-		collection := db.Collection(fmt.Sprintf("chapter_%d", chapterNum))
-
-		// Count total items
-		count, err := collection.CountDocuments(ctx, bson.M{})
-		if err != nil {
-			log.Printf("Error counting documents in chapter %d: %v", chapterNum, err)
-			continue
-		}
-
-		// Get first and last verse numbers
-		var firstVerse, lastVerse string
-		var firstItem, lastItem HitopadesaVerse
-
-		// Get first item by sequence_number
-		firstCursor := collection.FindOne(ctx, bson.M{}, options.FindOne().SetSort(bson.D{{Key: "sequence_number", Value: 1}}))
-		if firstCursor.Err() == nil {
-			firstCursor.Decode(&firstItem)
-			if firstItem.VerseNumber != "" {
-				firstVerse = firstItem.VerseNumber
-			}
-		}
-
-		// Get last item by sequence_number
-		lastCursor := collection.FindOne(ctx, bson.M{}, options.FindOne().SetSort(bson.D{{Key: "sequence_number", Value: -1}}))
-		if lastCursor.Err() == nil {
-			lastCursor.Decode(&lastItem)
-			if lastItem.VerseNumber != "" {
-				lastVerse = lastItem.VerseNumber
-			}
-		}
-
-		chapters = append(chapters, HitopadesaChapterMetadata{
-			ChapterNumber: chapterNum,
-			VerseCount:    int(count),
-			FirstVerse:    firstVerse,
-			LastVerse:     lastVerse,
-			CreatedAt:     time.Now(),
-		})
-	}
-
-	// Sort by chapter number
-	for i := 0; i < len(chapters)-1; i++ {
-		for j := i + 1; j < len(chapters); j++ {
-			if chapters[i].ChapterNumber > chapters[j].ChapterNumber {
-				chapters[i], chapters[j] = chapters[j], chapters[i]
-			}
-		}
+	if err := cursor.All(ctx, &chapters); err != nil {
+		return nil, fmt.Errorf("failed to decode chapters: %w", err)
 	}
 
 	return chapters, nil
