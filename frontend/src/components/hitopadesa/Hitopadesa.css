@@ -218,6 +218,13 @@
   color: #212121;
 }
 
+/* Bhagavad Gita main verse - bigger and bold */
+.hitopadesa-devanagari.gita-main-verse {
+  font-size: 1.6rem;
+  font-weight: bold;
+  line-height: 2;
+}
+
 .hitopadesa-line {
   display: block;
   margin-bottom: 4px;

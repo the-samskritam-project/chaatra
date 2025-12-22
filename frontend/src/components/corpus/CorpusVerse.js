@@ -402,8 +402,9 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
         <div className="hitopadesa-verse-column-left">
           {verse.transliterated_devanagari && (() => {
             const lines = splitDevanagariLines(verse.transliterated_devanagari);
+            const isGitaVerse = corpusName === 'bhagavad_gita' && verse.type === 'original_verse';
             return (
-              <div className="hitopadesa-devanagari">
+              <div className={`hitopadesa-devanagari ${isGitaVerse ? 'gita-main-verse' : ''}`}>
                 {lines.map((line, idx) => (
                   <div key={`devanagari-${getItemNumber()}-${idx}`} className="hitopadesa-line">
                     {line}
