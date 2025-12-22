@@ -2,6 +2,7 @@ import './App.css';
 import './Modal.css';
 import { Tabs, TabList, Tab, TabPanel } from 'react-tabs';
 import './tabs.css';
+import { useState, useEffect } from 'react';
 import Dictionary from './components/dictionary/Dictionary';
 import Flashcards from './components/flashcards/Flashcards';
 import RamayanaExplore from './components/ramayana/RamayanaExplore';
@@ -9,6 +10,7 @@ import Hitopadesa from './components/hitopadesa/Hitopadesa';
 import Pancatantra from './components/pancatantra/Pancatantra';
 import BhagavadGita from './components/bhagavad_gita/BhagavadGita';
 import Footer from './components/Footer';
+import SignInButton from './components/auth/SignInButton';
 
 function App() {
   // Check if Hitopadesa tab should be visible
@@ -16,8 +18,56 @@ function App() {
   // Pancatantra is always visible (or can be controlled via env var if needed)
   const showPancatantra = process.env.REACT_APP_SHOW_PANCATANTRA !== 'false';
 
+  // Auth state management
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [apiUrl, setApiUrl] = useState('');
+
+  // Load auth data from localStorage on mount
+  useEffect(() => {
+    const savedToken = localStorage.getItem('auth_token');
+    const savedUser = localStorage.getItem('auth_user');
+    
+    if (savedToken && savedUser) {
+      try {
+        setToken(savedToken);
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Error loading auth data:', error);
+        // Clear invalid data
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
+      }
+    }
+
+    // Set API URL
+    const url = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || 'http://localhost:8081';
+    setApiUrl(url);
+  }, []);
+
+  // Handle successful sign-in
+  const handleSignInSuccess = (result) => {
+    setToken(result.token);
+    setUser(result.user);
+    
+    // Store in localStorage
+    localStorage.setItem('auth_token', result.token);
+    localStorage.setItem('auth_user', JSON.stringify(result.user));
+  };
+
+  // Handle sign-out
+  const handleSignOut = () => {
+    setToken(null);
+    setUser(null);
+    
+    // Clear from localStorage
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+  };
+
   return (
     <div>
+      <SignInButton user={user} onSignInSuccess={handleSignInSuccess} onSignOut={handleSignOut} apiUrl={apiUrl} />
       <div className="tabs-container">
         <Tabs defaultIndex={2}>
           <div className="tabs-section">
