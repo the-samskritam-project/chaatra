@@ -519,24 +519,21 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
                 >
                   {isTranslating ? 'Translating...' : 'Translate'}
                 </button>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <button
-                    className="hitopadesa-translate-button"
-                    onClick={() => {
-                      if (user && token) {
-                        setShowNotesModal(true);
-                      } else {
-                        setShowSignInModal(true);
-                      }
-                    }}
-                    type="button"
-                  >
-                    Add Note
-                  </button>
-                  {user && token && notesCount > 0 && (
-                    <span className="notes-count-badge">{notesCount} note{notesCount !== 1 ? 's' : ''}</span>
-                  )}
-                </div>
+                <button
+                  className="hitopadesa-translate-button"
+                  onClick={() => {
+                    if (user && token) {
+                      setShowNotesModal(true);
+                    } else {
+                      setShowSignInModal(true);
+                    }
+                  }}
+                  type="button"
+                >
+                  {user && token && notesCount > 0 
+                    ? `${notesCount} Note${notesCount !== 1 ? 's' : ''}` 
+                    : 'Add Note'}
+                </button>
               </>
             )}
             {translationError && (
