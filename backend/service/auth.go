@@ -12,8 +12,9 @@ import (
 
 // JWTClaims represents the JWT token claims
 type JWTClaims struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
+	Email  string      `json:"email"`
+	Name   string      `json:"name"`
+	UserID interface{} `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
@@ -38,8 +39,9 @@ func GenerateToken(user *persistence.User) (string, error) {
 
 	// Create claims
 	claims := &JWTClaims{
-		Email: user.Email,
-		Name:  user.Name,
+		Email:  user.Email,
+		Name:   user.Name,
+		UserID: user.ID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

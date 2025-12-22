@@ -14,27 +14,35 @@ import (
 
 // User represents a user in the system
 type User struct {
-	Email     string    `json:"email" bson:"email"`
-	Name      string    `json:"name" bson:"name"`
-	CreatedAt time.Time `json:"created_at" bson:"created_at"`
+	ID        interface{} `json:"id,omitempty" bson:"_id,omitempty"`
+	Email     string      `json:"email" bson:"email"`
+	Name      string      `json:"name" bson:"name"`
+	CreatedAt time.Time   `json:"created_at" bson:"created_at"`
 }
 
-// getUsersCollection returns the users collection from the MongoDB database
-func getUsersCollection() *mongo.Collection {
+// getUsersDatabase returns the users database
+func getUsersDatabase() *mongo.Database {
 	if mongoClient == nil {
 		return nil
 	}
-	// Use the same database as configured in InitMongoDB
-	// If mongoDB is initialized, use it; otherwise create a new database reference
-	if mongoDB != nil {
-		return mongoDB.Collection("users")
+	// Use a dedicated database for users (configurable via env var)
+	dbName := os.Getenv("MONGODB_USERS_DATABASE")
+	if dbName == "" {
+		dbName = "users_db" // Default
 	}
-	// Fallback: use default database name
-	databaseName := os.Getenv("MONGODB_DATABASE")
-	if databaseName == "" {
-		databaseName = "hitopadesa"
+	return mongoClient.Database(dbName)
+}
+
+// getUsersCollection returns the users collection from a dedicated users database
+func getUsersCollection() (*mongo.Collection, error) {
+	if mongoClient == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
 	}
-	return mongoClient.Database(databaseName).Collection("users")
+	usersDB := getUsersDatabase()
+	if usersDB == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+	return usersDB.Collection("users"), nil
 }
 
 // GetUserByEmail retrieves a user by email address
@@ -46,18 +54,29 @@ func GetUserByEmail(email string) (*User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := getUsersCollection()
-	if collection == nil {
-		return nil, fmt.Errorf("MongoDB not initialized")
+	collection, err := getUsersCollection()
+	if err != nil {
+		return nil, err
 	}
 
 	var user User
-	err := collection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
+	err = collection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, nil // User not found, return nil without error
 		}
 		return nil, fmt.Errorf("failed to query user: %w", err)
+	}
+
+	// The ID should be automatically decoded from _id field
+	// If it's still nil, we need to fetch it separately
+	if user.ID == nil {
+		var result bson.M
+		if err := collection.FindOne(ctx, bson.M{"email": email}).Decode(&result); err == nil {
+			if id, ok := result["_id"]; ok {
+				user.ID = id
+			}
+		}
 	}
 
 	return &user, nil
@@ -72,9 +91,9 @@ func CreateUser(email string, name string) (*User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection := getUsersCollection()
-	if collection == nil {
-		return nil, fmt.Errorf("MongoDB not initialized")
+	collection, err := getUsersCollection()
+	if err != nil {
+		return nil, err
 	}
 
 	// Check if user already exists
@@ -114,6 +133,8 @@ func CreateUser(email string, name string) (*User, error) {
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 
+	// Set the ID from the inserted result
+	user.ID = result.InsertedID
 	log.Printf("Created user with ID: %v", result.InsertedID)
 
 	return &user, nil

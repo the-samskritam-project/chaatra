@@ -73,6 +73,28 @@ func main() {
 	mux.HandleFunc("/v2/auth/signin", h.SignInHandler)
 	mux.HandleFunc("/v2/auth/users", h.APIKeyMiddleware(h.CreateUserHandler))
 
+	// Notes endpoints (protected by JWT)
+	mux.HandleFunc("/v2/notes", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			h.JWTAuthMiddleware(h.CreateNoteHandler)(w, r)
+		case http.MethodGet:
+			h.JWTAuthMiddleware(h.GetNotesHandler)(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+	mux.HandleFunc("/v2/notes/", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			h.JWTAuthMiddleware(h.GetNoteHandler)(w, r)
+		case http.MethodPut:
+			h.JWTAuthMiddleware(h.UpdateNoteHandler)(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "https://chaatra-frontend-production.up.railway.app"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "OPTIONS"},

@@ -17,6 +17,8 @@ const (
 	UserEmailKey ContextKey = "user_email"
 	// UserNameKey is the context key for user name
 	UserNameKey ContextKey = "user_name"
+	// UserIDKey is the context key for user ID
+	UserIDKey ContextKey = "user_id"
 )
 
 // APIKeyMiddleware validates the API key from request headers
@@ -89,6 +91,7 @@ func JWTAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		// Attach user info to context
 		ctx := context.WithValue(r.Context(), UserEmailKey, claims.Email)
 		ctx = context.WithValue(ctx, UserNameKey, claims.Name)
+		ctx = context.WithValue(ctx, UserIDKey, claims.UserID)
 
 		// Create new request with updated context
 		r = r.WithContext(ctx)
@@ -114,4 +117,13 @@ func GetUserFromContext(r *http.Request) (email string, name string, ok bool) {
 
 	name, _ = nameVal.(string)
 	return email, name, true
+}
+
+// GetUserIDFromContext extracts user ID from request context
+func GetUserIDFromContext(r *http.Request) (interface{}, bool) {
+	userIDVal := r.Context().Value(UserIDKey)
+	if userIDVal == nil {
+		return nil, false
+	}
+	return userIDVal, true
 }
