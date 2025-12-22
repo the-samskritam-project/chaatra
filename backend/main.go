@@ -95,6 +95,21 @@ func main() {
 		}
 	})
 
+	// Favorites endpoints (protected by JWT)
+	mux.HandleFunc("/v2/favorites", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			h.JWTAuthMiddleware(h.StarVerseHandler)(w, r)
+		case http.MethodGet:
+			h.JWTAuthMiddleware(h.GetFavoritesHandler)(w, r)
+		case http.MethodDelete:
+			h.JWTAuthMiddleware(h.UnstarVerseHandler)(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+	mux.HandleFunc("/v2/favorites/status", h.JWTAuthMiddleware(h.GetFavoriteStatusHandler))
+
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "https://chaatra-frontend-production.up.railway.app"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "OPTIONS"},

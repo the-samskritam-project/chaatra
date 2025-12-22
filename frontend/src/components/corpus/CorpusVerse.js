@@ -3,6 +3,7 @@ import '../hitopadesa/Hitopadesa.css';
 import NotesModal from '../notes/NotesModal';
 import SignInModal from '../auth/SignInModal';
 import NotesService from '../../services/NotesService';
+import FavoritesService from '../../services/FavoritesService';
 
 function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignInSuccess }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -20,6 +21,9 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [tempToken, setTempToken] = useState(null);
   const [notesCount, setNotesCount] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const [pendingStarAction, setPendingStarAction] = useState(false);
 
   const splitDevanagariLines = (text) => {
     if (!text) return [];
@@ -389,6 +393,39 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
     fetchNotesCount();
   }, [corpusName, verse.type, verse.verse_number, user, token, apiUrl]);
 
+  // Fetch favorite status for this verse if user is signed in
+  useEffect(() => {
+    const fetchFavoriteStatus = async () => {
+      if (
+        corpusName === 'bhagavad_gita' &&
+        verse.type === 'original_verse' &&
+        verse.verse_number &&
+        user &&
+        token &&
+        apiUrl
+      ) {
+        try {
+          const favoritesService = new FavoritesService(apiUrl);
+          const status = await favoritesService.getFavoriteStatus(
+            'bhagavad_gita',
+            'Verse',
+            verse.verse_number,
+            token
+          );
+          setIsFavorite(status.is_favorite || false);
+        } catch (error) {
+          // Silently fail - don't show error for status fetch
+          console.error('Error fetching favorite status:', error);
+          setIsFavorite(false);
+        }
+      } else {
+        setIsFavorite(false);
+      }
+    };
+
+    fetchFavoriteStatus();
+  }, [corpusName, verse.type, verse.verse_number, user, token, apiUrl, tempToken]);
+
   // Debug logging
   useEffect(() => {
     console.log('Rendering CorpusVerse:', {
@@ -423,6 +460,53 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
           <span className="hitopadesa-verse-type">{getTypeLabel()}</span>
         )}
         <span className="hitopadesa-verse-id">{getItemNumber()}</span>
+        {corpusName === 'bhagavad_gita' && verse.type === 'original_verse' && (
+          <button
+            className={`favorite-star-button ${isFavorite ? 'favorited' : ''}`}
+            onClick={async () => {
+              if (!user || !token) {
+                // Set pending action and show sign-in modal
+                setPendingStarAction(true);
+                setShowSignInModal(true);
+                return;
+              }
+
+              if (isTogglingFavorite) return;
+
+              setIsTogglingFavorite(true);
+              try {
+                const favoritesService = new FavoritesService(apiUrl);
+                if (isFavorite) {
+                  await favoritesService.unstarVerse(
+                    'bhagavad_gita',
+                    'Verse',
+                    verse.verse_number,
+                    token
+                  );
+                  setIsFavorite(false);
+                } else {
+                  await favoritesService.starVerse(
+                    'bhagavad_gita',
+                    'Verse',
+                    verse.verse_number,
+                    token
+                  );
+                  setIsFavorite(true);
+                }
+              } catch (error) {
+                console.error('Error toggling favorite:', error);
+                // Optionally show error message to user
+              } finally {
+                setIsTogglingFavorite(false);
+              }
+            }}
+            disabled={isTogglingFavorite}
+            type="button"
+            title={isFavorite ? 'Unstar verse' : 'Star verse'}
+          >
+            {isTogglingFavorite ? '...' : (isFavorite ? '★' : '☆')}
+          </button>
+        )}
         {corpusName === 'bhagavad_gita' && verse.type === 'original_verse' && (
           <button
             className="hitopadesa-split-button"
@@ -507,7 +591,7 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
             </div>
           )}
 
-          {/* Translation section with AI translate button and Add Note button */}
+          {/* Translation section with AI translate button, Add Note button, and Star button */}
           <div className="hitopadesa-translation-section">
             {corpusName === 'bhagavad_gita' && verse.type === 'original_verse' && (
               <>
@@ -623,18 +707,55 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
           />
           {showSignInModal && (
             <SignInModal
-              onClose={() => setShowSignInModal(false)}
-              onSignInSuccess={(result) => {
+              onClose={() => {
+                setShowSignInModal(false);
+                setPendingStarAction(false);
+              }}
+              onSignInSuccess={async (result) => {
                 if (onSignInSuccess) {
                   onSignInSuccess(result);
                 }
                 // Store token temporarily for immediate use
                 setTempToken(result.token);
                 setShowSignInModal(false);
-                // After successful sign-in, open notes modal with the new token
-                setTimeout(() => {
-                  setShowNotesModal(true);
-                }, 200);
+                
+                // If user was trying to star, do it now
+                if (pendingStarAction && corpusName === 'bhagavad_gita' && verse.type === 'original_verse' && verse.verse_number) {
+                  try {
+                    const favoritesService = new FavoritesService(apiUrl);
+                    await favoritesService.starVerse(
+                      'bhagavad_gita',
+                      'Verse',
+                      verse.verse_number,
+                      result.token
+                    );
+                    setIsFavorite(true);
+                  } catch (error) {
+                    console.error('Error starring verse after sign-in:', error);
+                  }
+                  setPendingStarAction(false);
+                } else {
+                  // Refresh favorite status after sign-in
+                  if (corpusName === 'bhagavad_gita' && verse.type === 'original_verse' && verse.verse_number) {
+                    try {
+                      const favoritesService = new FavoritesService(apiUrl);
+                      const status = await favoritesService.getFavoriteStatus(
+                        'bhagavad_gita',
+                        'Verse',
+                        verse.verse_number,
+                        result.token
+                      );
+                      setIsFavorite(status.is_favorite || false);
+                    } catch (error) {
+                      console.error('Error fetching favorite status after sign-in:', error);
+                    }
+                  }
+                  
+                  // After successful sign-in, open notes modal with the new token
+                  setTimeout(() => {
+                    setShowNotesModal(true);
+                  }, 200);
+                }
               }}
               apiUrl={apiUrl}
             />
