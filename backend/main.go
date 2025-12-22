@@ -69,6 +69,10 @@ func main() {
 	mux.HandleFunc("/v2/bhagavad_gita/verses/", h.BhagavadGitaUpdateVerseHandler)
 	mux.HandleFunc("/v2/search/semantic", h.SemanticSearchHandler)
 
+	// Auth endpoints
+	mux.HandleFunc("/v2/auth/signin", h.SignInHandler)
+	mux.HandleFunc("/v2/auth/users", h.APIKeyMiddleware(h.CreateUserHandler))
+
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "https://chaatra-frontend-production.up.railway.app"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "OPTIONS"},

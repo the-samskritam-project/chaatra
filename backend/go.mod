@@ -8,6 +8,7 @@ require github.com/elastic/go-elasticsearch/v7 v7.17.10
 
 require (
 	github.com/dlclark/regexp2 v1.10.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/pkoukk/tiktoken-go v0.1.6 // indirect
 )
