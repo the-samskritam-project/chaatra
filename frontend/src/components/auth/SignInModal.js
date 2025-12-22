@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import AuthService from '../../services/AuthService';
 import './Auth.css';
 
@@ -45,7 +46,7 @@ const SignInModal = ({ onClose, onSignInSuccess, apiUrl }) => {
     }
   };
 
-  return (
+  return createPortal(
     <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-content signin-modal" onClick={(e) => e.stopPropagation()}>
         <button className="modal-close" onClick={handleClose} disabled={loading}>
@@ -86,7 +87,8 @@ const SignInModal = ({ onClose, onSignInSuccess, apiUrl }) => {
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

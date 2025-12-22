@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import '../hitopadesa/Hitopadesa.css';
 import NotesModal from '../notes/NotesModal';
+import SignInModal from '../auth/SignInModal';
 
-function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token }) {
+function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignInSuccess }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -15,6 +16,8 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token }) {
   const [localTranslation, setLocalTranslation] = useState(null);
   const [isAITranslated, setIsAITranslated] = useState(false);
   const [showNotesModal, setShowNotesModal] = useState(false);
+  const [showSignInModal, setShowSignInModal] = useState(false);
+  const [tempToken, setTempToken] = useState(null);
 
   const splitDevanagariLines = (text) => {
     if (!text) return [];
@@ -481,15 +484,19 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token }) {
                 >
                   {isTranslating ? 'Translating...' : 'Translate'}
                 </button>
-                {user && token && (
-                  <button
-                    className="hitopadesa-translate-button"
-                    onClick={() => setShowNotesModal(true)}
-                    type="button"
-                  >
-                    Add Note
-                  </button>
-                )}
+                <button
+                  className="hitopadesa-translate-button"
+                  onClick={() => {
+                    if (user && token) {
+                      setShowNotesModal(true);
+                    } else {
+                      setShowSignInModal(true);
+                    }
+                  }}
+                  type="button"
+                >
+                  Add Note
+                </button>
               </>
             )}
             {translationError && (
@@ -555,13 +562,36 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token }) {
 
       {/* Notes Modal */}
       {corpusName === 'bhagavad_gita' && verse.type === 'original_verse' && (
-        <NotesModal
-          verse={verse}
-          isOpen={showNotesModal}
-          onClose={() => setShowNotesModal(false)}
-          apiUrl={apiUrl}
-          token={token}
-        />
+        <>
+          <NotesModal
+            verse={verse}
+            isOpen={showNotesModal}
+            onClose={() => {
+              setShowNotesModal(false);
+              setTempToken(null); // Clear temp token when modal closes
+            }}
+            apiUrl={apiUrl}
+            token={token || tempToken}
+          />
+          {showSignInModal && (
+            <SignInModal
+              onClose={() => setShowSignInModal(false)}
+              onSignInSuccess={(result) => {
+                if (onSignInSuccess) {
+                  onSignInSuccess(result);
+                }
+                // Store token temporarily for immediate use
+                setTempToken(result.token);
+                setShowSignInModal(false);
+                // After successful sign-in, open notes modal with the new token
+                setTimeout(() => {
+                  setShowNotesModal(true);
+                }, 200);
+              }}
+              apiUrl={apiUrl}
+            />
+          )}
+        </>
       )}
     </div>
   );

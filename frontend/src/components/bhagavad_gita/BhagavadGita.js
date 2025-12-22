@@ -1,7 +1,7 @@
 import React from 'react';
 import CorpusViewer from '../corpus/CorpusViewer';
 
-function BhagavadGita({ user, token }) {
+function BhagavadGita({ user, token, onSignInSuccess }) {
   return (
     <div>
       <CorpusViewer 
@@ -9,6 +9,7 @@ function BhagavadGita({ user, token }) {
         versesPerPage={5}
         user={user}
         token={token}
+        onSignInSuccess={onSignInSuccess}
       />
     </div>
   );

@@ -119,7 +119,7 @@ function App() {
               </TabPanel>
             )}
             <TabPanel>
-              <BhagavadGita user={user} token={token} />
+              <BhagavadGita user={user} token={token} onSignInSuccess={handleSignInSuccess} />
             </TabPanel>
           </div>
         </Tabs>
