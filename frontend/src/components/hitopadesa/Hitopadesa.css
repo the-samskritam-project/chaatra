@@ -447,8 +447,10 @@
 .hitopadesa-translation-section {
   margin-bottom: 16px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
 }
 
 .hitopadesa-translate-button {

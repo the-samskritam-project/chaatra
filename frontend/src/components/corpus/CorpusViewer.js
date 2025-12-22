@@ -4,7 +4,7 @@ import '../hitopadesa/Hitopadesa.css';
 
 const VERSES_PER_PAGE = 10;
 
-function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, versesPerPage = 10 }) {
+function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, versesPerPage = 10, user, token }) {
   const [apiUrl, setApiUrl] = useState('');
   const [chapters, setChapters] = useState([]);
   const [selectedChapter, setSelectedChapter] = useState(null);
@@ -265,6 +265,8 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
                   apiUrl={apiUrl}
                   corpusName={corpusName}
                   onUpdate={() => fetchVerses(selectedChapter)}
+                  user={user}
+                  token={token}
                 />
               );
             })}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import '../hitopadesa/Hitopadesa.css';
+import NotesModal from '../notes/NotesModal';
 
-function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
+function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -13,6 +14,7 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
   const [translationError, setTranslationError] = useState('');
   const [localTranslation, setLocalTranslation] = useState(null);
   const [isAITranslated, setIsAITranslated] = useState(false);
+  const [showNotesModal, setShowNotesModal] = useState(false);
 
   const splitDevanagariLines = (text) => {
     if (!text) return [];
@@ -467,17 +469,28 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
             </div>
           )}
 
-          {/* Translation section with AI translate button */}
+          {/* Translation section with AI translate button and Add Note button */}
           <div className="hitopadesa-translation-section">
             {corpusName === 'bhagavad_gita' && verse.type === 'original_verse' && (
-              <button
-                className="hitopadesa-translate-button"
-                onClick={handleTranslate}
-                disabled={isTranslating || !!verse.full_translation}
-                type="button"
-              >
-                {isTranslating ? 'Translating...' : 'Translate'}
-              </button>
+              <>
+                <button
+                  className="hitopadesa-translate-button"
+                  onClick={handleTranslate}
+                  disabled={isTranslating || !!verse.full_translation}
+                  type="button"
+                >
+                  {isTranslating ? 'Translating...' : 'Translate'}
+                </button>
+                {user && token && (
+                  <button
+                    className="hitopadesa-translate-button"
+                    onClick={() => setShowNotesModal(true)}
+                    type="button"
+                  >
+                    Add Note
+                  </button>
+                )}
+              </>
             )}
             {translationError && (
               <div className="hitopadesa-translation-error">{translationError}</div>
@@ -539,6 +552,17 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate }) {
           )}
         </div>
       </div>
+
+      {/* Notes Modal */}
+      {corpusName === 'bhagavad_gita' && verse.type === 'original_verse' && (
+        <NotesModal
+          verse={verse}
+          isOpen={showNotesModal}
+          onClose={() => setShowNotesModal(false)}
+          apiUrl={apiUrl}
+          token={token}
+        />
+      )}
     </div>
   );
 }

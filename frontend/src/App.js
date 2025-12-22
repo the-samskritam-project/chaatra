@@ -119,7 +119,7 @@ function App() {
               </TabPanel>
             )}
             <TabPanel>
-              <BhagavadGita />
+              <BhagavadGita user={user} token={token} />
             </TabPanel>
           </div>
         </Tabs>

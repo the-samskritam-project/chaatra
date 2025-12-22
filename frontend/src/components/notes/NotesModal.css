@@ -1,0 +1,268 @@
+/* Notes Modal Overlay */
+.notes-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+/* Notes Modal Content */
+.notes-modal-content {
+  position: relative;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 40px 30px 30px 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+.notes-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #666;
+  cursor: pointer;
+  padding: 5px 10px;
+  line-height: 1;
+  transition: color 0.3s;
+}
+
+.notes-modal-close:hover:not(:disabled) {
+  color: #000;
+}
+
+.notes-modal-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.notes-modal-header {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f5f5f5;
+}
+
+.notes-modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 600;
+}
+
+/* Verse Context */
+.notes-verse-context {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+.notes-verse-devanagari {
+  margin-bottom: 15px;
+  font-size: 1.4rem;
+  line-height: 2;
+  color: #212121;
+  font-weight: bold;
+}
+
+.notes-verse-line {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.notes-verse-translation {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.notes-verse-label {
+  font-weight: 600;
+  color: #007bff;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.notes-verse-translation-text {
+  color: #3e2723;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+/* Existing Notes Section */
+.notes-existing-section {
+  margin-bottom: 30px;
+}
+
+.notes-section-title {
+  font-weight: 600;
+  color: #007bff;
+  font-size: 1rem;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.notes-loading,
+.notes-empty {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.notes-item {
+  padding: 15px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  transition: box-shadow 0.2s;
+}
+
+.notes-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.notes-item-content {
+  color: #3e2723;
+  line-height: 1.6;
+  margin-bottom: 8px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.notes-item-meta {
+  font-size: 0.85rem;
+  color: #666;
+  font-style: italic;
+}
+
+.notes-item-updated {
+  color: #999;
+}
+
+/* New Note Section */
+.notes-new-section {
+  margin-top: auto;
+}
+
+.notes-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.notes-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #d7ccc8;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: 'Roboto', sans-serif;
+  line-height: 1.6;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.notes-textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.notes-textarea:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.notes-error {
+  padding: 10px;
+  background-color: #ffebee;
+  color: #c62828;
+  border-radius: 4px;
+  border-left: 3px solid #c62828;
+  font-size: 0.9rem;
+}
+
+.notes-success {
+  padding: 10px;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 4px;
+  border-left: 3px solid #2e7d32;
+  font-size: 0.9rem;
+}
+
+.notes-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.notes-save-button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: 2px solid #007bff;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s, border-color 0.3s;
+  font-family: 'Roboto', sans-serif;
+}
+
+.notes-save-button:hover:not(:disabled) {
+  background-color: #0056b3;
+  border-color: #004495;
+}
+
+.notes-save-button:disabled {
+  background-color: #ccc;
+  border-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .notes-modal-content {
+    max-width: 95%;
+    padding: 30px 20px 20px 20px;
+  }
+
+  .notes-verse-devanagari {
+    font-size: 1.2rem;
+  }
+
+  .notes-modal-header h2 {
+    font-size: 1.2rem;
+  }
+}
+
