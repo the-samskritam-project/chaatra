@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../hitopadesa/Hitopadesa.css';
 import NotesModal from '../notes/NotesModal';
 import SignInModal from '../auth/SignInModal';
+import NotesService from '../../services/NotesService';
 
 function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignInSuccess }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -18,6 +19,7 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [tempToken, setTempToken] = useState(null);
+  const [notesCount, setNotesCount] = useState(0);
 
   const splitDevanagariLines = (text) => {
     if (!text) return [];
@@ -354,6 +356,39 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
     return type.charAt(0).toUpperCase() + type.slice(1);
   };
 
+  // Fetch notes count for this verse if user is signed in
+  useEffect(() => {
+    const fetchNotesCount = async () => {
+      if (
+        corpusName === 'bhagavad_gita' &&
+        verse.type === 'original_verse' &&
+        verse.verse_number &&
+        user &&
+        token &&
+        apiUrl
+      ) {
+        try {
+          const notesService = new NotesService(apiUrl);
+          const notes = await notesService.fetchNotes(
+            'bhagavad_gita',
+            'Verse',
+            verse.verse_number,
+            token
+          );
+          setNotesCount(Array.isArray(notes) ? notes.length : 0);
+        } catch (error) {
+          // Silently fail - don't show error for count fetch
+          console.error('Error fetching notes count:', error);
+          setNotesCount(0);
+        }
+      } else {
+        setNotesCount(0);
+      }
+    };
+
+    fetchNotesCount();
+  }, [corpusName, verse.type, verse.verse_number, user, token, apiUrl]);
+
   // Debug logging
   useEffect(() => {
     console.log('Rendering CorpusVerse:', {
@@ -484,19 +519,24 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
                 >
                   {isTranslating ? 'Translating...' : 'Translate'}
                 </button>
-                <button
-                  className="hitopadesa-translate-button"
-                  onClick={() => {
-                    if (user && token) {
-                      setShowNotesModal(true);
-                    } else {
-                      setShowSignInModal(true);
-                    }
-                  }}
-                  type="button"
-                >
-                  Add Note
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button
+                    className="hitopadesa-translate-button"
+                    onClick={() => {
+                      if (user && token) {
+                        setShowNotesModal(true);
+                      } else {
+                        setShowSignInModal(true);
+                      }
+                    }}
+                    type="button"
+                  >
+                    Add Note
+                  </button>
+                  {user && token && notesCount > 0 && (
+                    <span className="notes-count-badge">{notesCount} note{notesCount !== 1 ? 's' : ''}</span>
+                  )}
+                </div>
               </>
             )}
             {translationError && (
@@ -569,6 +609,17 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
             onClose={() => {
               setShowNotesModal(false);
               setTempToken(null); // Clear temp token when modal closes
+              // Refresh notes count after modal closes (in case notes were added/updated)
+              if (corpusName === 'bhagavad_gita' && verse.type === 'original_verse' && verse.verse_number && (token || tempToken)) {
+                const notesService = new NotesService(apiUrl);
+                notesService.fetchNotes('bhagavad_gita', 'Verse', verse.verse_number, token || tempToken)
+                  .then(notes => {
+                    setNotesCount(Array.isArray(notes) ? notes.length : 0);
+                  })
+                  .catch(() => {
+                    setNotesCount(0);
+                  });
+              }
             }}
             apiUrl={apiUrl}
             token={token || tempToken}

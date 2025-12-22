@@ -480,6 +480,19 @@
   opacity: 0.5;
 }
 
+/* Notes Count Badge */
+.notes-count-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background-color: #007bff;
+  color: white;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Roboto', sans-serif;
+  white-space: nowrap;
+}
+
 .hitopadesa-split-results {
   margin-top: 20px;
   padding: 16px;
