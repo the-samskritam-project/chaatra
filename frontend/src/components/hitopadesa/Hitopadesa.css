@@ -3,6 +3,140 @@
   padding: 20px;
 }
 
+/* Search Bar Container */
+.hitopadesa-search-container {
+  margin-top: 60px; /* Add space above to prevent overlap with sign in/out button */
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.hitopadesa-search-form {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.hitopadesa-search-input-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.hitopadesa-search-input {
+  width: 100%;
+  padding: 10px 16px;
+  border: 2px solid #d7ccc8;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #fff;
+  color: #3e2723;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: 'Roboto', sans-serif;
+  box-sizing: border-box;
+}
+
+.hitopadesa-search-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.hitopadesa-search-input::placeholder {
+  color: #999;
+}
+
+.hitopadesa-search-clear {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  z-index: 10;
+}
+
+.hitopadesa-search-clear:hover {
+  color: #333;
+}
+
+.hitopadesa-search-error {
+  margin-top: 8px;
+  color: #dc3545;
+  font-size: 0.9rem;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Search Suggestions */
+.hitopadesa-search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #007bff;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-top: -2px;
+}
+
+.hitopadesa-search-suggestion-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #3e2723;
+  font-family: 'Roboto', sans-serif;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.hitopadesa-search-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.hitopadesa-search-suggestion-item:hover {
+  background-color: #e3f2fd;
+}
+
+.hitopadesa-search-suggestion-item:active {
+  background-color: #bbdefb;
+}
+
+/* Highlighted Verse */
+.verse-highlighted {
+  border: 3px solid #ffc107 !important;
+  background-color: #fff9e6 !important;
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3) !important;
+  animation: highlightPulse 0.5s ease-in-out;
+}
+
+@keyframes highlightPulse {
+  0% {
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.5);
+  }
+  50% {
+    box-shadow: 0 6px 16px rgba(255, 193, 7, 0.6);
+  }
+  100% {
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+  }
+}
+
 .hitopadesa-controls {
   display: flex;
   align-items: center;

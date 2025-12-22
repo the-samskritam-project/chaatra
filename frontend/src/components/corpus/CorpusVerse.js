@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../hitopadesa/Hitopadesa.css';
 import NotesModal from '../notes/NotesModal';
 import SignInModal from '../auth/SignInModal';
 import NotesService from '../../services/NotesService';
 import FavoritesService from '../../services/FavoritesService';
 
-function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignInSuccess }) {
+function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignInSuccess, isHighlighted = false }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -450,11 +450,19 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
 
   const backgroundClass = getBackgroundClass();
   const verseClassName = backgroundClass 
-    ? `hitopadesa-verse ${backgroundClass}`
-    : 'hitopadesa-verse';
+    ? `hitopadesa-verse ${backgroundClass}${isHighlighted ? ' verse-highlighted' : ''}`
+    : `hitopadesa-verse${isHighlighted ? ' verse-highlighted' : ''}`;
+
+  // Scroll into view when highlighted
+  const verseRef = useRef(null);
+  useEffect(() => {
+    if (isHighlighted && verseRef.current) {
+      verseRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [isHighlighted]);
 
   return (
-    <div className={verseClassName}>
+    <div ref={verseRef} className={verseClassName}>
       <div className="hitopadesa-verse-header">
         {corpusName !== 'bhagavad_gita' && (
           <span className="hitopadesa-verse-type">{getTypeLabel()}</span>
