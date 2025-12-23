@@ -139,7 +139,12 @@ function ChapterList({
                         className="verse-item"
                         onClick={() => handleVerseClick(chapter.chapter_number, verse.verse_number)}
                       >
-                        Verse {verse.verse_number}
+                        <span className="verse-number">Verse {verse.verse_number}</span>
+                        {verse.primary_theme && (
+                          <span className="verse-theme-label">
+                            {verse.primary_theme.split('–')[0].trim()}
+                          </span>
+                        )}
                       </li>
                     ))}
                   </ul>

@@ -66,6 +66,9 @@ type HitopadesaVerse struct {
 	SplitWordByWordTranslation []WordTranslation   `json:"split_word_by_word_translation,omitempty" bson:"split_word_by_word_translation,omitempty"` // Word-by-word from split
 	SplitAt                    *time.Time          `json:"split_at,omitempty" bson:"split_at,omitempty"`                                             // Timestamp when split was performed
 	AITranslatedAt             *time.Time          `json:"ai_translated_at,omitempty" bson:"ai_translated_at,omitempty"`                             // Timestamp when AI translation was generated
+	PrimaryTheme               string              `json:"primary_theme,omitempty" bson:"primary_theme,omitempty"`                                   // Primary theme classification
+	SecondaryThemes            []string            `json:"secondary_themes,omitempty" bson:"secondary_themes,omitempty"`                             // Secondary theme classifications
+	Rationale                  string              `json:"rationale,omitempty" bson:"rationale,omitempty"`                                           // Rationale for theme classification
 }
 
 // InitMongoDB initializes MongoDB connection
