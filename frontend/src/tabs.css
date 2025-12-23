@@ -14,7 +14,7 @@
 
   .sidebar-toggle {
     position: fixed;
-    left: calc(25% - 15px);
+    left: calc(12.5% - 15px);
     top: 50%;
     transform: translateY(-50%);
     z-index: 10000;
@@ -132,7 +132,7 @@
   /* Ensure the TabPanel takes the full width of the main container */
   .tab-panel-container {
     flex-grow: 1;
-    width: 75%; /* Occupies the remaining 70% of the container's width */
+    width: 87.5%; /* Occupies the remaining width after sidebar */
     padding: 20px;
     background: #fff;
     border-radius: 8px; /* Rounded corners */
@@ -163,7 +163,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 25%; /* Adjusted width */
+    width: 12.5%; /* Reduced to 50% of previous 25% width */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow around the section */
     padding: 20px; /* Optional: Add padding for better appearance */
     background-color: #fff; /* Optional: Add background color */
