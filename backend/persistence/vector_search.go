@@ -36,6 +36,9 @@ func SemanticSearch(
 	corpusFilter string,
 	limit int,
 ) ([]VectorSearchResult, error) {
+	log.Printf("SemanticSearch called: database=%s, collections=%v, indexes=%v, corpusFilter=%q, limit=%d, embeddingLen=%d",
+		databaseName, collections, indexNames, corpusFilter, limit, len(queryEmbedding))
+
 	if mongoClient == nil {
 		return nil, fmt.Errorf("MongoDB not initialized")
 	}
@@ -48,6 +51,7 @@ func SemanticSearch(
 	defer cancel()
 
 	db := mongoClient.Database(databaseName)
+	log.Printf("Using database: %s", databaseName)
 
 	var allResults []VectorSearchResult
 
@@ -55,6 +59,8 @@ func SemanticSearch(
 	for i, collectionName := range collections {
 		collection := db.Collection(collectionName)
 		indexName := indexNames[i]
+
+		log.Printf("Searching collection %s with index %s", collectionName, indexName)
 
 		// Build aggregation pipeline for vector search
 		pipeline := []bson.M{
@@ -69,13 +75,18 @@ func SemanticSearch(
 			},
 		}
 
-		// Add corpus filter if specified (filter by collection name or corpus_name field)
-		if corpusFilter != "" {
+		// Add corpus filter if specified and we're searching multiple collections
+		// If we're already searching a corpus-specific collection, skip the filter
+		// since all documents in that collection belong to that corpus
+		if corpusFilter != "" && len(collections) > 1 {
+			log.Printf("Adding corpus filter: corpus_name=%q (searching multiple collections)", corpusFilter)
 			pipeline = append(pipeline, bson.M{
 				"$match": bson.M{
 					"corpus_name": corpusFilter,
 				},
 			})
+		} else if corpusFilter != "" {
+			log.Printf("Skipping corpus filter (already searching corpus-specific collection: %s)", collectionName)
 		}
 
 		// Project fields
@@ -97,23 +108,30 @@ func SemanticSearch(
 			},
 		})
 
+		log.Printf("Executing aggregation pipeline on collection %s (index: %s)", collectionName, indexName)
 		cursor, err := collection.Aggregate(ctx, pipeline)
 		if err != nil {
-			log.Printf("Vector search failed for collection %s: %v", collectionName, err)
+			log.Printf("ERROR: Vector search failed for collection %s (index: %s): %v", collectionName, indexName, err)
 			continue // Continue with other collections
 		}
 
 		var results []VectorSearchResult
 		if err := cursor.All(ctx, &results); err != nil {
 			cursor.Close(ctx)
-			log.Printf("Failed to decode results from %s: %v", collectionName, err)
+			log.Printf("ERROR: Failed to decode results from %s: %v", collectionName, err)
 			continue
 		}
 		cursor.Close(ctx)
 
 		log.Printf("Found %d results from collection %s", len(results), collectionName)
+		if len(results) > 0 {
+			log.Printf("Sample result from %s: corpus_name=%q, chapter=%d, score=%.4f",
+				collectionName, results[0].CorpusName, results[0].ChapterNumber, results[0].Score)
+		}
 		allResults = append(allResults, results...)
 	}
+
+	log.Printf("Combined %d results from all collections before sorting", len(allResults))
 
 	// Sort all results by score (descending) across all collections
 	sort.Slice(allResults, func(i, j int) bool {
@@ -121,11 +139,17 @@ func SemanticSearch(
 	})
 
 	// Limit to requested number of results
+	originalCount := len(allResults)
 	if len(allResults) > limit {
 		allResults = allResults[:limit]
+		log.Printf("Limited results from %d to %d", originalCount, limit)
 	}
 
 	log.Printf("Returning %d total results (from %d collections)", len(allResults), len(collections))
+	if len(allResults) > 0 {
+		log.Printf("Top result: corpus_name=%q, chapter=%d, score=%.4f",
+			allResults[0].CorpusName, allResults[0].ChapterNumber, allResults[0].Score)
+	}
 	return allResults, nil
 }
 
@@ -147,5 +171,5 @@ func GetVectorSearchCollections() []string {
 // GetVectorSearchIndexNames returns the index names corresponding to collections
 func GetVectorSearchIndexNames() []string {
 	// Return index names matching the collections
-	return []string{"vector_index_hitopadesa", "vector_index_pnacatantra"}
+	return []string{"vector_index_hitopadesa", "vector_index_pancatantra"}
 }

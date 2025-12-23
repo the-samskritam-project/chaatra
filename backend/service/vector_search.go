@@ -3,6 +3,7 @@ package service
 import (
 	"chaatra/persistence"
 	"fmt"
+	"log"
 )
 
 // SemanticSearchRequest represents a semantic search request
@@ -34,6 +35,8 @@ func PerformSemanticSearch(
 	corpusFilter string,
 	limit int,
 ) ([]SemanticSearchResult, error) {
+	log.Printf("PerformSemanticSearch: corpusFilter=%q, limit=%d, embeddingLen=%d", corpusFilter, limit, len(queryEmbedding))
+
 	if limit <= 0 {
 		limit = 10
 	}
@@ -41,9 +44,37 @@ func PerformSemanticSearch(
 		limit = 100 // Cap at 100 results
 	}
 
-	databaseName := persistence.GetVectorSearchDatabase()
-	collections := persistence.GetVectorSearchCollections()
-	indexNames := persistence.GetVectorSearchIndexNames()
+	var databaseName string
+	var collections []string
+	var indexNames []string
+
+	// If corpus filter is specified, use corpus-specific database and collection
+	if corpusFilter != "" {
+		databaseName = corpusFilter // Use corpus name as database name
+		// Map corpus name to collection and index
+		switch corpusFilter {
+		case "pancatantra":
+			collections = []string{"pancatantra_vector_search"}
+			indexNames = []string{"vector_index_pancatantra"}
+		case "hitopadesa":
+			collections = []string{"hitopadesa_vector_search"}
+			indexNames = []string{"vector_index_hitopadesa"}
+		default:
+			// For unknown corpus, fall back to unified search
+			databaseName = persistence.GetVectorSearchDatabase()
+			collections = persistence.GetVectorSearchCollections()
+			indexNames = persistence.GetVectorSearchIndexNames()
+		}
+		log.Printf("PerformSemanticSearch: Using corpus-specific database=%s, collections=%v, indexNames=%v",
+			databaseName, collections, indexNames)
+	} else {
+		// No corpus filter - search all collections in unified database
+		databaseName = persistence.GetVectorSearchDatabase()
+		collections = persistence.GetVectorSearchCollections()
+		indexNames = persistence.GetVectorSearchIndexNames()
+		log.Printf("PerformSemanticSearch: Using unified database=%s, collections=%v, indexNames=%v",
+			databaseName, collections, indexNames)
+	}
 
 	results, err := persistence.SemanticSearch(
 		queryEmbedding,
@@ -54,8 +85,11 @@ func PerformSemanticSearch(
 		limit,
 	)
 	if err != nil {
+		log.Printf("ERROR: persistence.SemanticSearch failed: %v", err)
 		return nil, fmt.Errorf("failed to perform semantic search: %w", err)
 	}
+
+	log.Printf("PerformSemanticSearch: received %d results from persistence layer", len(results))
 
 	// Convert persistence results to service results
 	serviceResults := make([]SemanticSearchResult, len(results))
@@ -75,5 +109,6 @@ func PerformSemanticSearch(
 		}
 	}
 
+	log.Printf("PerformSemanticSearch: returning %d service results", len(serviceResults))
 	return serviceResults, nil
 }

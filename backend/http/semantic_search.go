@@ -112,22 +112,28 @@ func SemanticSearchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Printf("SemanticSearchHandler: query=%q, corpusFilter=%q, limit=%d", query, corpusFilter, limit)
+
 	// Generate embedding for the query
+	log.Printf("Generating embedding for query: %q", query)
 	queryEmbedding, err := generateEmbedding(query)
 	if err != nil {
-		log.Printf("Failed to generate embedding: %v", err)
+		log.Printf("ERROR: Failed to generate embedding: %v", err)
 		http.Error(w, fmt.Sprintf("Failed to generate embedding: %v", err), http.StatusInternalServerError)
 		return
 	}
+	log.Printf("Generated embedding with length: %d", len(queryEmbedding))
 
 	// Perform semantic search
+	log.Printf("Calling PerformSemanticSearch with corpusFilter=%q, limit=%d", corpusFilter, limit)
 	results, err := service.PerformSemanticSearch(queryEmbedding, corpusFilter, limit)
 	if err != nil {
-		log.Printf("Semantic search failed: %v", err)
+		log.Printf("ERROR: Semantic search failed: %v", err)
 		http.Error(w, fmt.Sprintf("Search failed: %v", err), http.StatusInternalServerError)
 		return
 	}
 
+	log.Printf("SemanticSearchHandler: returning %d results", len(results))
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(results)
 }
