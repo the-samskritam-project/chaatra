@@ -13,11 +13,11 @@
   }
 
   .sidebar-toggle {
-    position: absolute;
+    position: fixed;
     left: calc(25% - 15px);
     top: 50%;
     transform: translateY(-50%);
-    z-index: 1001;
+    z-index: 10000;
     background: rgba(255, 255, 255, 0.95);
     color: #666;
     border: 1px solid #ddd;
