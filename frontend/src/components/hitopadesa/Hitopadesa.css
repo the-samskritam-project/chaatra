@@ -766,6 +766,49 @@
   font-weight: 500;
 }
 
+.bhagavad-gita-nav-buttons {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.gita-nav-button {
+  min-width: 44px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: #007bff;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.gita-nav-button:hover:not(:disabled) {
+  background: #005fcc;
+  transform: translateY(-1px);
+}
+
+.gita-nav-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.gita-nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bhagavad-gita-nav-current {
+  font-weight: 600;
+  color: #007bff;
+  font-size: 1rem;
+  min-width: 60px;
+  text-align: center;
+}
+
 /* Bhagavad Gita two-column layout */
 .bhagavad-gita-layout {
   display: flex;

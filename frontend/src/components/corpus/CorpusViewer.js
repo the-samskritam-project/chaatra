@@ -22,6 +22,29 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
   const [allVerseNumbers, setAllVerseNumbers] = useState([]); // Index of all verse numbers
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedVerseNumber, setSelectedVerseNumber] = useState(null);
+  const [navStatus, setNavStatus] = useState({ prev: null, next: null });
+
+  // Filter logic
+  const filteredVerses = useMemo(() => {
+    if (filter === 'all') return verses;
+    
+    return verses.filter((verse) => {
+      const type = verse.type || (verse.verse_number ? 'verse' : 'prose');
+      
+      if (filter === 'verses') {
+        // For Bhagavad Gita: original_verse, for others: verse
+        return type === 'original_verse' || type === 'verse';
+      }
+      
+      if (filter === 'commentary') {
+        // For Bhagavad Gita: commentary, for others: prose
+        return type === 'commentary' || type === 'prose';
+      }
+      
+      return true;
+    });
+  }, [verses, filter]);
 
   useEffect(() => {
     const url = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8081';
@@ -163,6 +186,24 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
       console.log(`Sorted: ${sortedData.length} items (${verseCount} verses, ${proseCount} prose)`);
       
       setVerses(sortedData);
+      if (corpusName === 'bhagavad_gita') {
+        // Set default selected verse if none
+        if (!selectedVerseNumber) {
+          const firstVerse = sortedData.find(v => v.type === 'original_verse' && v.verse_number);
+          if (firstVerse && firstVerse.verse_number) {
+            setSelectedVerseNumber(firstVerse.verse_number);
+          }
+        } else {
+          // Ensure selectedVerseNumber exists; if not, reset to first available
+          const exists = sortedData.some(v => v.verse_number === selectedVerseNumber);
+          if (!exists) {
+            const firstVerse = sortedData.find(v => v.type === 'original_verse' && v.verse_number);
+            if (firstVerse && firstVerse.verse_number) {
+              setSelectedVerseNumber(firstVerse.verse_number);
+            }
+          }
+        }
+      }
     } catch (err) {
       console.error('Error fetching verses:', err);
       setError('Unable to load verses. Please try again.');
@@ -175,10 +216,12 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
   const handleChapterChange = (event) => {
     const chapterNum = parseInt(event.target.value, 10);
     setSelectedChapter(chapterNum);
+    setSelectedVerseNumber(null);
   };
 
   const handleChapterSelect = (chapterNum) => {
     setSelectedChapter(chapterNum);
+    setSelectedVerseNumber(null);
   };
 
   const handleVerseSelect = (verseNumber) => {
@@ -189,10 +232,12 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
     if (selectedChapter !== chapterNum) {
       setPendingSearch(verseNumber);
       setSelectedChapter(chapterNum);
+      setSelectedVerseNumber(verseNumber);
       // The search will be triggered in useEffect when verses are loaded
       return;
     }
     
+    setSelectedVerseNumber(verseNumber);
     // Use the existing search logic to find and highlight the verse
     findAndHighlightVerse(verseNumber);
   };
@@ -293,6 +338,7 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
       return;
     }
 
+    setSelectedVerseNumber(verseNumber);
     // Find the page that contains this verse
     const verseIndex = filteredVerses.findIndex(v => v.verse_number === verseNumber);
     const targetPage = Math.floor(verseIndex / versesPerPage) + 1;
@@ -310,56 +356,109 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
         : (verse.verse_number || verse.prose_number || verse._id));
     
     setHighlightedVerseId(verseId);
-    
-    // Scroll to verse after a short delay to allow page change
-    setTimeout(() => {
-      const verseElement = document.getElementById(`verse-${verseId}`);
+  };
+
+  const goToPrevVerse = () => {
+    if (!navStatus.prev) return;
+    setSelectedVerseNumber(navStatus.prev);
+    findAndHighlightVerse(navStatus.prev);
+  };
+
+  const goToNextVerse = () => {
+    if (!navStatus.next) return;
+    setSelectedVerseNumber(navStatus.next);
+    findAndHighlightVerse(navStatus.next);
+  };
+
+  // Effect to search for verse after chapter switch and verses load
+  useEffect(() => {
+    // If we have a pending verse (from cross-chapter click/search), run it once the target chapter's verses are loaded
+    if (!pendingSearch) return;
+    if (isLoadingVerses) return;
+    if (verses.length === 0) return;
+
+    const pendingChapter = parseInt(pendingSearch.split('.')[0], 10);
+    if (pendingChapter !== selectedChapter) return;
+
+    findAndHighlightVerse(pendingSearch);
+    setPendingSearch(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedChapter, verses, isLoadingVerses, pendingSearch]);
+
+  // Scroll to highlighted verse when it changes (after pagination/page render)
+  useEffect(() => {
+    if (!highlightedVerseId) return;
+
+    // Wait for DOM to render the target verse
+    const timeout = setTimeout(() => {
+      const verseElement = document.getElementById(`verse-${highlightedVerseId}`);
       if (verseElement) {
         verseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }, 200);
 
-    // Clear highlight after 3 seconds
-    setTimeout(() => {
+    // Clear highlight after a delay
+    const clearTimeoutId = setTimeout(() => {
       setHighlightedVerseId(null);
     }, 3000);
-  };
 
-  // Effect to search for verse after chapter switch and verses load
+    return () => {
+      clearTimeout(timeout);
+      clearTimeout(clearTimeoutId);
+    };
+  }, [highlightedVerseId, currentPage]);
+
+  // Ensure a selected verse for Bhagavad Gita is always set when verses load
   useEffect(() => {
-    if (pendingSearch && !isLoadingVerses && verses.length > 0) {
-      findAndHighlightVerse(pendingSearch);
-      setPendingSearch(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedChapter, verses, isLoadingVerses, pendingSearch]);
-
-  // Filter logic
-  const filteredVerses = useMemo(() => {
-    if (filter === 'all') return verses;
+    if (corpusName !== 'bhagavad_gita') return;
+    if (isLoadingVerses) return;
+    if (filteredVerses.length === 0) return;
     
-    return verses.filter((verse) => {
-      const type = verse.type || (verse.verse_number ? 'verse' : 'prose');
-      
-      if (filter === 'verses') {
-        // For Bhagavad Gita: original_verse, for others: verse
-        return type === 'original_verse' || type === 'verse';
+    // Recompute prev/next
+    const idx = selectedVerseNumber
+      ? filteredVerses.findIndex(v => v.verse_number === selectedVerseNumber)
+      : -1;
+
+    if (idx === -1) {
+      const firstVerse = filteredVerses.find(v => v.type === 'original_verse' && v.verse_number) || filteredVerses[0];
+      if (firstVerse && firstVerse.verse_number) {
+        setSelectedVerseNumber(firstVerse.verse_number);
+        setNavStatus({
+          prev: null,
+          next: filteredVerses[1]?.verse_number || null,
+        });
       }
-      
-      if (filter === 'commentary') {
-        // For Bhagavad Gita: commentary, for others: prose
-        return type === 'commentary' || type === 'prose';
-      }
-      
-      return true;
+      return;
+    }
+
+    setNavStatus({
+      prev: idx > 0 ? filteredVerses[idx - 1].verse_number || null : null,
+      next: idx < filteredVerses.length - 1 ? filteredVerses[idx + 1].verse_number || null : null,
     });
-  }, [verses, filter]);
+  }, [corpusName, filteredVerses, isLoadingVerses, selectedVerseNumber]);
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredVerses.length / versesPerPage);
-  const startIndex = (currentPage - 1) * versesPerPage;
-  const endIndex = startIndex + versesPerPage;
-  const currentVerses = filteredVerses.slice(startIndex, endIndex);
+  let totalPages = Math.ceil(filteredVerses.length / versesPerPage);
+  let startIndex = (currentPage - 1) * versesPerPage;
+  let endIndex = startIndex + versesPerPage;
+  let currentVerses = filteredVerses.slice(startIndex, endIndex);
+
+  // For Bhagavad Gita, ignore pagination and show only selected verse
+  if (corpusName === 'bhagavad_gita') {
+    totalPages = 1;
+    startIndex = 0;
+    endIndex = filteredVerses.length;
+    if (selectedVerseNumber && filteredVerses.length > 0) {
+      const idx = filteredVerses.findIndex(v => v.verse_number === selectedVerseNumber);
+      if (idx !== -1) {
+        currentVerses = filteredVerses.slice(idx, idx + 1); // only current
+      } else {
+        currentVerses = filteredVerses.slice(0, 1);
+      }
+    } else {
+      currentVerses = filteredVerses.slice(0, 1);
+    }
+  }
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -577,7 +676,31 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
                     })}
                   </div>
 
-                  {totalPages > 1 && (
+                  {corpusName === 'bhagavad_gita' && (
+                    <div className="bhagavad-gita-nav-buttons">
+                      <button
+                        type="button"
+                        className="gita-nav-button"
+                        onClick={goToPrevVerse}
+                        disabled={!navStatus.prev}
+                      >
+                        &lt;
+                      </button>
+                      <div className="bhagavad-gita-nav-current">
+                        {selectedVerseNumber || '—'}
+                      </div>
+                      <button
+                        type="button"
+                        className="gita-nav-button"
+                        onClick={goToNextVerse}
+                        disabled={!navStatus.next}
+                      >
+                        &gt;
+                      </button>
+                    </div>
+                  )}
+
+              {corpusName !== 'bhagavad_gita' && totalPages > 1 && (
                     <div className="hitopadesa-pagination">
                       <button
                         className="pagination-button"
@@ -689,7 +812,7 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
                 })}
               </div>
 
-              {totalPages > 1 && (
+              {corpusName !== 'bhagavad_gita' && totalPages > 1 && (
                 <div className="hitopadesa-pagination">
                   <button
                     className="pagination-button"
