@@ -17,7 +17,6 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
   const [filter, setFilter] = useState(corpusName === 'bhagavad_gita' ? 'verses' : 'all'); // 'all', 'verses', 'commentary'
   const [searchQuery, setSearchQuery] = useState('');
   const [searchError, setSearchError] = useState('');
-  const [highlightedVerseId, setHighlightedVerseId] = useState(null);
   const [pendingSearch, setPendingSearch] = useState(null);
   const [allVerseNumbers, setAllVerseNumbers] = useState([]); // Index of all verse numbers
   const [searchSuggestions, setSearchSuggestions] = useState([]);
@@ -187,20 +186,11 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
       
       setVerses(sortedData);
       if (corpusName === 'bhagavad_gita') {
-        // Set default selected verse if none
+        // Only set verse 1 if no verse is selected
         if (!selectedVerseNumber) {
           const firstVerse = sortedData.find(v => v.type === 'original_verse' && v.verse_number);
           if (firstVerse && firstVerse.verse_number) {
-            setSelectedVerseNumber(firstVerse.verse_number);
-          }
-        } else {
-          // Ensure selectedVerseNumber exists; if not, reset to first available
-          const exists = sortedData.some(v => v.verse_number === selectedVerseNumber);
-          if (!exists) {
-            const firstVerse = sortedData.find(v => v.type === 'original_verse' && v.verse_number);
-            if (firstVerse && firstVerse.verse_number) {
-              setSelectedVerseNumber(firstVerse.verse_number);
-            }
+            setSelectedVerseNumber(normalizeVerseNumber(firstVerse.verse_number));
           }
         }
       }
@@ -225,21 +215,18 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
   };
 
   const handleVerseSelect = (verseNumber) => {
-    // Extract chapter number from verse number (e.g., "1.1" -> 1)
+    const targetNum = normalizeVerseNumber(verseNumber);
     const chapterNum = parseInt(verseNumber.split('.')[0], 10);
-    
-    // If chapter doesn't match current chapter, switch to it first
-    if (selectedChapter !== chapterNum) {
-      setPendingSearch(verseNumber);
-      setSelectedChapter(chapterNum);
-      setSelectedVerseNumber(verseNumber);
-      // The search will be triggered in useEffect when verses are loaded
+
+    // Same chapter and verses already loaded: just select and render
+    if (selectedChapter === chapterNum && verses.length > 0) {
+      setSelectedVerseNumber(targetNum);
       return;
     }
-    
-    setSelectedVerseNumber(verseNumber);
-    // Use the existing search logic to find and highlight the verse
-    findAndHighlightVerse(verseNumber);
+
+    // Different chapter or no verses yet: switch chapter, set target; fetch will run
+    setSelectedChapter(chapterNum);
+    setSelectedVerseNumber(targetNum);
   };
 
   // Update suggestions as user types
@@ -283,7 +270,6 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
   const handleSearch = (e) => {
     e.preventDefault();
     setSearchError('');
-    setHighlightedVerseId(null);
     setShowSuggestions(false);
 
     const query = searchQuery.trim();
@@ -321,92 +307,29 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
     if (selectedChapter !== chapterNum) {
       setPendingSearch(verseNumber);
       setSelectedChapter(chapterNum);
-      // Wait for verses to load before searching
-      // The search will be triggered in useEffect when verses are loaded
+      setSelectedVerseNumber(verseNumber);
       return;
     }
 
-    // Find verse in current verses
-    findAndHighlightVerse(verseNumber);
+    // Set the selected verse
+    setSelectedVerseNumber(verseNumber);
   };
 
-  const findAndHighlightVerse = (verseNumber) => {
-    const verse = filteredVerses.find(v => v.verse_number === verseNumber);
-    
-    if (!verse) {
-      setSearchError(`Verse ${verseNumber} not found in chapter ${selectedChapter}`);
-      return;
-    }
-
-    setSelectedVerseNumber(verseNumber);
-    // Find the page that contains this verse
-    const verseIndex = filteredVerses.findIndex(v => v.verse_number === verseNumber);
-    const targetPage = Math.floor(verseIndex / versesPerPage) + 1;
-    
-    // Switch to the page containing the verse
-    if (targetPage !== currentPage) {
-      setCurrentPage(targetPage);
-    }
-
-    // Generate verse ID for highlighting
-    const verseId = verse.sequence_number 
-      ? `item-${verse.sequence_number}` 
-      : (verse.chapter_sequence_index 
-        ? `item-${verse.chapter_sequence_index}` 
-        : (verse.verse_number || verse.prose_number || verse._id));
-    
-    setHighlightedVerseId(verseId);
+  const normalizeVerseNumber = (val) => {
+    if (val === null || val === undefined) return '';
+    return String(val);
   };
 
   const goToPrevVerse = () => {
     if (!navStatus.prev) return;
-    setSelectedVerseNumber(navStatus.prev);
-    findAndHighlightVerse(navStatus.prev);
+    setSelectedVerseNumber(normalizeVerseNumber(navStatus.prev));
   };
 
   const goToNextVerse = () => {
     if (!navStatus.next) return;
-    setSelectedVerseNumber(navStatus.next);
-    findAndHighlightVerse(navStatus.next);
+    setSelectedVerseNumber(normalizeVerseNumber(navStatus.next));
   };
 
-  // Effect to search for verse after chapter switch and verses load
-  useEffect(() => {
-    // If we have a pending verse (from cross-chapter click/search), run it once the target chapter's verses are loaded
-    if (!pendingSearch) return;
-    if (isLoadingVerses) return;
-    if (verses.length === 0) return;
-
-    const pendingChapter = parseInt(pendingSearch.split('.')[0], 10);
-    if (pendingChapter !== selectedChapter) return;
-
-    findAndHighlightVerse(pendingSearch);
-    setPendingSearch(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedChapter, verses, isLoadingVerses, pendingSearch]);
-
-  // Scroll to highlighted verse when it changes (after pagination/page render)
-  useEffect(() => {
-    if (!highlightedVerseId) return;
-
-    // Wait for DOM to render the target verse
-    const timeout = setTimeout(() => {
-      const verseElement = document.getElementById(`verse-${highlightedVerseId}`);
-      if (verseElement) {
-        verseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 200);
-
-    // Clear highlight after a delay
-    const clearTimeoutId = setTimeout(() => {
-      setHighlightedVerseId(null);
-    }, 3000);
-
-    return () => {
-      clearTimeout(timeout);
-      clearTimeout(clearTimeoutId);
-    };
-  }, [highlightedVerseId, currentPage]);
 
   // Ensure a selected verse for Bhagavad Gita is always set when verses load
   useEffect(() => {
@@ -416,18 +339,25 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
     
     // Recompute prev/next
     const idx = selectedVerseNumber
-      ? filteredVerses.findIndex(v => v.verse_number === selectedVerseNumber)
+      ? filteredVerses.findIndex(v => normalizeVerseNumber(v.verse_number) === normalizeVerseNumber(selectedVerseNumber))
       : -1;
 
-    if (idx === -1) {
+    // Only set verse 1 if no verse is selected
+    if (idx === -1 && !selectedVerseNumber) {
       const firstVerse = filteredVerses.find(v => v.type === 'original_verse' && v.verse_number) || filteredVerses[0];
       if (firstVerse && firstVerse.verse_number) {
-        setSelectedVerseNumber(firstVerse.verse_number);
+        setSelectedVerseNumber(normalizeVerseNumber(firstVerse.verse_number));
         setNavStatus({
           prev: null,
           next: filteredVerses[1]?.verse_number || null,
         });
       }
+      return;
+    }
+
+    // If verse is selected but not found, don't override - just update nav status
+    if (idx === -1) {
+      setNavStatus({ prev: null, next: null });
       return;
     }
 
@@ -513,7 +443,6 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
                         setSearchQuery(suggestion);
                         setShowSuggestions(false);
                         setSearchError('');
-                        setHighlightedVerseId(null);
                         
                         // Trigger search after state update
                         setTimeout(() => {
@@ -537,11 +466,12 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
                           if (selectedChapter !== chapterNum) {
                             setPendingSearch(verseNumber);
                             setSelectedChapter(chapterNum);
+                            setSelectedVerseNumber(verseNumber);
                             return;
                           }
                           
-                          // Find verse in current verses
-                          findAndHighlightVerse(verseNumber);
+                          // Set the selected verse
+                          setSelectedVerseNumber(verseNumber);
                         }, 0);
                       }}
                     >
@@ -557,7 +487,6 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
                   onClick={() => {
                     setSearchQuery('');
                     setSearchError('');
-                    setHighlightedVerseId(null);
                     setShowSuggestions(false);
                   }}
                   aria-label="Clear search"
@@ -658,7 +587,6 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
                         : (verse.chapter_sequence_index 
                           ? `item-${verse.chapter_sequence_index}` 
                           : (verse.verse_number || verse.prose_number || verse._id || `verse-${index}`));
-                      const isHighlighted = highlightedVerseId === key;
                       return (
                         <div key={key} id={`verse-${key}`}>
                           <CorpusVerse 
@@ -669,7 +597,6 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
                             user={user}
                             token={token}
                             onSignInSuccess={onSignInSuccess}
-                            isHighlighted={isHighlighted}
                           />
                         </div>
                       );
@@ -794,7 +721,6 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
                     : (verse.chapter_sequence_index 
                       ? `item-${verse.chapter_sequence_index}` 
                       : (verse.verse_number || verse.prose_number || verse._id || `verse-${index}`));
-                  const isHighlighted = highlightedVerseId === key;
                   return (
                     <div key={key} id={`verse-${key}`}>
                       <CorpusVerse 
@@ -805,7 +731,6 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
                         user={user}
                         token={token}
                         onSignInSuccess={onSignInSuccess}
-                        isHighlighted={isHighlighted}
                       />
                     </div>
                   );
