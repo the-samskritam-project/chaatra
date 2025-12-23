@@ -22,6 +22,12 @@ function App() {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [apiUrl, setApiUrl] = useState('');
+  
+  // Track selected tab index
+  const [selectedIndex, setSelectedIndex] = useState(2);
+  
+  // Track manual sidebar collapse state (null = auto, true/false = manual override)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(null);
 
   // Load auth data from localStorage on mount
   useEffect(() => {
@@ -65,12 +71,50 @@ function App() {
     localStorage.removeItem('auth_user');
   };
 
+  // Calculate Bhagavad Gita tab index
+  // Tab order: Dictionary (0), Flash cards (1), Ramayana (2), Hitopadesa (3 if shown), Pancatantra (varies), Bhagavad Gita (last)
+  const bhagavadGitaIndex = 3 + (showHitopadesa ? 1 : 0) + (showPancatantra ? 1 : 0);
+  const isBhagavadGitaActive = selectedIndex === bhagavadGitaIndex;
+  
+  // Reset manual state when switching to Bhagavad Gita (so it auto-collapses)
+  useEffect(() => {
+    if (isBhagavadGitaActive) {
+      setIsSidebarCollapsed(null); // Reset to allow auto-collapse
+    }
+  }, [isBhagavadGitaActive]);
+  
+  // Sidebar is collapsed if:
+  // - Bhagavad Gita is active AND not manually expanded, OR
+  // - Manually collapsed when on other tabs
+  const sidebarCollapsed = isBhagavadGitaActive 
+    ? (isSidebarCollapsed !== false)  // Collapsed by default, but allow manual expand
+    : (isSidebarCollapsed === true); // Use manual state on other tabs
+  
+  // Toggle sidebar collapse
+  const toggleSidebar = () => {
+    if (isBhagavadGitaActive) {
+      // On Bhagavad Gita, toggle between collapsed (default) and expanded (manual override)
+      setIsSidebarCollapsed(isSidebarCollapsed === false ? null : false);
+    } else {
+      // On other tabs, toggle manual state
+      setIsSidebarCollapsed(isSidebarCollapsed === true ? false : true);
+    }
+  };
+
   return (
     <div>
       <SignInButton user={user} onSignInSuccess={handleSignInSuccess} onSignOut={handleSignOut} apiUrl={apiUrl} />
-      <div className="tabs-container">
-        <Tabs defaultIndex={2}>
-          <div className="tabs-section">
+      <div className={`tabs-container ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        <button 
+          className="sidebar-toggle"
+          onClick={toggleSidebar}
+          aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {sidebarCollapsed ? '▶' : '◀'}
+        </button>
+        <Tabs defaultIndex={2} selectedIndex={selectedIndex} onSelect={(index) => setSelectedIndex(index)}>
+          <div className={`tabs-section ${sidebarCollapsed ? 'collapsed' : ''}`}>
             <div className="heading">
               <span className="devanagari">छात्रः</span>
               <span className="english">A pupil, disciple.</span>
