@@ -208,13 +208,29 @@ def parse_bhagavad_gita_xml(xml_path: str) -> Dict[int, List[Dict]]:
             verse_lines = []
             verse_number = None
             
-            for l_elem in l_elements:
-                line_text = extract_element_text(l_elem).strip()
-                if line_text:
-                    verse_lines.append(line_text)
-                    # Check for verse number in this line
-                    if verse_number is None:
-                        verse_number = extract_verse_number(line_text)
+            # FIRST: Check xml:id attribute for verse number (used in some XML files like Ramanuja bhashya)
+            xml_id = elem.get('{http://www.w3.org/XML/1998/namespace}id') or elem.get('xml:id') or elem.get('id')
+            if xml_id:
+                # Extract verse number from xml:id like "BhG_18.1"
+                match = re.search(r'BhG_(\d+\.\d+)', xml_id)
+                if match:
+                    verse_number = match.group(1)
+            
+            # If not found in xml:id, check text content
+            if verse_number is None:
+                for l_elem in l_elements:
+                    line_text = extract_element_text(l_elem).strip()
+                    if line_text:
+                        verse_lines.append(line_text)
+                        # Check for verse number in this line
+                        if verse_number is None:
+                            verse_number = extract_verse_number(line_text)
+            else:
+                # Build verse_lines if we got verse_number from xml:id
+                for l_elem in l_elements:
+                    line_text = extract_element_text(l_elem).strip()
+                    if line_text:
+                        verse_lines.append(line_text)
             
             if not verse_lines:
                 continue
@@ -222,7 +238,7 @@ def parse_bhagavad_gita_xml(xml_path: str) -> Dict[int, List[Dict]]:
             # Join lines with newline
             full_verse = '\n'.join(verse_lines)
             
-            # Extract verse number if not found yet
+            # Extract verse number if not found yet (fallback)
             if verse_number is None:
                 verse_number = extract_verse_number(full_verse)
             

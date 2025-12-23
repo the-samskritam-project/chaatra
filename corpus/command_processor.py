@@ -252,6 +252,59 @@ def process_bhagavad_gita_command(corpus_name: str, args):
     )
 
 
+def extract_chapters_command(corpus_name: str, args):
+    """Execute extract_chapters command."""
+    corpus_name_lower = corpus_name.lower()
+    if corpus_name_lower != 'bhagavad_gita':
+        print("Error: extract_chapters command only works with bhagavad_gita corpus")
+        sys.exit(1)
+    
+    from processor.extract_chapters import extract_chapters_to_mongodb
+    
+    # Get XML path
+    xml_path = getattr(args, 'extract_xml_path', None)
+    if not xml_path:
+        print("Error: --extract-xml-path is required")
+        sys.exit(1)
+    
+    if not os.path.exists(xml_path):
+        print(f"Error: XML file not found: {xml_path}")
+        sys.exit(1)
+    
+    # Get MongoDB URI
+    mongodb_uri = args.mongodb_uri or os.getenv('MONGODB_URI')
+    if not mongodb_uri:
+        print("Error: MONGODB_URI must be provided or set as environment variable")
+        sys.exit(1)
+    
+    # Get chapter range
+    from_chapter = getattr(args, 'extract_from_chapter', None)
+    to_chapter = getattr(args, 'extract_to_chapter', None)
+    
+    if from_chapter is None or to_chapter is None:
+        print("Error: --extract-from-chapter and --extract-to-chapter are required")
+        sys.exit(1)
+    
+    # Get database name (defaults to bhagavad_gita_shankara_bhasya)
+    database_name = args.database or 'bhagavad_gita_shankara_bhasya'
+    
+    # Get batch size
+    batch_size = getattr(args, 'extract_batch_size', 50)
+    
+    # Get clear existing flag
+    clear_existing = getattr(args, 'extract_clear_existing', False)
+    
+    extract_chapters_to_mongodb(
+        xml_path=xml_path,
+        mongodb_uri=mongodb_uri,
+        database_name=database_name,
+        from_chapter=from_chapter,
+        to_chapter=to_chapter,
+        batch_size=batch_size,
+        clear_existing=clear_existing
+    )
+
+
 def main():
     """Main CLI entry point."""
     # Load environment variables
@@ -297,6 +350,10 @@ Examples:
   python command_processor.py process_bhagavad_gita bhagavad_gita --process-start-chapter 1 --process-end-chapter 5
   python command_processor.py process_bhagavad_gita bhagavad_gita --api-url http://localhost:8081 --process-delay 3.0
   
+  # Extract chapters from XML to MongoDB
+  python command_processor.py extract_chapters bhagavad_gita --extract-xml-path corpus/data/bhagavad_gita_ramanuja_bhashya.xml --extract-from-chapter 18 --extract-to-chapter 18
+  python command_processor.py extract_chapters bhagavad_gita --extract-xml-path corpus/data/bhagavad_gita_ramanuja_bhashya.xml --extract-from-chapter 18 --extract-to-chapter 18 --extract-clear-existing
+  
   # Summarise Bhagavad Gita chapters
   python command_processor.py summarise_bhagavad_gita
   python command_processor.py summarise_bhagavad_gita --clear-existing
@@ -305,7 +362,7 @@ Examples:
     
     parser.add_argument(
         'command',
-        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'summarise_bhagavad_gita'],
+        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'extract_chapters', 'summarise_bhagavad_gita'],
         help='Command to execute'
     )
     parser.add_argument(
@@ -575,6 +632,33 @@ Examples:
         default=0.5,
         help='Delay between API calls in seconds for process_bhagavad_gita (default: 0.5)'
     )
+
+    # Extract chapters arguments
+    parser.add_argument(
+        '--extract-xml-path',
+        help='Path to source XML file for extract_chapters command'
+    )
+    parser.add_argument(
+        '--extract-from-chapter',
+        type=int,
+        help='Starting chapter number for extract_chapters (inclusive)'
+    )
+    parser.add_argument(
+        '--extract-to-chapter',
+        type=int,
+        help='Ending chapter number for extract_chapters (inclusive)'
+    )
+    parser.add_argument(
+        '--extract-batch-size',
+        type=int,
+        default=50,
+        help='Batch size for MongoDB writes in extract_chapters (default: 50)'
+    )
+    parser.add_argument(
+        '--extract-clear-existing',
+        action='store_true',
+        help='Clear existing chapter data before importing in extract_chapters'
+    )
     parser.add_argument(
         '--theme-nodes-delay',
         type=float,
@@ -590,8 +674,8 @@ Examples:
     args = parser.parse_args()
     
     # Validate corpus name (not required for vector_search, generate_interval_theme_embeddings, cluster_interval_themes, generate_theme_nodes)
-    # process_bhagavad_gita and summarise_bhagavad_gita require corpus but validation is done in the command function
-    if args.command not in ['vector_search', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'summarise_bhagavad_gita']:
+    # process_bhagavad_gita, extract_chapters, and summarise_bhagavad_gita require corpus but validation is done in the command function
+    if args.command not in ['vector_search', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'extract_chapters', 'summarise_bhagavad_gita']:
         if not args.corpus:
             print("Error: Corpus name is required for this command")
             sys.exit(1)
@@ -607,6 +691,14 @@ Examples:
             sys.exit(1)
         if args.corpus.lower() != 'bhagavad_gita':
             print("Error: process_bhagavad_gita command only works with bhagavad_gita corpus")
+            sys.exit(1)
+    elif args.command == 'extract_chapters':
+        # Validate corpus for extract_chapters
+        if not args.corpus:
+            print("Error: Corpus name is required for extract_chapters command")
+            sys.exit(1)
+        if args.corpus.lower() != 'bhagavad_gita':
+            print("Error: extract_chapters command only works with bhagavad_gita corpus")
             sys.exit(1)
     
     # Execute command
@@ -756,6 +848,8 @@ Examples:
             )
         elif args.command == 'process_bhagavad_gita':
             process_bhagavad_gita_command(args.corpus, args)
+        elif args.command == 'extract_chapters':
+            extract_chapters_command(args.corpus, args)
         elif args.command == 'summarise_bhagavad_gita':
             from processor.summarise_bhagavad_gita import summarise_bhagavad_gita
             
