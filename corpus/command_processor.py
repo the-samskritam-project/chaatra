@@ -305,6 +305,55 @@ def extract_chapters_command(corpus_name: str, args):
     )
 
 
+def classify_bhagavad_gita_themes_command(corpus_name: str, args):
+    """Execute classify_bhagavad_gita_themes command."""
+    corpus_name_lower = corpus_name.lower()
+    if corpus_name_lower != 'bhagavad_gita':
+        print("Error: classify_bhagavad_gita_themes command only works with bhagavad_gita corpus")
+        sys.exit(1)
+    
+    from processor.classify_bhagavad_gita_themes import classify_bhagavad_gita_themes
+    
+    # Get MongoDB URI
+    mongodb_uri = args.mongodb_uri or os.getenv('MONGODB_URI')
+    if not mongodb_uri:
+        print("Error: MONGODB_URI must be provided or set as environment variable")
+        sys.exit(1)
+    
+    # Get database name (defaults to bhagavad_gita_shankara_bhasya)
+    database_name = args.database or 'bhagavad_gita_shankara_bhasya'
+    
+    # Get chapter range
+    start_chapter = getattr(args, 'theme_start_chapter', None)
+    end_chapter = getattr(args, 'theme_end_chapter', None)
+    
+    # Get API key
+    api_key = args.api_key or os.getenv('LANGCHAIN_API_KEY') or os.getenv('OPENAI_API_KEY')
+    if not api_key:
+        print("Error: OPENAI_API_KEY or LANGCHAIN_API_KEY must be provided or set as environment variable")
+        sys.exit(1)
+    
+    # Get model
+    model = args.model or 'gpt-5.1'
+    
+    # Get delay
+    delay = getattr(args, 'theme_delay', 1.0)
+    
+    # Get force flag
+    force = getattr(args, 'theme_force', False)
+    
+    classify_bhagavad_gita_themes(
+        mongodb_uri=mongodb_uri,
+        database_name=database_name,
+        start_chapter=start_chapter,
+        end_chapter=end_chapter,
+        api_key=api_key,
+        model=model,
+        delay=delay,
+        force=force
+    )
+
+
 def main():
     """Main CLI entry point."""
     # Load environment variables
@@ -357,12 +406,17 @@ Examples:
   # Summarise Bhagavad Gita chapters
   python command_processor.py summarise_bhagavad_gita
   python command_processor.py summarise_bhagavad_gita --clear-existing
+  
+  # Classify Bhagavad Gita verses into themes
+  python command_processor.py classify_bhagavad_gita_themes bhagavad_gita
+  python command_processor.py classify_bhagavad_gita_themes bhagavad_gita --theme-start-chapter 1 --theme-end-chapter 5
+  python command_processor.py classify_bhagavad_gita_themes bhagavad_gita --theme-force
         """
     )
     
     parser.add_argument(
         'command',
-        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'extract_chapters', 'summarise_bhagavad_gita'],
+        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'extract_chapters', 'summarise_bhagavad_gita', 'classify_bhagavad_gita_themes'],
         help='Command to execute'
     )
     parser.add_argument(
@@ -401,7 +455,7 @@ Examples:
     parser.add_argument(
         '--model',
         default='gpt-4o',
-        help='OpenAI model to use (default: gpt-4o). Options: gpt-4o, gpt-4-turbo, gpt-4, o1-preview, o1-mini'
+        help='OpenAI model to use (default: gpt-4o). Options: gpt-5.1, gpt-4o, gpt-4-turbo, gpt-4, o1-preview, o1-mini'
     )
     parser.add_argument(
         '--delay',
@@ -671,11 +725,34 @@ Examples:
         help='Overwrite existing theme nodes'
     )
     
+    # Classify Bhagavad Gita themes arguments
+    parser.add_argument(
+        '--theme-start-chapter',
+        type=int,
+        help='First chapter to process for classify_bhagavad_gita_themes (inclusive)'
+    )
+    parser.add_argument(
+        '--theme-end-chapter',
+        type=int,
+        help='Last chapter to process for classify_bhagavad_gita_themes (inclusive)'
+    )
+    parser.add_argument(
+        '--theme-delay',
+        type=float,
+        default=1.0,
+        help='Delay between API calls for classify_bhagavad_gita_themes (seconds, default: 1.0)'
+    )
+    parser.add_argument(
+        '--theme-force',
+        action='store_true',
+        help='Overwrite existing theme classifications for classify_bhagavad_gita_themes'
+    )
+    
     args = parser.parse_args()
     
     # Validate corpus name (not required for vector_search, generate_interval_theme_embeddings, cluster_interval_themes, generate_theme_nodes)
-    # process_bhagavad_gita, extract_chapters, and summarise_bhagavad_gita require corpus but validation is done in the command function
-    if args.command not in ['vector_search', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'extract_chapters', 'summarise_bhagavad_gita']:
+    # process_bhagavad_gita, extract_chapters, summarise_bhagavad_gita, and classify_bhagavad_gita_themes require corpus but validation is done in the command function
+    if args.command not in ['vector_search', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'extract_chapters', 'summarise_bhagavad_gita', 'classify_bhagavad_gita_themes']:
         if not args.corpus:
             print("Error: Corpus name is required for this command")
             sys.exit(1)
@@ -699,6 +776,14 @@ Examples:
             sys.exit(1)
         if args.corpus.lower() != 'bhagavad_gita':
             print("Error: extract_chapters command only works with bhagavad_gita corpus")
+            sys.exit(1)
+    elif args.command == 'classify_bhagavad_gita_themes':
+        # Validate corpus for classify_bhagavad_gita_themes
+        if not args.corpus:
+            print("Error: Corpus name is required for classify_bhagavad_gita_themes command")
+            sys.exit(1)
+        if args.corpus.lower() != 'bhagavad_gita':
+            print("Error: classify_bhagavad_gita_themes command only works with bhagavad_gita corpus")
             sys.exit(1)
     
     # Execute command
@@ -850,6 +935,8 @@ Examples:
             process_bhagavad_gita_command(args.corpus, args)
         elif args.command == 'extract_chapters':
             extract_chapters_command(args.corpus, args)
+        elif args.command == 'classify_bhagavad_gita_themes':
+            classify_bhagavad_gita_themes_command(args.corpus, args)
         elif args.command == 'summarise_bhagavad_gita':
             from processor.summarise_bhagavad_gita import summarise_bhagavad_gita
             
