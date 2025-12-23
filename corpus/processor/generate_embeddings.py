@@ -8,6 +8,7 @@ translations, storing them in a unified vector search collection.
 
 import os
 import sys
+import re
 from typing import Dict, List, Optional
 from datetime import datetime
 
@@ -235,6 +236,274 @@ def generate_embeddings_for_corpus(
                 "full_translation": doc["full_translation"],
                 "original_iast": doc["original_iast"],
                 "transliterated_devanagari": doc.get("transliterated_devanagari", ""),
+                "metadata": doc["metadata"],
+                "created_at": datetime.utcnow()
+            }
+            vector_docs.append(vector_doc)
+        
+        # Insert into vector search collection
+        try:
+            result = vector_collection_obj.insert_many(vector_docs, ordered=False)
+            inserted = len(result.inserted_ids)
+            total_inserted += inserted
+            print(f"  ✓ Inserted {inserted} embeddings")
+        except DuplicateKeyError:
+            # Some documents might have been inserted by another process
+            inserted = 0
+            for vector_doc in vector_docs:
+                try:
+                    vector_collection_obj.insert_one(vector_doc)
+                    inserted += 1
+                    total_inserted += 1
+                except DuplicateKeyError:
+                    pass
+            print(f"  ✓ Inserted {inserted} embeddings (some duplicates skipped)")
+        except Exception as e:
+            print(f"  ✗ Error inserting embeddings: {e}")
+            total_errors += len(batch)
+    
+    print(f"\n{'='*60}")
+    print(f"Embedding Generation Summary:")
+    print(f"  Total documents processed: {len(documents_to_process)}")
+    print(f"  Successfully inserted: {total_inserted}")
+    print(f"  Errors: {total_errors}")
+    print(f"{'='*60}")
+    
+    client.close()
+    print("\n✓ Embedding generation completed!")
+
+
+def discover_bhagavad_gita_chapter_collections(db) -> List[int]:
+    """
+    Discover all chapter collections matching pattern chapter_\d+ for Bhagavad Gita.
+    
+    Args:
+        db: MongoDB database object
+        
+    Returns:
+        List of chapter numbers (integers)
+    """
+    collections = db.list_collection_names()
+    chapter_numbers = []
+    
+    for coll_name in collections:
+        match = re.match(r'^chapter_(\d+)$', coll_name)
+        if match:
+            chapter_num = int(match.group(1))
+            chapter_numbers.append(chapter_num)
+    
+    return sorted(chapter_numbers)
+
+
+def combine_bhagavad_gita_text(doc: Dict) -> Optional[str]:
+    """
+    Combine full_translation, primary_theme, and rationale fields for embedding.
+    
+    Args:
+        doc: MongoDB document
+        
+    Returns:
+        Combined text string, or None if full_translation is missing
+    """
+    full_translation = doc.get("full_translation", "").strip()
+    if not full_translation:
+        return None
+    
+    parts = [full_translation]
+    
+    primary_theme = doc.get("primary_theme", "").strip()
+    if primary_theme:
+        parts.append(f"\n\nTheme: {primary_theme}")
+    
+    rationale = doc.get("rationale", "").strip()
+    if rationale:
+        parts.append(f"\n\nRationale: {rationale}")
+    
+    return "".join(parts)
+
+
+def generate_bhagavad_gita_embeddings(
+    mongodb_uri: str,
+    database_name: str = 'bhagavad_gita_shankara_bhasya',
+    vector_collection: str = "bhagavad_gita_vector_search",
+    batch_size: int = 100,
+    skip_existing: bool = True,
+    provider: Optional[str] = None,
+    model_name: Optional[str] = None,
+    api_key: Optional[str] = None
+):
+    """
+    Generate embeddings for Bhagavad Gita verses and store in vector search collection.
+    
+    Combines full_translation + primary_theme + rationale fields for embedding.
+    Iterates over all documents in all chapter collections.
+    
+    Args:
+        mongodb_uri: MongoDB connection URI
+        database_name: Database name (defaults to bhagavad_gita_shankara_bhasya)
+        vector_collection: Collection name for vector search (default: bhagavad_gita_vector_search)
+        batch_size: Batch size for embedding generation (default: 100)
+        skip_existing: Skip documents that already have embeddings (default: True)
+        provider: Embedding provider (optional, uses env vars if not provided)
+        model_name: Model identifier (optional, uses env vars if not provided)
+        api_key: API key (optional, uses env vars if not provided)
+    """
+    print(f"\n{'='*60}")
+    print(f"Generating embeddings for Bhagavad Gita")
+    print(f"{'='*60}")
+    print(f"Database: {database_name}")
+    print(f"Vector collection: {vector_collection}")
+    print(f"Batch size: {batch_size}")
+    print(f"Skip existing: {skip_existing}")
+    
+    # Connect to MongoDB
+    print(f"\nConnecting to MongoDB...")
+    try:
+        db, client = connect_mongodb(mongodb_uri, database_name)
+    except ConnectionFailure as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+    
+    # Get embedding model
+    print(f"\nInitializing embedding model...")
+    try:
+        embedding_model = get_embedding_model(provider=provider, model_name=model_name, api_key=api_key)
+        print(f"✓ Using embedding model: {model_name or os.getenv('LANGCHAIN_EMBEDDING_MODEL', 'default')}")
+    except Exception as e:
+        print(f"Error initializing embedding model: {e}")
+        client.close()
+        sys.exit(1)
+    
+    # Discover chapter collections
+    print(f"\nDiscovering chapter collections...")
+    chapter_numbers = discover_bhagavad_gita_chapter_collections(db)
+    
+    if not chapter_numbers:
+        print("Error: No chapter collections found (expected pattern: chapter_N)")
+        client.close()
+        sys.exit(1)
+    
+    print(f"✓ Found {len(chapter_numbers)} chapter collections")
+    
+    # Extract all documents from all chapter collections
+    print(f"\nExtracting documents from all chapter collections...")
+    documents = []
+    skipped_no_translation = 0
+    
+    for chapter_num in chapter_numbers:
+        collection_name = f"chapter_{chapter_num}"
+        collection = db[collection_name]
+        
+        # Get all documents (not filtering by full_translation yet, we'll check in combine function)
+        items = list(collection.find({}))
+        
+        for item in items:
+            # Combine text fields
+            combined_text = combine_bhagavad_gita_text(item)
+            if combined_text is None:
+                skipped_no_translation += 1
+                continue
+            
+            doc = {
+                "document_id": item.get("_id"),
+                "corpus_name": "bhagavad_gita",
+                "chapter_number": item.get("chapter_number", chapter_num),
+                "verse_number": item.get("verse_number"),
+                "prose_number": item.get("prose_number"),
+                "type": item.get("type"),
+                "full_translation": item.get("full_translation", ""),
+                "original_iast": item.get("original_iast", ""),
+                "transliterated_devanagari": item.get("transliterated_devanagari", ""),
+                "primary_theme": item.get("primary_theme", ""),
+                "rationale": item.get("rationale", ""),
+                "combined_text": combined_text,
+                "metadata": {
+                    "verse_index": item.get("verse_index"),
+                    "prose_index": item.get("prose_index"),
+                    "sequence_index": item.get("sequence_index"),
+                    "sequence_number": item.get("sequence_number"),
+                }
+            }
+            documents.append(doc)
+    
+    print(f"Extracted {len(documents)} documents with translations")
+    if skipped_no_translation > 0:
+        print(f"Skipped {skipped_no_translation} documents without full_translation")
+    
+    if not documents:
+        print(f"No documents found with translations")
+        client.close()
+        return
+    
+    # Get vector search collection (same database)
+    vector_collection_obj = db[vector_collection]
+    
+    # Check existing embeddings if skip_existing is True
+    existing_ids = set()
+    if skip_existing:
+        print(f"\nChecking for existing embeddings...")
+        existing_docs = vector_collection_obj.find(
+            {"corpus_name": "bhagavad_gita"},
+            {"document_id": 1}
+        )
+        existing_ids = {doc["document_id"] for doc in existing_docs}
+        print(f"Found {len(existing_ids)} existing embeddings")
+    
+    # Filter out existing documents
+    documents_to_process = [
+        doc for doc in documents
+        if doc["document_id"] not in existing_ids
+    ]
+    
+    if not documents_to_process:
+        print(f"\nAll documents already have embeddings. Use --no-skip-existing to regenerate.")
+        client.close()
+        return
+    
+    print(f"\nProcessing {len(documents_to_process)} documents...")
+    
+    # Process in batches
+    total_batches = (len(documents_to_process) + batch_size - 1) // batch_size
+    total_inserted = 0
+    total_errors = 0
+    
+    for batch_num in range(total_batches):
+        start_idx = batch_num * batch_size
+        end_idx = min(start_idx + batch_size, len(documents_to_process))
+        batch = documents_to_process[start_idx:end_idx]
+        
+        print(f"\nBatch {batch_num + 1}/{total_batches} ({len(batch)} documents)...")
+        
+        # Extract combined texts for embedding
+        texts = [doc["combined_text"] for doc in batch]
+        
+        # Generate embeddings
+        try:
+            print(f"  Generating embeddings...")
+            embeddings = embedding_model.embed_documents(texts)
+            print(f"  ✓ Generated {len(embeddings)} embeddings")
+        except Exception as e:
+            print(f"  ✗ Error generating embeddings: {e}")
+            total_errors += len(batch)
+            continue
+        
+        # Prepare documents for insertion
+        vector_docs = []
+        for i, doc in enumerate(batch):
+            vector_doc = {
+                "_id": f"bhagavad_gita_{doc['document_id']}",  # Unique ID combining corpus and document
+                "corpus_name": "bhagavad_gita",
+                "document_id": doc["document_id"],
+                "chapter_number": doc["chapter_number"],
+                "verse_number": doc.get("verse_number"),
+                "prose_number": doc.get("prose_number"),
+                "type": doc.get("type"),
+                "embedding": embeddings[i],
+                "full_translation": doc["full_translation"],
+                "original_iast": doc["original_iast"],
+                "transliterated_devanagari": doc.get("transliterated_devanagari", ""),
+                "primary_theme": doc.get("primary_theme", ""),
+                "rationale": doc.get("rationale", ""),
                 "metadata": doc["metadata"],
                 "created_at": datetime.utcnow()
             }

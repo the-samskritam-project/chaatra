@@ -20,6 +20,9 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
   const [pendingSearch, setPendingSearch] = useState(null);
   const [allVerseNumbers, setAllVerseNumbers] = useState([]); // Index of all verse numbers
   const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [semanticSearchResults, setSemanticSearchResults] = useState([]);
+  const [isSemanticSearch, setIsSemanticSearch] = useState(false);
+  const [isLoadingSemanticSearch, setIsLoadingSemanticSearch] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedVerseNumber, setSelectedVerseNumber] = useState(null);
   const [navStatus, setNavStatus] = useState({ prev: null, next: null });
@@ -229,43 +232,47 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
     setSelectedVerseNumber(targetNum);
   };
 
-  // Update suggestions as user types
+  // Update suggestions as user types - semantic search only
   useEffect(() => {
     if (corpusName !== 'bhagavad_gita' || !searchQuery.trim()) {
-      setSearchSuggestions([]);
+      setSemanticSearchResults([]);
+      setIsSemanticSearch(true);
       setShowSuggestions(false);
       return;
     }
 
     const query = searchQuery.trim();
-    const versePattern = /^(\d+)(\.(\d*))?$/;
-    const match = query.match(versePattern);
+    setIsSemanticSearch(true);
+    setSearchSuggestions([]);
     
-    if (!match) {
-      setSearchSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-
-    const chapterNum = match[1];
-    const verseNum = match[3] || '';
-    
-    // Filter verse numbers that match the pattern
-    const suggestions = allVerseNumbers
-      .filter(verseNumStr => {
-        if (verseNum) {
-          // User has typed chapter.verse - match exact or prefix
-          return verseNumStr.startsWith(`${chapterNum}.${verseNum}`);
-        } else {
-          // User has typed just chapter - show first few verses of that chapter
-          return verseNumStr.startsWith(`${chapterNum}.`);
+    // Debounce semantic search
+    const debounceTimer = setTimeout(async () => {
+      if (!apiUrl) return;
+      
+      setIsLoadingSemanticSearch(true);
+      try {
+        const response = await fetch(
+          `${apiUrl}/v2/bhagavad_gita/search?q=${encodeURIComponent(query)}&limit=10`
+        );
+        
+        if (!response.ok) {
+          throw new Error(`Search failed: ${response.statusText}`);
         }
-      })
-      .slice(0, 10); // Limit to 10 suggestions
+        
+        const results = await response.json();
+        setSemanticSearchResults(Array.isArray(results) ? results : []);
+        setShowSuggestions(results.length > 0);
+      } catch (err) {
+        console.error('Semantic search error:', err);
+        setSemanticSearchResults([]);
+        setShowSuggestions(false);
+      } finally {
+        setIsLoadingSemanticSearch(false);
+      }
+    }, 300); // 300ms debounce
     
-    setSearchSuggestions(suggestions);
-    setShowSuggestions(suggestions.length > 0);
-  }, [searchQuery, allVerseNumbers, corpusName]);
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery, corpusName, apiUrl]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -277,42 +284,27 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
       return;
     }
 
-    // Validate format: X.Y (e.g., 1.1, 2.5)
-    const versePattern = /^(\d+)\.(\d+)$/;
-    const match = query.match(versePattern);
-    
-    if (!match) {
-      setSearchError('Please enter verse in format X.Y (e.g., 1.1)');
-      return;
+    // Semantic search - if we have results, select the first one
+    if (semanticSearchResults.length > 0) {
+      const firstResult = semanticSearchResults[0];
+      if (firstResult.verse_number) {
+        const verseNumber = firstResult.verse_number;
+        const chapterNum = firstResult.chapter_number;
+        
+        // Navigate to the verse
+        if (selectedChapter !== chapterNum) {
+          setPendingSearch(verseNumber);
+          setSelectedChapter(chapterNum);
+          setSelectedVerseNumber(verseNumber);
+        } else {
+          setSelectedVerseNumber(verseNumber);
+        }
+      }
+    } else {
+      // No results yet, wait for semantic search to complete
+      // The search will be triggered by the useEffect
+      setSearchError('Searching...');
     }
-
-    const chapterNum = parseInt(match[1], 10);
-    const verseNum = parseInt(match[2], 10);
-    const verseNumber = `${chapterNum}.${verseNum}`;
-
-    // Check if verse exists in our index
-    if (!allVerseNumbers.includes(verseNumber)) {
-      setSearchError(`Verse ${verseNumber} does not exist`);
-      return;
-    }
-
-    // Check if chapter exists
-    const chapterExists = chapters.some(ch => ch.chapter_number === chapterNum);
-    if (!chapterExists) {
-      setSearchError(`Chapter ${chapterNum} does not exist`);
-      return;
-    }
-
-    // If chapter doesn't match current chapter, switch to it
-    if (selectedChapter !== chapterNum) {
-      setPendingSearch(verseNumber);
-      setSelectedChapter(chapterNum);
-      setSelectedVerseNumber(verseNumber);
-      return;
-    }
-
-    // Set the selected verse
-    setSelectedVerseNumber(verseNumber);
   };
 
   const normalizeVerseNumber = (val) => {
@@ -409,7 +401,7 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
               <input
                 type="text"
                 className="hitopadesa-search-input"
-                placeholder="Search verse (e.g., 1.1)"
+                placeholder="Search by meaning (e.g., wisdom, detachment, knowledge)"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -432,52 +424,57 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
                 }}
                 autoComplete="off"
               />
-              {showSuggestions && searchSuggestions.length > 0 && (
+              {showSuggestions && (
                 <div className="hitopadesa-search-suggestions">
-                  {searchSuggestions.map((suggestion) => (
-                    <div
-                      key={suggestion}
-                      className="hitopadesa-search-suggestion-item"
-                      onMouseDown={(e) => {
-                        e.preventDefault(); // Prevent input blur
-                        setSearchQuery(suggestion);
-                        setShowSuggestions(false);
-                        setSearchError('');
-                        
-                        // Trigger search after state update
-                        setTimeout(() => {
-                          const chapterNum = parseInt(suggestion.split('.')[0], 10);
-                          const verseNumber = suggestion;
-                          
-                          // Check if verse exists in our index
-                          if (!allVerseNumbers.includes(verseNumber)) {
-                            setSearchError(`Verse ${verseNumber} does not exist`);
-                            return;
-                          }
-                          
-                          // Check if chapter exists
-                          const chapterExists = chapters.some(ch => ch.chapter_number === chapterNum);
-                          if (!chapterExists) {
-                            setSearchError(`Chapter ${chapterNum} does not exist`);
-                            return;
-                          }
-                          
-                          // If chapter doesn't match current chapter, switch to it
-                          if (selectedChapter !== chapterNum) {
-                            setPendingSearch(verseNumber);
-                            setSelectedChapter(chapterNum);
-                            setSelectedVerseNumber(verseNumber);
-                            return;
-                          }
-                          
-                          // Set the selected verse
-                          setSelectedVerseNumber(verseNumber);
-                        }, 0);
-                      }}
-                    >
-                      {suggestion}
+                  {isLoadingSemanticSearch && (
+                    <div className="hitopadesa-search-suggestion-item" style={{ fontStyle: 'italic', color: '#666' }}>
+                      Searching...
                     </div>
-                  ))}
+                  )}
+                  {!isLoadingSemanticSearch && semanticSearchResults.length > 0 && semanticSearchResults.map((result, index) => {
+                    const verseNumber = result.verse_number || '';
+                    const translation = result.full_translation || '';
+                    const score = result.score || 0;
+                    const snippet = translation.length > 80 ? translation.substring(0, 80) + '...' : translation;
+                    
+                    return (
+                      <div
+                        key={`${result.document_id || index}`}
+                        className="hitopadesa-search-suggestion-item"
+                        onMouseDown={(e) => {
+                          e.preventDefault(); // Prevent input blur
+                          setShowSuggestions(false);
+                          setSearchError('');
+                          
+                          const chapterNum = result.chapter_number;
+                          const verseNum = verseNumber;
+                          
+                          // Navigate to the verse
+                          if (selectedChapter !== chapterNum) {
+                            setPendingSearch(verseNum);
+                            setSelectedChapter(chapterNum);
+                            setSelectedVerseNumber(verseNum);
+                          } else {
+                            setSelectedVerseNumber(verseNum);
+                          }
+                        }}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <div style={{ fontWeight: 'bold' }}>{verseNumber}</div>
+                        <div style={{ fontSize: '0.9em', color: '#666', marginTop: '2px' }}>
+                          {snippet}
+                        </div>
+                        <div style={{ fontSize: '0.8em', color: '#999', marginTop: '2px' }}>
+                          Score: {score.toFixed(3)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {!isLoadingSemanticSearch && semanticSearchResults.length === 0 && searchQuery.trim() && (
+                    <div className="hitopadesa-search-suggestion-item" style={{ fontStyle: 'italic', color: '#666' }}>
+                      No results found
+                    </div>
+                  )}
                 </div>
               )}
               {searchQuery && (

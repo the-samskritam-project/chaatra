@@ -268,3 +268,69 @@ func BhagavadGitaTranslateVerseHandler(w http.ResponseWriter, r *http.Request) {
 		"translation": translation,
 	})
 }
+
+// BhagavadGitaSemanticSearchHandler handles semantic search requests for Bhagavad Gita
+func BhagavadGitaSemanticSearchHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var query string
+	var limit int = 10
+
+	if r.Method == http.MethodGet {
+		query = r.URL.Query().Get("q")
+		if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
+			if parsedLimit, err := strconv.Atoi(limitStr); err == nil {
+				limit = parsedLimit
+			}
+		}
+	} else {
+		// POST request with JSON body
+		var requestBody struct {
+			Query string `json:"query"`
+			Limit int    `json:"limit,omitempty"`
+		}
+
+		if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+			http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
+			return
+		}
+
+		query = requestBody.Query
+		if requestBody.Limit > 0 {
+			limit = requestBody.Limit
+		}
+	}
+
+	if query == "" {
+		http.Error(w, "query parameter is required (use ?q=your_query for GET or {\"query\": \"your_query\"} for POST)", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("BhagavadGitaSemanticSearchHandler: query=%q, limit=%d", query, limit)
+
+	// Generate embedding for the query (using function from semantic_search.go in same package)
+	log.Printf("Generating embedding for query: %q", query)
+	queryEmbedding, err := generateEmbedding(query)
+	if err != nil {
+		log.Printf("ERROR: Failed to generate embedding: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to generate embedding: %v", err), http.StatusInternalServerError)
+		return
+	}
+	log.Printf("Generated embedding with length: %d", len(queryEmbedding))
+
+	// Perform semantic search with hardcoded corpusFilter="bhagavad_gita"
+	log.Printf("Calling PerformSemanticSearch with corpusFilter=bhagavad_gita, limit=%d", limit)
+	results, err := service.PerformSemanticSearch(queryEmbedding, "bhagavad_gita", limit)
+	if err != nil {
+		log.Printf("ERROR: Semantic search failed: %v", err)
+		http.Error(w, fmt.Sprintf("Search failed: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("BhagavadGitaSemanticSearchHandler: returning %d results", len(results))
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(results)
+}

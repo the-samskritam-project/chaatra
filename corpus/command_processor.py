@@ -354,6 +354,43 @@ def classify_bhagavad_gita_themes_command(corpus_name: str, args):
     )
 
 
+def generate_bhagavad_gita_embeddings_command(corpus_name: str, args):
+    """Execute generate_bhagavad_gita_embeddings command."""
+    corpus_name_lower = corpus_name.lower()
+    if corpus_name_lower != 'bhagavad_gita':
+        print("Error: generate_bhagavad_gita_embeddings command only works with bhagavad_gita corpus")
+        sys.exit(1)
+    
+    from processor.generate_embeddings import generate_bhagavad_gita_embeddings
+    
+    mongodb_uri = args.mongodb_uri or os.getenv('MONGODB_URI')
+    if not mongodb_uri:
+        print("Error: MONGODB_URI must be provided or set as environment variable")
+        sys.exit(1)
+    
+    api_key = args.api_key or os.getenv('LANGCHAIN_API_KEY') or os.getenv('OPENAI_API_KEY')
+    if not api_key:
+        print("Error: LANGCHAIN_API_KEY or OPENAI_API_KEY must be provided or set as environment variable")
+        sys.exit(1)
+    
+    # Get database name (defaults to bhagavad_gita_shankara_bhasya)
+    database_name = args.database or 'bhagavad_gita_shankara_bhasya'
+    
+    # Get vector collection name (default: bhagavad_gita_vector_search)
+    vector_collection = getattr(args, 'bg_vector_collection', None) or 'bhagavad_gita_vector_search'
+    
+    generate_bhagavad_gita_embeddings(
+        mongodb_uri=mongodb_uri,
+        database_name=database_name,
+        vector_collection=vector_collection,
+        batch_size=args.batch_size,
+        skip_existing=not args.no_skip_existing,
+        provider=args.provider,
+        model_name=getattr(args, 'embedding_model', None),
+        api_key=api_key
+    )
+
+
 def main():
     """Main CLI entry point."""
     # Load environment variables
@@ -411,12 +448,17 @@ Examples:
   python command_processor.py classify_bhagavad_gita_themes bhagavad_gita
   python command_processor.py classify_bhagavad_gita_themes bhagavad_gita --theme-start-chapter 1 --theme-end-chapter 5
   python command_processor.py classify_bhagavad_gita_themes bhagavad_gita --theme-force
+  
+  # Generate embeddings for Bhagavad Gita
+  python command_processor.py generate_bhagavad_gita_embeddings bhagavad_gita
+  python command_processor.py generate_bhagavad_gita_embeddings bhagavad_gita --batch-size 50
+  python command_processor.py generate_bhagavad_gita_embeddings bhagavad_gita --no-skip-existing
         """
     )
     
     parser.add_argument(
         'command',
-        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'extract_chapters', 'summarise_bhagavad_gita', 'classify_bhagavad_gita_themes'],
+        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'extract_chapters', 'summarise_bhagavad_gita', 'classify_bhagavad_gita_themes', 'generate_bhagavad_gita_embeddings'],
         help='Command to execute'
     )
     parser.add_argument(
@@ -748,11 +790,17 @@ Examples:
         help='Overwrite existing theme classifications for classify_bhagavad_gita_themes'
     )
     
+    # Generate Bhagavad Gita embeddings arguments
+    parser.add_argument(
+        '--bg-vector-collection',
+        help='Vector collection name for generate_bhagavad_gita_embeddings (default: bhagavad_gita_vector_search)'
+    )
+    
     args = parser.parse_args()
     
     # Validate corpus name (not required for vector_search, generate_interval_theme_embeddings, cluster_interval_themes, generate_theme_nodes)
-    # process_bhagavad_gita, extract_chapters, summarise_bhagavad_gita, and classify_bhagavad_gita_themes require corpus but validation is done in the command function
-    if args.command not in ['vector_search', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'extract_chapters', 'summarise_bhagavad_gita', 'classify_bhagavad_gita_themes']:
+    # process_bhagavad_gita, extract_chapters, summarise_bhagavad_gita, classify_bhagavad_gita_themes, and generate_bhagavad_gita_embeddings require corpus but validation is done in the command function
+    if args.command not in ['vector_search', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'extract_chapters', 'summarise_bhagavad_gita', 'classify_bhagavad_gita_themes', 'generate_bhagavad_gita_embeddings']:
         if not args.corpus:
             print("Error: Corpus name is required for this command")
             sys.exit(1)
@@ -784,6 +832,14 @@ Examples:
             sys.exit(1)
         if args.corpus.lower() != 'bhagavad_gita':
             print("Error: classify_bhagavad_gita_themes command only works with bhagavad_gita corpus")
+            sys.exit(1)
+    elif args.command == 'generate_bhagavad_gita_embeddings':
+        # Validate corpus for generate_bhagavad_gita_embeddings
+        if not args.corpus:
+            print("Error: Corpus name is required for generate_bhagavad_gita_embeddings command")
+            sys.exit(1)
+        if args.corpus.lower() != 'bhagavad_gita':
+            print("Error: generate_bhagavad_gita_embeddings command only works with bhagavad_gita corpus")
             sys.exit(1)
     
     # Execute command
@@ -937,6 +993,8 @@ Examples:
             extract_chapters_command(args.corpus, args)
         elif args.command == 'classify_bhagavad_gita_themes':
             classify_bhagavad_gita_themes_command(args.corpus, args)
+        elif args.command == 'generate_bhagavad_gita_embeddings':
+            generate_bhagavad_gita_embeddings_command(args.corpus, args)
         elif args.command == 'summarise_bhagavad_gita':
             from processor.summarise_bhagavad_gita import summarise_bhagavad_gita
             

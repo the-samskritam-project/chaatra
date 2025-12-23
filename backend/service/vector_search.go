@@ -59,6 +59,10 @@ func PerformSemanticSearch(
 		case "hitopadesa":
 			collections = []string{"hitopadesa_vector_search"}
 			indexNames = []string{"vector_index_hitopadesa"}
+		case "bhagavad_gita":
+			databaseName = "bhagavad_gita_shankara_bhasya"
+			collections = []string{"bhagavad_gita_vector_search"}
+			indexNames = []string{"vector_index_bhagavad_gita"}
 		default:
 			// For unknown corpus, fall back to unified search
 			databaseName = persistence.GetVectorSearchDatabase()
