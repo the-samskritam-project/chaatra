@@ -558,6 +558,7 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
               <ChapterList
                 chapters={chapters}
                 selectedChapter={selectedChapter}
+                selectedVerseNumber={selectedVerseNumber}
                 onChapterSelect={handleChapterSelect}
                 onVerseSelect={handleVerseSelect}
                 apiUrl={apiUrl}

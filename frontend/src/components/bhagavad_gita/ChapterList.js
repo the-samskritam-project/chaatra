@@ -4,6 +4,7 @@ import './ChapterList.css';
 function ChapterList({ 
   chapters, 
   selectedChapter, 
+  selectedVerseNumber,
   onChapterSelect, 
   onVerseSelect,
   apiUrl,
@@ -133,20 +134,23 @@ function ChapterList({
                   <div className="verses-empty">No verses found</div>
                 ) : (
                   <ul className="verses-list">
-                    {verses.map((verse) => (
-                      <li
-                        key={verse._id || verse.verse_number}
-                        className="verse-item"
-                        onClick={() => handleVerseClick(chapter.chapter_number, verse.verse_number)}
-                      >
-                        <span className="verse-number">Verse {verse.verse_number}</span>
-                        {verse.primary_theme && (
-                          <span className="verse-theme-label">
-                            {verse.primary_theme.split('–')[0].trim()}
-                          </span>
-                        )}
-                      </li>
-                    ))}
+                    {verses.map((verse) => {
+                      const isSelected = selectedVerseNumber === verse.verse_number;
+                      return (
+                        <li
+                          key={verse._id || verse.verse_number}
+                          className={`verse-item ${isSelected ? 'selected' : ''}`}
+                          onClick={() => handleVerseClick(chapter.chapter_number, verse.verse_number)}
+                        >
+                          <span className="verse-number">Verse {verse.verse_number}</span>
+                          {verse.primary_theme && (
+                            <span className="verse-theme-label">
+                              {verse.primary_theme.split('–')[0].trim()}
+                            </span>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
