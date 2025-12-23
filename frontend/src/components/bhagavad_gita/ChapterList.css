@@ -1,0 +1,144 @@
+.chapter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+  overflow-y: auto;
+  padding: 8px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.chapter-item {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.chapter-item:hover {
+  border-color: #ccc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chapter-item.selected {
+  border-color: #e0e0e0;
+  background: #f0f8ff;
+}
+
+.chapter-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  gap: 12px;
+  font-weight: 500;
+  color: #333;
+}
+
+.chapter-header:hover {
+  background: #f5f5f5;
+}
+
+.chapter-item.selected .chapter-header:hover {
+  background: #e6f3ff;
+}
+
+.chapter-expand-icon {
+  font-size: 12px;
+  color: #666;
+  width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.chapter-title {
+  flex: 1;
+  font-size: 15px;
+}
+
+.chapter-verse-count {
+  font-size: 13px;
+  color: #666;
+  font-weight: normal;
+}
+
+.chapter-verses {
+  background: #fafafa;
+  border-top: 1px solid #e0e0e0;
+  padding: 8px 0;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+  }
+}
+
+.verses-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.verse-item {
+  padding: 8px 16px 8px 48px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #555;
+  transition: all 0.15s ease;
+  border-left: 3px solid transparent;
+}
+
+.verse-item:hover {
+  background: #f5f5f5;
+  border-left-color: #ccc;
+  color: #333;
+  padding-left: 52px;
+}
+
+.verses-loading,
+.verses-empty {
+  padding: 12px 16px 12px 48px;
+  font-size: 13px;
+  color: #999;
+  font-style: italic;
+}
+
+.chapter-list-loading,
+.chapter-list-empty {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Scrollbar styling */
+.chapter-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chapter-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.chapter-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.chapter-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+

@@ -766,6 +766,30 @@
   font-weight: 500;
 }
 
+/* Bhagavad Gita two-column layout */
+.bhagavad-gita-layout {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.bhagavad-gita-chapter-sidebar {
+  flex: 0 0 300px;
+  min-width: 300px;
+  order: 1;
+  position: sticky;
+  top: 20px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+.bhagavad-gita-content {
+  flex: 1;
+  min-width: 0;
+  order: 2;
+}
+
 @media (max-width: 768px) {
   .hitopadesa-controls {
     flex-direction: column;
@@ -799,6 +823,18 @@
   .hitopadesa-pagination {
     flex-direction: column;
     gap: 12px;
+  }
+
+  .bhagavad-gita-layout {
+    flex-direction: column;
+  }
+
+  .bhagavad-gita-chapter-sidebar {
+    flex: 0 0 auto;
+    min-width: 100%;
+    position: relative;
+    top: 0;
+    max-height: 400px;
   }
 }
 

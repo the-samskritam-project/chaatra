@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import CorpusVerse from './CorpusVerse';
 import '../hitopadesa/Hitopadesa.css';
+import ChapterList from '../bhagavad_gita/ChapterList';
 
 const VERSES_PER_PAGE = 10;
 
@@ -174,6 +175,26 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
   const handleChapterChange = (event) => {
     const chapterNum = parseInt(event.target.value, 10);
     setSelectedChapter(chapterNum);
+  };
+
+  const handleChapterSelect = (chapterNum) => {
+    setSelectedChapter(chapterNum);
+  };
+
+  const handleVerseSelect = (verseNumber) => {
+    // Extract chapter number from verse number (e.g., "1.1" -> 1)
+    const chapterNum = parseInt(verseNumber.split('.')[0], 10);
+    
+    // If chapter doesn't match current chapter, switch to it first
+    if (selectedChapter !== chapterNum) {
+      setPendingSearch(verseNumber);
+      setSelectedChapter(chapterNum);
+      // The search will be triggered in useEffect when verses are loaded
+      return;
+    }
+    
+    // Use the existing search logic to find and highlight the verse
+    findAndHighlightVerse(verseNumber);
   };
 
   // Update suggestions as user types
@@ -452,147 +473,244 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
           )}
         </div>
       )}
-      <div className="hitopadesa-controls">
-        <div className="hitopadesa-chapter-selector">
-          <label htmlFor="chapter-select">Chapter:</label>
-          <select
-            id="chapter-select"
-            value={selectedChapter !== null ? selectedChapter : ''}
-            onChange={handleChapterChange}
-            disabled={isLoadingChapters || !chapters || chapters.length === 0}
-            className="chapter-dropdown"
-          >
-            {(!chapters || chapters.length === 0) && (
-              <option value="">{isLoadingChapters ? 'Loading...' : 'No chapters available'}</option>
-            )}
-            {chapters && chapters.map((chapter) => (
-              <option key={chapter.chapter_number} value={chapter.chapter_number}>
-                Chapter {chapter.chapter_number}
-              </option>
-            ))}
-          </select>
-        </div>
-        {selectedChapterData && (
-          <div className="hitopadesa-chapter-info">
-            <span>
-              {selectedChapterData.verse_count} verses
-              {selectedChapterData.first_verse && selectedChapterData.last_verse && (
-                <> • {selectedChapterData.first_verse} - {selectedChapterData.last_verse}</>
-              )}
-            </span>
-          </div>
-        )}
-        {corpusName === 'bhagavad_gita' && (
-          <div className="hitopadesa-filter-controls">
-            <label>Filter:</label>
-            <div className="hitopadesa-filter-buttons">
-              <button
-                type="button"
-                className={`hitopadesa-filter-button ${filter === 'all' ? 'active' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setFilter('all');
-                }}
-              >
-                All
-              </button>
-              <button
-                type="button"
-                className={`hitopadesa-filter-button ${filter === 'verses' ? 'active' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setFilter('verses');
-                }}
-              >
-                Verses
-              </button>
-              <button
-                type="button"
-                className={`hitopadesa-filter-button ${filter === 'commentary' ? 'active' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setFilter('commentary');
-                }}
-              >
-                Commentary
-              </button>
-            </div>
-          </div>
-        )}
-        {showSearchIcon && onSearchClick && (
-          <button
-            className="pancatantra-search-icon-button"
-            onClick={onSearchClick}
-            aria-label="Search"
-            title="Search by theme"
-          >
-            🔍
-          </button>
-        )}
-      </div>
-
-      {error && <div className="hitopadesa-error">{error}</div>}
-
-      {isLoadingVerses && (
-        <div className="hitopadesa-loading">Loading verses...</div>
-      )}
-
-      {!isLoadingVerses && verses.length === 0 && selectedChapter !== null && (
-        <div className="hitopadesa-empty">No verses found for this chapter.</div>
-      )}
-
-      {!isLoadingVerses && verses.length > 0 && filteredVerses.length === 0 && (
-        <div className="hitopadesa-empty">No items match the selected filter.</div>
-      )}
-
-      {!isLoadingVerses && currentVerses.length > 0 && (
+      {corpusName === 'bhagavad_gita' ? (
         <>
-          <div className="hitopadesa-verses">
-            {currentVerses.map((verse, index) => {
-              // Use chapter_sequence_index for key if available, otherwise fallback to verse_number or prose_number or index
-              const key = verse.sequence_number 
-                ? `item-${verse.sequence_number}` 
-                : (verse.chapter_sequence_index 
-                  ? `item-${verse.chapter_sequence_index}` 
-                  : (verse.verse_number || verse.prose_number || verse._id || `verse-${index}`));
-              const isHighlighted = highlightedVerseId === key;
-              return (
-                <div key={key} id={`verse-${key}`}>
-                  <CorpusVerse 
-                    verse={verse} 
-                    apiUrl={apiUrl}
-                    corpusName={corpusName}
-                    onUpdate={() => fetchVerses(selectedChapter)}
-                    user={user}
-                    token={token}
-                    onSignInSuccess={onSignInSuccess}
-                    isHighlighted={isHighlighted}
-                  />
-                </div>
-              );
-            })}
+          <div className="hitopadesa-controls">
+            <div className="hitopadesa-filter-controls">
+              <label>Filter:</label>
+              <div className="hitopadesa-filter-buttons">
+                <button
+                  type="button"
+                  className={`hitopadesa-filter-button ${filter === 'all' ? 'active' : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setFilter('all');
+                  }}
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  className={`hitopadesa-filter-button ${filter === 'verses' ? 'active' : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setFilter('verses');
+                  }}
+                >
+                  Verses
+                </button>
+                <button
+                  type="button"
+                  className={`hitopadesa-filter-button ${filter === 'commentary' ? 'active' : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setFilter('commentary');
+                  }}
+                >
+                  Commentary
+                </button>
+              </div>
+            </div>
+            {showSearchIcon && onSearchClick && (
+              <button
+                className="pancatantra-search-icon-button"
+                onClick={onSearchClick}
+                aria-label="Search"
+                title="Search by theme"
+              >
+                🔍
+              </button>
+            )}
           </div>
 
-          {totalPages > 1 && (
-            <div className="hitopadesa-pagination">
-              <button
-                className="pagination-button"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </button>
-              <span className="pagination-info">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                className="pagination-button"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </button>
+          {error && <div className="hitopadesa-error">{error}</div>}
+
+          <div className="bhagavad-gita-layout">
+            <div className="bhagavad-gita-chapter-sidebar">
+              <ChapterList
+                chapters={chapters}
+                selectedChapter={selectedChapter}
+                onChapterSelect={handleChapterSelect}
+                onVerseSelect={handleVerseSelect}
+                apiUrl={apiUrl}
+                isLoadingChapters={isLoadingChapters}
+              />
             </div>
+            <div className="bhagavad-gita-content">
+              {isLoadingVerses && (
+                <div className="hitopadesa-loading">Loading verses...</div>
+              )}
+
+              {!isLoadingVerses && verses.length === 0 && selectedChapter !== null && (
+                <div className="hitopadesa-empty">No verses found for this chapter.</div>
+              )}
+
+              {!isLoadingVerses && verses.length > 0 && filteredVerses.length === 0 && (
+                <div className="hitopadesa-empty">No items match the selected filter.</div>
+              )}
+
+              {!isLoadingVerses && currentVerses.length > 0 && (
+                <>
+                  <div className="hitopadesa-verses">
+                    {currentVerses.map((verse, index) => {
+                      // Use chapter_sequence_index for key if available, otherwise fallback to verse_number or prose_number or index
+                      const key = verse.sequence_number 
+                        ? `item-${verse.sequence_number}` 
+                        : (verse.chapter_sequence_index 
+                          ? `item-${verse.chapter_sequence_index}` 
+                          : (verse.verse_number || verse.prose_number || verse._id || `verse-${index}`));
+                      const isHighlighted = highlightedVerseId === key;
+                      return (
+                        <div key={key} id={`verse-${key}`}>
+                          <CorpusVerse 
+                            verse={verse} 
+                            apiUrl={apiUrl}
+                            corpusName={corpusName}
+                            onUpdate={() => fetchVerses(selectedChapter)}
+                            user={user}
+                            token={token}
+                            onSignInSuccess={onSignInSuccess}
+                            isHighlighted={isHighlighted}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {totalPages > 1 && (
+                    <div className="hitopadesa-pagination">
+                      <button
+                        className="pagination-button"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        Previous
+                      </button>
+                      <span className="pagination-info">
+                        Page {currentPage} of {totalPages}
+                      </span>
+                      <button
+                        className="pagination-button"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="hitopadesa-controls">
+            <div className="hitopadesa-chapter-selector">
+              <label htmlFor="chapter-select">Chapter:</label>
+              <select
+                id="chapter-select"
+                value={selectedChapter !== null ? selectedChapter : ''}
+                onChange={handleChapterChange}
+                disabled={isLoadingChapters || !chapters || chapters.length === 0}
+                className="chapter-dropdown"
+              >
+                {(!chapters || chapters.length === 0) && (
+                  <option value="">{isLoadingChapters ? 'Loading...' : 'No chapters available'}</option>
+                )}
+                {chapters && chapters.map((chapter) => (
+                  <option key={chapter.chapter_number} value={chapter.chapter_number}>
+                    Chapter {chapter.chapter_number}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {selectedChapterData && (
+              <div className="hitopadesa-chapter-info">
+                <span>
+                  {selectedChapterData.verse_count} verses
+                  {selectedChapterData.first_verse && selectedChapterData.last_verse && (
+                    <> • {selectedChapterData.first_verse} - {selectedChapterData.last_verse}</>
+                  )}
+                </span>
+              </div>
+            )}
+            {showSearchIcon && onSearchClick && (
+              <button
+                className="pancatantra-search-icon-button"
+                onClick={onSearchClick}
+                aria-label="Search"
+                title="Search by theme"
+              >
+                🔍
+              </button>
+            )}
+          </div>
+
+          {error && <div className="hitopadesa-error">{error}</div>}
+
+          {isLoadingVerses && (
+            <div className="hitopadesa-loading">Loading verses...</div>
+          )}
+
+          {!isLoadingVerses && verses.length === 0 && selectedChapter !== null && (
+            <div className="hitopadesa-empty">No verses found for this chapter.</div>
+          )}
+
+          {!isLoadingVerses && verses.length > 0 && filteredVerses.length === 0 && (
+            <div className="hitopadesa-empty">No items match the selected filter.</div>
+          )}
+
+          {!isLoadingVerses && currentVerses.length > 0 && (
+            <>
+              <div className="hitopadesa-verses">
+                {currentVerses.map((verse, index) => {
+                  // Use chapter_sequence_index for key if available, otherwise fallback to verse_number or prose_number or index
+                  const key = verse.sequence_number 
+                    ? `item-${verse.sequence_number}` 
+                    : (verse.chapter_sequence_index 
+                      ? `item-${verse.chapter_sequence_index}` 
+                      : (verse.verse_number || verse.prose_number || verse._id || `verse-${index}`));
+                  const isHighlighted = highlightedVerseId === key;
+                  return (
+                    <div key={key} id={`verse-${key}`}>
+                      <CorpusVerse 
+                        verse={verse} 
+                        apiUrl={apiUrl}
+                        corpusName={corpusName}
+                        onUpdate={() => fetchVerses(selectedChapter)}
+                        user={user}
+                        token={token}
+                        onSignInSuccess={onSignInSuccess}
+                        isHighlighted={isHighlighted}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="hitopadesa-pagination">
+                  <button
+                    className="pagination-button"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                  <span className="pagination-info">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    className="pagination-button"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </>
       )}
