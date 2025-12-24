@@ -147,10 +147,18 @@ function AdityaHridaya() {
   return (
     <div className="aditya-hridaya-container">
       <div className="aditya-hridaya-header">
-        <h1>Aditya Hridaya Stotra</h1>
-        <p className="aditya-hridaya-subtitle">
-          Yuddha Kanda, Sarga 107 • {verses.reduce((sum, group) => sum + group.verses.length, 0)} shlokas
-        </p>
+        <h1 className="aditya-hridaya-title">
+          <span className="aditya-hridaya-title-sanskrit">आदित्यहृदयस्तोत्रम्</span>
+          <span className="aditya-hridaya-title-english">Aditya Hridaya Stotra</span>
+        </h1>
+        <div className="aditya-hridaya-background">
+          <p>
+            The Aditya Hridaya Stotra is a powerful hymn dedicated to Surya, the Sun God. 
+            It was revealed to Lord Rama by the sage Agastya during the final battle with Ravana in the Ramayana. 
+            This sacred hymn is said to bestow victory, remove obstacles, and grant protection to those who recite it with devotion. 
+            Composed of thirty verses, it extols the glory of the Sun as the source of all energy and the witness of all actions.
+          </p>
+        </div>
       </div>
       
       <div className="aditya-hridaya-verses">
@@ -199,7 +207,7 @@ function AdityaHridaya() {
                 {/* Full translation (explanation) first */}
                 {group.explanation && (
                   <div className="aditya-hridaya-explanation">
-                    {group.explanation}
+                    {group.explanation.replace(/"/g, '')}
                   </div>
                 )}
                 
@@ -224,6 +232,7 @@ function AdityaHridaya() {
                       <div className="aditya-hridaya-word-by-word-content">
                         <div className="aditya-hridaya-word-list">
                           {group.translation
+                            .replace(/"/g, '')
                             .split(',')
                             .map((item, idx) => {
                               const trimmed = item.trim();

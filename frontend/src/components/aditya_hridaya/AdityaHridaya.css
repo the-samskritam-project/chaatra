@@ -14,17 +14,44 @@
   border-bottom: 2px solid #e0e0e0;
 }
 
-.aditya-hridaya-header h1 {
-  font-size: 2.5rem;
-  margin: 0 0 0.5rem 0;
-  color: #1a1a1a;
-  font-weight: 600;
+.aditya-hridaya-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1.5rem 0;
 }
 
-.aditya-hridaya-subtitle {
-  font-size: 1.1rem;
+.aditya-hridaya-title-sanskrit {
+  display: block;
+  font-size: 2.5rem;
+  color: #1a1a1a;
+  font-weight: 600;
+  font-family: 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', sans-serif;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+.aditya-hridaya-title-english {
+  display: block;
+  font-size: 1.8rem;
   color: #666;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.aditya-hridaya-background {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.aditya-hridaya-background p {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #555;
   margin: 0;
+  text-align: justify;
 }
 
 .aditya-hridaya-loading,
@@ -226,8 +253,16 @@
     padding: 1rem;
   }
 
-  .aditya-hridaya-header h1 {
+  .aditya-hridaya-title-sanskrit {
     font-size: 2rem;
+  }
+
+  .aditya-hridaya-title-english {
+    font-size: 1.5rem;
+  }
+
+  .aditya-hridaya-background p {
+    font-size: 1rem;
   }
 
   .aditya-hridaya-sanskrit-text {
