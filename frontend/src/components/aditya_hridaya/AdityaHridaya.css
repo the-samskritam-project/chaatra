@@ -1,0 +1,202 @@
+.aditya-hridaya-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.aditya-hridaya-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.aditya-hridaya-header h1 {
+  font-size: 2.5rem;
+  margin: 0 0 0.5rem 0;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.aditya-hridaya-subtitle {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 0;
+}
+
+.aditya-hridaya-loading,
+.aditya-hridaya-error {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.aditya-hridaya-error {
+  color: #d32f2f;
+}
+
+.aditya-hridaya-verses {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.aditya-hridaya-verse {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: box-shadow 0.2s ease;
+}
+
+.aditya-hridaya-verse:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.aditya-hridaya-verse-number {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.aditya-hridaya-verse-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Sanskrit column (left) */
+.aditya-hridaya-sanskrit {
+  border-right: 1px solid #e0e0e0;
+  padding-right: 2rem;
+}
+
+.aditya-hridaya-sanskrit-text {
+  font-size: 1.4rem;
+  line-height: 2;
+  color: #1a1a1a;
+  font-family: 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', sans-serif;
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+  text-align: justify;
+  word-break: break-word;
+}
+
+.aditya-hridaya-sanskrit-line {
+  margin-bottom: 0.5rem;
+}
+
+.aditya-hridaya-sanskrit-line:last-child {
+  margin-bottom: 0;
+}
+
+.aditya-hridaya-transliteration {
+  font-size: 0.95rem;
+  color: #666;
+  font-style: italic;
+  line-height: 1.6;
+  margin-top: 0.5rem;
+}
+
+/* Translation column (right) */
+.aditya-hridaya-translation {
+  padding-left: 2rem;
+}
+
+.aditya-hridaya-explanation {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #333;
+  margin-bottom: 1rem;
+  text-align: justify;
+}
+
+.aditya-hridaya-word-by-word {
+  margin-top: 1rem;
+}
+
+.aditya-hridaya-word-by-word-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  padding: 0.5rem 0;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #666;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.aditya-hridaya-word-by-word-toggle:hover {
+  color: #333;
+}
+
+.aditya-hridaya-toggle-icon {
+  font-size: 0.75rem;
+  display: inline-block;
+  width: 1rem;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.aditya-hridaya-word-by-word-content {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #666;
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: #f9f9f9;
+  border-radius: 4px;
+  text-align: justify;
+}
+
+/* Responsive design */
+@media (max-width: 968px) {
+  .aditya-hridaya-verse-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .aditya-hridaya-sanskrit {
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+    padding-right: 0;
+    padding-bottom: 1.5rem;
+  }
+
+  .aditya-hridaya-translation {
+    padding-left: 0;
+    padding-top: 1.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .aditya-hridaya-container {
+    padding: 1rem;
+  }
+
+  .aditya-hridaya-header h1 {
+    font-size: 2rem;
+  }
+
+  .aditya-hridaya-sanskrit-text {
+    font-size: 1.2rem;
+  }
+
+  .aditya-hridaya-translation-text {
+    font-size: 1rem;
+  }
+}
+

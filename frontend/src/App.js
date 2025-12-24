@@ -9,6 +9,7 @@ import RamayanaExplore from './components/ramayana/RamayanaExplore';
 import Hitopadesa from './components/hitopadesa/Hitopadesa';
 import Pancatantra from './components/pancatantra/Pancatantra';
 import BhagavadGita from './components/bhagavad_gita/BhagavadGita';
+import AdityaHridaya from './components/aditya_hridaya/AdityaHridaya';
 import Footer from './components/Footer';
 import SignInButton from './components/auth/SignInButton';
 
@@ -113,6 +114,7 @@ function App() {
                 {showHitopadesa && <Tab>Hitopadesa</Tab>}
                 {showPancatantra && <Tab>Pancatantra</Tab>}
                 <Tab>Bhagavad Gita</Tab>
+                <Tab>Aditya Hridaya</Tab>
               </TabList>
             </div>
           </div>
@@ -142,6 +144,9 @@ function App() {
             )}
             <TabPanel>
               <BhagavadGita user={user} token={token} onSignInSuccess={handleSignInSuccess} />
+            </TabPanel>
+            <TabPanel>
+              <AdityaHridaya />
             </TabPanel>
           </div>
         </Tabs>

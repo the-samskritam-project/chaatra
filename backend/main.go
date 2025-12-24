@@ -68,6 +68,7 @@ func main() {
 	mux.HandleFunc("/v2/bhagavad_gita/verses", h.BhagavadGitaVersesHandler)
 	mux.HandleFunc("/v2/bhagavad_gita/verses/", h.BhagavadGitaUpdateVerseHandler)
 	mux.HandleFunc("/v2/bhagavad_gita/search", h.BhagavadGitaSemanticSearchHandler)
+	mux.HandleFunc("/v2/aditya_hridaya_stotra/verses", h.AdityaHridayaVersesHandler)
 	mux.HandleFunc("/v2/search/semantic", h.SemanticSearchHandler)
 
 	// Auth endpoints
