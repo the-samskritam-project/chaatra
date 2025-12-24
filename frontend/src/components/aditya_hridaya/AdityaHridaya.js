@@ -203,7 +203,7 @@ function AdityaHridaya() {
                   </div>
                 )}
                 
-                {/* Word-by-word translation in collapsible */}
+                {/* Word-by-word translation in collapsible - at the end */}
                 {group.translation && (
                   <div className="aditya-hridaya-word-by-word">
                     <button
@@ -213,15 +213,46 @@ function AdityaHridaya() {
                         [groupIndex]: !prev[groupIndex]
                       }))}
                       aria-expanded={expandedWordByWord[groupIndex] || false}
+                      aria-label="Toggle word-by-word translation"
                     >
                       <span className="aditya-hridaya-toggle-icon">
                         {expandedWordByWord[groupIndex] ? '▼' : '▶'}
                       </span>
-                      <span>Word-by-word translation</span>
+                      <span className="aditya-hridaya-word-by-word-label">Word-by-word translation</span>
                     </button>
                     {expandedWordByWord[groupIndex] && (
                       <div className="aditya-hridaya-word-by-word-content">
-                        {group.translation}
+                        <div className="aditya-hridaya-word-list">
+                          {group.translation
+                            .split(',')
+                            .map((item, idx) => {
+                              const trimmed = item.trim();
+                              if (!trimmed) return null;
+                              
+                              // Split by space to separate Sanskrit word from translation
+                              const parts = trimmed.split(/\s+/);
+                              if (parts.length < 2) {
+                                // If no space, treat entire string as word
+                                return (
+                                  <div key={idx} className="aditya-hridaya-word-item">
+                                    <span className="aditya-hridaya-word">{trimmed}</span>
+                                  </div>
+                                );
+                              }
+                              
+                              // First part is Sanskrit, rest is translation
+                              const sanskritWord = parts[0];
+                              const translation = parts.slice(1).join(' ');
+                              
+                              return (
+                                <div key={idx} className="aditya-hridaya-word-item">
+                                  <span className="aditya-hridaya-word">{sanskritWord}</span>
+                                  <span className="aditya-hridaya-word-translation">{translation}</span>
+                                </div>
+                              );
+                            })
+                            .filter(Boolean)}
+                        </div>
                       </div>
                     )}
                   </div>
