@@ -4,7 +4,6 @@ import { Tabs, TabList, Tab, TabPanel } from 'react-tabs';
 import './tabs.css';
 import { useState, useEffect } from 'react';
 import Dictionary from './components/dictionary/Dictionary';
-import Flashcards from './components/flashcards/Flashcards';
 import RamayanaExplore from './components/ramayana/RamayanaExplore';
 import Hitopadesa from './components/hitopadesa/Hitopadesa';
 import Pancatantra from './components/pancatantra/Pancatantra';
@@ -101,20 +100,13 @@ function App() {
             <div className="tabs-wrapper">
               <TabList>
                 <Tab data-tooltip="Coming soon">
-                  Dictionary
+                  शब्दकोशः | Dictionary
                 </Tab>
-                <Tab
-                  className="react-tabs__tab tab-coming-soon"
-                  disabled
-                  data-tooltip="Coming soon"
-                >
-                  Flash cards
-                </Tab>
-                <Tab>Ramayana</Tab>
-                {showHitopadesa && <Tab>Hitopadesa</Tab>}
-                {showPancatantra && <Tab>Pancatantra</Tab>}
-                <Tab>Bhagavad Gita</Tab>
-                <Tab>Aditya Hridaya</Tab>
+                <Tab>रामायणम् | Ramayana</Tab>
+                {showHitopadesa && <Tab>हितोपदेशः | Hitopadesa</Tab>}
+                {showPancatantra && <Tab>पञ्चतन्त्रम् | Pancatantra</Tab>}
+                <Tab>भगवद्गीता | Bhagavad Gita</Tab>
+                <Tab>आदित्यहृदयम् | Aditya Hridaya</Tab>
               </TabList>
             </div>
           </div>
@@ -122,10 +114,6 @@ function App() {
           <div className="tab-panel-container">
             <TabPanel>
               <Dictionary />
-            </TabPanel>
-
-            <TabPanel>
-              <Flashcards />
             </TabPanel>
 
             <TabPanel>
