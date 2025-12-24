@@ -113,7 +113,7 @@ func main() {
 	mux.HandleFunc("/v2/favorites/status", h.JWTAuthMiddleware(h.GetFavoriteStatusHandler))
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000", "https://chaatra-frontend-production.up.railway.app"},
+		AllowedOrigins:   []string{"http://localhost:3000", "https://chaatra-frontend-production.up.railway.app", "https://vijayasamskritam.org", "http://vijayasamskritam.org"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization"}, // Assuming you might need Authorization
 		AllowCredentials: true,
