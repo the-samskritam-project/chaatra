@@ -62,6 +62,183 @@ function StotraViewer() {
   );
 }
 
+// Sruti/Scripture viewer component
+function SrutiViewer({ user, token, onSignInSuccess }) {
+  const scriptures = [
+    { 
+      id: 'bhagavad_gita', 
+      name: 'भगवद्गीता', 
+      nameEn: 'Bhagavad Gita', 
+      path: 'bhagavad-gita',
+      component: BhagavadGita
+    }
+  ];
+
+  return (
+    <div style={{ padding: '2rem' }}>
+      <h2 style={{ marginBottom: '1.5rem', color: '#333' }}>श्रुतिः | Scriptures</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {scriptures.map((scripture) => (
+          <Link
+            key={scripture.id}
+            to={`/sruti/${scripture.path}`}
+            style={{
+              padding: '1rem 1.5rem',
+              background: '#fff',
+              border: '1px solid #e0e0e0',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.2s ease',
+              fontSize: '1rem',
+              textDecoration: 'none',
+              display: 'block'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#f0f8ff';
+              e.currentTarget.style.borderColor = '#007bff';
+              e.currentTarget.style.transform = 'translateX(4px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#fff';
+              e.currentTarget.style.borderColor = '#e0e0e0';
+              e.currentTarget.style.transform = 'translateX(0)';
+            }}
+          >
+            <div style={{ fontWeight: 600, color: '#007bff', marginBottom: '0.25rem' }}>
+              {scripture.name}
+            </div>
+            <div style={{ color: '#666', fontSize: '0.9rem' }}>
+              {scripture.nameEn}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Epics viewer component
+function EpicsViewer() {
+  const epics = [
+    { 
+      id: 'ramayana', 
+      name: 'रामायणम्', 
+      nameEn: 'Ramayana', 
+      path: 'ramayana'
+    }
+  ];
+
+  return (
+    <div style={{ padding: '2rem' }}>
+      <h2 style={{ marginBottom: '1.5rem', color: '#333' }}>इतिहासः | Epics</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {epics.map((epic) => (
+          <Link
+            key={epic.id}
+            to={`/epics/${epic.path}`}
+            style={{
+              padding: '1rem 1.5rem',
+              background: '#fff',
+              border: '1px solid #e0e0e0',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.2s ease',
+              fontSize: '1rem',
+              textDecoration: 'none',
+              display: 'block'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#f0f8ff';
+              e.currentTarget.style.borderColor = '#007bff';
+              e.currentTarget.style.transform = 'translateX(4px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#fff';
+              e.currentTarget.style.borderColor = '#e0e0e0';
+              e.currentTarget.style.transform = 'translateX(0)';
+            }}
+          >
+            <div style={{ fontWeight: 600, color: '#007bff', marginBottom: '0.25rem' }}>
+              {epic.name}
+            </div>
+            <div style={{ color: '#666', fontSize: '0.9rem' }}>
+              {epic.nameEn}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Katha/Fables viewer component
+function KathaViewer() {
+  const showHitopadesa = process.env.REACT_APP_SHOW_HITOPADESA === 'true';
+  const showPancatantra = process.env.REACT_APP_SHOW_PANCATANTRA !== 'false';
+
+  const fables = [
+    { 
+      id: 'pancatantra', 
+      name: 'पञ्चतन्त्रम्', 
+      nameEn: 'Pancatantra', 
+      path: 'pancatantra',
+      show: showPancatantra
+    },
+    { 
+      id: 'hitopadesa', 
+      name: 'हितोपदेशः', 
+      nameEn: 'Hitopadesa', 
+      path: 'hitopadesa',
+      show: showHitopadesa
+    }
+  ].filter(fable => fable.show !== false);
+
+  return (
+    <div style={{ padding: '2rem' }}>
+      <h2 style={{ marginBottom: '1.5rem', color: '#333' }}>कथा | Fables</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {fables.map((fable) => (
+          <Link
+            key={fable.id}
+            to={`/katha/${fable.path}`}
+            style={{
+              padding: '1rem 1.5rem',
+              background: '#fff',
+              border: '1px solid #e0e0e0',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.2s ease',
+              fontSize: '1rem',
+              textDecoration: 'none',
+              display: 'block'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#f0f8ff';
+              e.currentTarget.style.borderColor = '#007bff';
+              e.currentTarget.style.transform = 'translateX(4px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#fff';
+              e.currentTarget.style.borderColor = '#e0e0e0';
+              e.currentTarget.style.transform = 'translateX(0)';
+            }}
+          >
+            <div style={{ fontWeight: 600, color: '#007bff', marginBottom: '0.25rem' }}>
+              {fable.name}
+            </div>
+            <div style={{ color: '#666', fontSize: '0.9rem' }}>
+              {fable.nameEn}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   // Check if Hitopadesa tab should be visible
   const showHitopadesa = process.env.REACT_APP_SHOW_HITOPADESA === 'true';
@@ -140,10 +317,9 @@ function App() {
   // Route configuration
   const routes = [
     { path: '/dictionary', label: 'शब्दकोशः | Dictionary', component: Dictionary, exact: false },
-    { path: '/ramayana', label: 'रामायणम् | Ramayana', component: RamayanaExplore, exact: false },
-    { path: '/hitopadesa', label: 'हितोपदेशः | Hitopadesa', component: Hitopadesa, exact: false, show: showHitopadesa },
-    { path: '/pancatantra', label: 'पञ्चतन्त्रम् | Pancatantra', component: Pancatantra, exact: false, show: showPancatantra },
-    { path: '/bhagavad-gita', label: 'भगवद्गीता | Bhagavad Gita', component: BhagavadGita, exact: false },
+    { path: '/epics', label: 'इतिहासः | Epics', component: EpicsViewer, exact: false },
+    { path: '/katha', label: 'कथा | Fables', component: KathaViewer, exact: false },
+    { path: '/sruti', label: 'श्रुतिः | Scriptures', component: SrutiViewer, exact: false },
     { path: '/stotras', label: 'स्तोत्राणि | Stotras', component: StotraViewer, exact: false }
   ];
 
@@ -193,15 +369,25 @@ function App() {
 
           <div className="tab-panel-container">
             <Routes>
-              <Route path="/" element={<Navigate to="/ramayana" replace />} />
+              <Route path="/" element={<Navigate to="/epics/ramayana" replace />} />
               <Route path="/dictionary" element={<Dictionary />} />
-              <Route path="/ramayana" element={<RamayanaExplore />} />
-              {showHitopadesa && <Route path="/hitopadesa" element={<Hitopadesa />} />}
-              {showPancatantra && <Route path="/pancatantra" element={<Pancatantra />} />}
-              <Route path="/bhagavad-gita" element={<BhagavadGita user={user} token={token} onSignInSuccess={handleSignInSuccess} />} />
+              <Route path="/epics" element={<EpicsViewer />} />
+              <Route path="/epics/ramayana" element={<RamayanaExplore />} />
+              {/* Redirect old route for backward compatibility */}
+              <Route path="/ramayana" element={<Navigate to="/epics/ramayana" replace />} />
+              <Route path="/katha" element={<KathaViewer />} />
+              {showHitopadesa && <Route path="/katha/hitopadesa" element={<Hitopadesa />} />}
+              {showPancatantra && <Route path="/katha/pancatantra" element={<Pancatantra />} />}
+              {/* Redirect old routes for backward compatibility */}
+              {showHitopadesa && <Route path="/hitopadesa" element={<Navigate to="/katha/hitopadesa" replace />} />}
+              {showPancatantra && <Route path="/pancatantra" element={<Navigate to="/katha/pancatantra" replace />} />}
+              <Route path="/sruti" element={<SrutiViewer user={user} token={token} onSignInSuccess={handleSignInSuccess} />} />
+              <Route path="/sruti/bhagavad-gita" element={<BhagavadGita user={user} token={token} onSignInSuccess={handleSignInSuccess} />} />
+              {/* Redirect old route for backward compatibility */}
+              <Route path="/bhagavad-gita" element={<Navigate to="/sruti/bhagavad-gita" replace />} />
               <Route path="/stotras" element={<StotraViewer />} />
               <Route path="/stotras/aditya-hridaya" element={<AdityaHridaya />} />
-              <Route path="*" element={<Navigate to="/ramayana" replace />} />
+              <Route path="*" element={<Navigate to="/epics/ramayana" replace />} />
             </Routes>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import RamayanaModal from './RamayanaModal';
 import { splitShlokaLines, splitTranslationTokens } from './shlokaUtils';
 import './RamayanaExplore.css';
@@ -11,6 +12,10 @@ const difficultyLabels = [
 ];
 
 function RamayanaExplore() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const showBackButton = location.pathname.startsWith('/epics/');
+  
   const [apiUrl, setApiUrl] = useState('');
   const [sliderValue, setSliderValue] = useState(0.35);
   const [isLoading, setIsLoading] = useState(false);
@@ -144,6 +149,29 @@ function RamayanaExplore() {
 
   return (
     <div className="ramayana-explore">
+      {showBackButton && (
+        <button
+          onClick={() => navigate('/epics')}
+          style={{
+            marginBottom: '1rem',
+            padding: '0.5rem 1rem',
+            background: '#f5f5f5',
+            border: '1px solid #ddd',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '0.9rem',
+            color: '#666'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#e0e0e0';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#f5f5f5';
+          }}
+        >
+          ← Back to Epics
+        </button>
+      )}
       <div className="explore-card">
         <div className="explore-header">
           <div>
