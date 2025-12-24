@@ -305,6 +305,38 @@ def extract_chapters_command(corpus_name: str, args):
     )
 
 
+def extract_aditya_hridaya_stotra_command(args):
+    """Execute extract_aditya_hridaya_stotra command."""
+    from processor.extract_aditya_hridaya import extract_aditya_hridaya_to_mongodb
+    
+    # Get JSON path (default: backend/chroma_db/valmiki_ramayan_shlokas.json)
+    json_path = getattr(args, 'stotra_json_path', None)
+    if not json_path:
+        # Default path relative to project root
+        # __file__ is corpus/command_processor.py, so dirname twice gets project root
+        project_root = os.path.dirname(os.path.dirname(__file__))
+        json_path = os.path.join(project_root, 'backend', 'chroma_db', 'valmiki_ramayan_shlokas.json')
+    
+    if not os.path.exists(json_path):
+        print(f"Error: JSON file not found: {json_path}")
+        sys.exit(1)
+    
+    # Get MongoDB URI
+    mongodb_uri = args.mongodb_uri or os.getenv('MONGODB_URI')
+    if not mongodb_uri:
+        print("Error: MONGODB_URI must be provided or set as environment variable")
+        sys.exit(1)
+    
+    # Get database name (defaults to aditya_hridaya_stotra)
+    database_name = args.database or 'aditya_hridaya_stotra'
+    
+    extract_aditya_hridaya_to_mongodb(
+        json_path=json_path,
+        mongodb_uri=mongodb_uri,
+        database_name=database_name
+    )
+
+
 def classify_bhagavad_gita_themes_command(corpus_name: str, args):
     """Execute classify_bhagavad_gita_themes command."""
     corpus_name_lower = corpus_name.lower()
@@ -440,6 +472,10 @@ Examples:
   python command_processor.py extract_chapters bhagavad_gita --extract-xml-path corpus/data/bhagavad_gita_ramanuja_bhashya.xml --extract-from-chapter 18 --extract-to-chapter 18
   python command_processor.py extract_chapters bhagavad_gita --extract-xml-path corpus/data/bhagavad_gita_ramanuja_bhashya.xml --extract-from-chapter 18 --extract-to-chapter 18 --extract-clear-existing
   
+  # Extract Aditya Hridaya Stotra to MongoDB
+  python command_processor.py extract_aditya_hridaya_stotra
+  python command_processor.py extract_aditya_hridaya_stotra --stotra-json-path backend/chroma_db/valmiki_ramayan_shlokas.json --database aditya_hridaya_stotra
+  
   # Summarise Bhagavad Gita chapters
   python command_processor.py summarise_bhagavad_gita
   python command_processor.py summarise_bhagavad_gita --clear-existing
@@ -458,7 +494,7 @@ Examples:
     
     parser.add_argument(
         'command',
-        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'extract_chapters', 'summarise_bhagavad_gita', 'classify_bhagavad_gita_themes', 'generate_bhagavad_gita_embeddings'],
+        choices=['transliterate', 'translate', 'import_to_mongo', 'generate_embeddings', 'vector_search', 'classify_verses', 'build_intervals', 'summarize_intervals', 'create_interval_theme_docs', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'extract_chapters', 'summarise_bhagavad_gita', 'classify_bhagavad_gita_themes', 'generate_bhagavad_gita_embeddings', 'extract_aditya_hridaya_stotra'],
         help='Command to execute'
     )
     parser.add_argument(
@@ -796,11 +832,18 @@ Examples:
         help='Vector collection name for generate_bhagavad_gita_embeddings (default: bhagavad_gita_vector_search)'
     )
     
+    # Extract Aditya Hridaya Stotra arguments
+    parser.add_argument(
+        '--stotra-json-path',
+        dest='stotra_json_path',
+        help='Path to Ramayana JSON file for extract_aditya_hridaya_stotra (default: backend/chroma_db/valmiki_ramayan_shlokas.json)'
+    )
+    
     args = parser.parse_args()
     
     # Validate corpus name (not required for vector_search, generate_interval_theme_embeddings, cluster_interval_themes, generate_theme_nodes)
-    # process_bhagavad_gita, extract_chapters, summarise_bhagavad_gita, classify_bhagavad_gita_themes, and generate_bhagavad_gita_embeddings require corpus but validation is done in the command function
-    if args.command not in ['vector_search', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'extract_chapters', 'summarise_bhagavad_gita', 'classify_bhagavad_gita_themes', 'generate_bhagavad_gita_embeddings']:
+    # process_bhagavad_gita, extract_chapters, summarise_bhagavad_gita, classify_bhagavad_gita_themes, generate_bhagavad_gita_embeddings, and extract_aditya_hridaya_stotra require corpus but validation is done in the command function
+    if args.command not in ['vector_search', 'generate_interval_theme_embeddings', 'cluster_interval_themes', 'generate_theme_nodes', 'process_bhagavad_gita', 'extract_chapters', 'summarise_bhagavad_gita', 'classify_bhagavad_gita_themes', 'generate_bhagavad_gita_embeddings', 'extract_aditya_hridaya_stotra']:
         if not args.corpus:
             print("Error: Corpus name is required for this command")
             sys.exit(1)
@@ -991,6 +1034,8 @@ Examples:
             process_bhagavad_gita_command(args.corpus, args)
         elif args.command == 'extract_chapters':
             extract_chapters_command(args.corpus, args)
+        elif args.command == 'extract_aditya_hridaya_stotra':
+            extract_aditya_hridaya_stotra_command(args)
         elif args.command == 'classify_bhagavad_gita_themes':
             classify_bhagavad_gita_themes_command(args.corpus, args)
         elif args.command == 'generate_bhagavad_gita_embeddings':
