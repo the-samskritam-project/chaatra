@@ -1,8 +1,8 @@
 import './App.css';
 import './Modal.css';
-import { Tabs, TabList, Tab, TabPanel } from 'react-tabs';
 import './tabs.css';
 import { useState, useEffect } from 'react';
+import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import Dictionary from './components/dictionary/Dictionary';
 import RamayanaExplore from './components/ramayana/RamayanaExplore';
 import Hitopadesa from './components/hitopadesa/Hitopadesa';
@@ -13,82 +13,51 @@ import Footer from './components/Footer';
 import SignInButton from './components/auth/SignInButton';
 
 // Stotra viewer component
-function StotraViewer({ selectedStotra, onSelectStotra }) {
+function StotraViewer() {
   const stotras = [
-    { id: 'aditya_hridaya', name: 'आदित्यहृदयम्', nameEn: 'Aditya Hridaya Stotra', component: AdityaHridaya }
+    { id: 'aditya_hridaya', name: 'आदित्यहृदयम्', nameEn: 'Aditya Hridaya Stotra', path: 'aditya-hridaya' }
   ];
 
-  if (!selectedStotra) {
-    return (
-      <div style={{ padding: '2rem' }}>
-        <h2 style={{ marginBottom: '1.5rem', color: '#333' }}>स्तोत्राणि | Stotras</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {stotras.map((stotra) => (
-            <button
-              key={stotra.id}
-              onClick={() => onSelectStotra(stotra.id)}
-              style={{
-                padding: '1rem 1.5rem',
-                background: '#fff',
-                border: '1px solid #e0e0e0',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                textAlign: 'left',
-                transition: 'all 0.2s ease',
-                fontSize: '1rem'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#f0f8ff';
-                e.currentTarget.style.borderColor = '#007bff';
-                e.currentTarget.style.transform = 'translateX(4px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = '#fff';
-                e.currentTarget.style.borderColor = '#e0e0e0';
-                e.currentTarget.style.transform = 'translateX(0)';
-              }}
-            >
-              <div style={{ fontWeight: 600, color: '#007bff', marginBottom: '0.25rem' }}>
-                {stotra.name}
-              </div>
-              <div style={{ color: '#666', fontSize: '0.9rem' }}>
-                {stotra.nameEn}
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  const selected = stotras.find(s => s.id === selectedStotra);
-  if (!selected) return null;
-
-  const Component = selected.component;
   return (
-    <div>
-      <button
-        onClick={() => onSelectStotra(null)}
-        style={{
-          marginBottom: '1rem',
-          padding: '0.5rem 1rem',
-          background: '#f5f5f5',
-          border: '1px solid #ddd',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontSize: '0.9rem',
-          color: '#666'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = '#e0e0e0';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = '#f5f5f5';
-        }}
-      >
-        ← Back to Stotras
-      </button>
-      <Component />
+    <div style={{ padding: '2rem' }}>
+      <h2 style={{ marginBottom: '1.5rem', color: '#333' }}>स्तोत्राणि | Stotras</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {stotras.map((stotra) => (
+          <Link
+            key={stotra.id}
+            to={`/stotras/${stotra.path}`}
+            style={{
+              padding: '1rem 1.5rem',
+              background: '#fff',
+              border: '1px solid #e0e0e0',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.2s ease',
+              fontSize: '1rem',
+              textDecoration: 'none',
+              display: 'block'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#f0f8ff';
+              e.currentTarget.style.borderColor = '#007bff';
+              e.currentTarget.style.transform = 'translateX(4px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#fff';
+              e.currentTarget.style.borderColor = '#e0e0e0';
+              e.currentTarget.style.transform = 'translateX(0)';
+            }}
+          >
+            <div style={{ fontWeight: 600, color: '#007bff', marginBottom: '0.25rem' }}>
+              {stotra.name}
+            </div>
+            <div style={{ color: '#666', fontSize: '0.9rem' }}>
+              {stotra.nameEn}
+            </div>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
@@ -104,14 +73,11 @@ function App() {
   const [token, setToken] = useState(null);
   const [apiUrl, setApiUrl] = useState('');
   
-  // Track selected tab index
-  const [selectedIndex, setSelectedIndex] = useState(2);
-  
   // Track sidebar collapse state (false = expanded, true = collapsed)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
-  // Track Stotra sub-item selection
-  const [selectedStotra, setSelectedStotra] = useState(null);
+  // Get current location for active tab styling
+  const location = useLocation();
 
   // Load auth data from localStorage on mount
   useEffect(() => {
@@ -163,6 +129,24 @@ function App() {
     setIsSidebarCollapsed(prev => !prev);
   };
 
+  // Helper function to check if a route is active
+  const isActiveRoute = (path) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
+  };
+
+  // Route configuration
+  const routes = [
+    { path: '/dictionary', label: 'शब्दकोशः | Dictionary', component: Dictionary, exact: false },
+    { path: '/ramayana', label: 'रामायणम् | Ramayana', component: RamayanaExplore, exact: false },
+    { path: '/hitopadesa', label: 'हितोपदेशः | Hitopadesa', component: Hitopadesa, exact: false, show: showHitopadesa },
+    { path: '/pancatantra', label: 'पञ्चतन्त्रम् | Pancatantra', component: Pancatantra, exact: false, show: showPancatantra },
+    { path: '/bhagavad-gita', label: 'भगवद्गीता | Bhagavad Gita', component: BhagavadGita, exact: false },
+    { path: '/stotras', label: 'स्तोत्राणि | Stotras', component: StotraViewer, exact: false }
+  ];
+
   return (
     <div>
       <SignInButton user={user} onSignInSuccess={handleSignInSuccess} onSignOut={handleSignOut} apiUrl={apiUrl} />
@@ -175,53 +159,52 @@ function App() {
         >
           {sidebarCollapsed ? '▶' : '◀'}
         </button>
-        <Tabs selectedIndex={selectedIndex} onSelect={(index) => setSelectedIndex(index)}>
+        <div className="react-tabs">
           <div className={`tabs-section ${sidebarCollapsed ? 'collapsed' : ''}`}>
             <div className="heading">
               <span className="devanagari">छात्रः</span>
               <span className="english">A pupil, disciple.</span>
             </div>
             <div className="tabs-wrapper">
-              <TabList>
-                <Tab data-tooltip="Coming soon">
-                  शब्दकोशः | Dictionary
-                </Tab>
-                <Tab>रामायणम् | Ramayana</Tab>
-                {showHitopadesa && <Tab>हितोपदेशः | Hitopadesa</Tab>}
-                {showPancatantra && <Tab>पञ्चतन्त्रम् | Pancatantra</Tab>}
-                <Tab>भगवद्गीता | Bhagavad Gita</Tab>
-                <Tab>स्तोत्राणि | Stotras</Tab>
-              </TabList>
+              <ul className="react-tabs__tab-list" role="tablist">
+                {routes
+                  .filter(route => route.show !== false)
+                  .map((route) => {
+                    const isActive = isActiveRoute(route.path);
+                    return (
+                      <li
+                        key={route.path}
+                        className={`react-tabs__tab ${isActive ? 'react-tabs__tab--selected' : ''}`}
+                        role="tab"
+                        aria-selected={isActive}
+                      >
+                        <Link
+                          to={route.path}
+                          data-tooltip={route.path === '/dictionary' ? 'Coming soon' : undefined}
+                        >
+                          {route.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+              </ul>
             </div>
           </div>
 
           <div className="tab-panel-container">
-            <TabPanel>
-              <Dictionary />
-            </TabPanel>
-
-            <TabPanel>
-              <RamayanaExplore />
-            </TabPanel>
-
-            {showHitopadesa && (
-              <TabPanel>
-                <Hitopadesa />
-              </TabPanel>
-            )}
-            {showPancatantra && (
-              <TabPanel>
-                <Pancatantra />
-              </TabPanel>
-            )}
-            <TabPanel>
-              <BhagavadGita user={user} token={token} onSignInSuccess={handleSignInSuccess} />
-            </TabPanel>
-            <TabPanel>
-              <StotraViewer selectedStotra={selectedStotra} onSelectStotra={setSelectedStotra} />
-            </TabPanel>
+            <Routes>
+              <Route path="/" element={<Navigate to="/ramayana" replace />} />
+              <Route path="/dictionary" element={<Dictionary />} />
+              <Route path="/ramayana" element={<RamayanaExplore />} />
+              {showHitopadesa && <Route path="/hitopadesa" element={<Hitopadesa />} />}
+              {showPancatantra && <Route path="/pancatantra" element={<Pancatantra />} />}
+              <Route path="/bhagavad-gita" element={<BhagavadGita user={user} token={token} onSignInSuccess={handleSignInSuccess} />} />
+              <Route path="/stotras" element={<StotraViewer />} />
+              <Route path="/stotras/aditya-hridaya" element={<AdityaHridaya />} />
+              <Route path="*" element={<Navigate to="/ramayana" replace />} />
+            </Routes>
           </div>
-        </Tabs>
+        </div>
       </div>
       <Footer />
     </div>

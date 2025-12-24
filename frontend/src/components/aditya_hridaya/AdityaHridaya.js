@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './AdityaHridaya.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || 'http://localhost:8081';
@@ -8,6 +9,9 @@ function AdityaHridaya() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedWordByWord, setExpandedWordByWord] = useState({});
+  const navigate = useNavigate();
+  const location = useLocation();
+  const showBackButton = location.pathname.startsWith('/stotras/');
 
   useEffect(() => {
     fetchVerses();
@@ -146,6 +150,29 @@ function AdityaHridaya() {
 
   return (
     <div className="aditya-hridaya-container">
+      {showBackButton && (
+        <button
+          onClick={() => navigate('/stotras')}
+          style={{
+            marginBottom: '1rem',
+            padding: '0.5rem 1rem',
+            background: '#f5f5f5',
+            border: '1px solid #ddd',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '0.9rem',
+            color: '#666'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#e0e0e0';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#f5f5f5';
+          }}
+        >
+          ← Back to Stotras
+        </button>
+      )}
       <div className="aditya-hridaya-header">
         <h1 className="aditya-hridaya-title">
           <span className="aditya-hridaya-title-sanskrit">आदित्यहृदयस्तोत्रम्</span>
