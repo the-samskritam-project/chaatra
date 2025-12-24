@@ -79,6 +79,18 @@
   padding-right: 2rem;
 }
 
+.aditya-hridaya-sanskrit-verse-group {
+  margin-bottom: 1.5rem;
+}
+
+.aditya-hridaya-sanskrit-verse-group:last-child {
+  margin-bottom: 0;
+}
+
+.aditya-hridaya-verse-gap {
+  height: 1.5rem;
+}
+
 .aditya-hridaya-sanskrit-text {
   font-size: 1.4rem;
   line-height: 2;

@@ -86,6 +86,26 @@ function AdityaHridaya() {
     return uniqueVerses.sort((a, b) => a.shloka - b.shloka);
   };
 
+  const groupVersesByTranslation = (verses) => {
+    // Group verses by their translation text
+    const groups = {};
+    verses.forEach((verse) => {
+      const translationKey = verse.translation || verse.explanation || '';
+      if (!groups[translationKey]) {
+        groups[translationKey] = [];
+      }
+      groups[translationKey].push(verse);
+    });
+    
+    // Convert groups to array format
+    return Object.values(groups).map((group) => ({
+      verses: group.sort((a, b) => a.shloka - b.shloka),
+      translation: group[0].translation,
+      explanation: group[0].explanation,
+      transliteration: group[0].transliteration,
+    }));
+  };
+
   const fetchVerses = async () => {
     try {
       setLoading(true);
@@ -97,7 +117,8 @@ function AdityaHridaya() {
       
       const data = await response.json();
       const splitData = splitShlokas(data);
-      setVerses(splitData);
+      const groupedData = groupVersesByTranslation(splitData);
+      setVerses(groupedData);
       setError(null);
     } catch (err) {
       console.error('Error fetching Aditya Hridaya Stotra:', err);
@@ -128,71 +149,79 @@ function AdityaHridaya() {
       <div className="aditya-hridaya-header">
         <h1>Aditya Hridaya Stotra</h1>
         <p className="aditya-hridaya-subtitle">
-          Yuddha Kanda, Sarga 107 • {verses.length} shlokas
+          Yuddha Kanda, Sarga 107 • {verses.reduce((sum, group) => sum + group.verses.length, 0)} shlokas
         </p>
       </div>
       
       <div className="aditya-hridaya-verses">
-        {verses.map((verse, index) => (
-          <div key={verse._id || index} className="aditya-hridaya-verse">
+        {verses.map((group, groupIndex) => (
+          <div key={groupIndex} className="aditya-hridaya-verse">
             <div className="aditya-hridaya-verse-number">
-              Verse {verse.shloka}
+              {group.verses.length > 1 
+                ? `Verses ${group.verses.map(v => v.shloka).join(', ')}`
+                : `Verse ${group.verses[0].shloka}`
+              }
             </div>
             <div className="aditya-hridaya-verse-content">
               <div className="aditya-hridaya-sanskrit">
-                <div className="aditya-hridaya-sanskrit-text">
-                  {verse.shloka_text
-                    // Replace shloka number markers like "6.107.1।।" with just "।।"
-                    .replace(/।।6\.107\.\d+।।/g, '।।')
-                    .split(/\s+।\s+/)
-                    .filter(line => line.trim().length > 0)
-                    .map((line, idx, arr) => {
-                      const trimmed = line.trim();
-                      // Add danda back to all lines except the last one
-                      if (idx < arr.length - 1) {
-                        return trimmed + ' ।';
-                      }
-                      return trimmed;
-                    })
-                    .map((line, idx) => (
-                      <div key={idx} className="aditya-hridaya-sanskrit-line">
-                        {line}
+                {group.verses.map((verse, verseIndex) => (
+                  <div key={verse._id || verseIndex} className="aditya-hridaya-sanskrit-verse-group">
+                    {verseIndex > 0 && <div className="aditya-hridaya-verse-gap" />}
+                    <div className="aditya-hridaya-sanskrit-text">
+                      {verse.shloka_text
+                        // Replace shloka number markers like "6.107.1।।" with just "।।"
+                        .replace(/।।6\.107\.\d+।।/g, '।।')
+                        .split(/\s+।\s+/)
+                        .filter(line => line.trim().length > 0)
+                        .map((line, idx, arr) => {
+                          const trimmed = line.trim();
+                          // Add danda back to all lines except the last one
+                          if (idx < arr.length - 1) {
+                            return trimmed + ' ।';
+                          }
+                          return trimmed;
+                        })
+                        .map((line, idx) => (
+                          <div key={idx} className="aditya-hridaya-sanskrit-line">
+                            {line}
+                          </div>
+                        ))}
+                    </div>
+                    {verse.transliteration && (
+                      <div className="aditya-hridaya-transliteration">
+                        {verse.transliteration}
                       </div>
-                    ))}
-                </div>
-                {verse.transliteration && (
-                  <div className="aditya-hridaya-transliteration">
-                    {verse.transliteration}
+                    )}
                   </div>
-                )}
+                ))}
               </div>
               <div className="aditya-hridaya-translation">
                 {/* Full translation (explanation) first */}
-                {verse.explanation && (
+                {group.explanation && (
                   <div className="aditya-hridaya-explanation">
-                    {verse.explanation}
+                    {group.explanation}
                   </div>
                 )}
                 
                 {/* Word-by-word translation in collapsible */}
-                {verse.translation && (
+                {group.translation && (
                   <div className="aditya-hridaya-word-by-word">
                     <button
                       className="aditya-hridaya-word-by-word-toggle"
                       onClick={() => setExpandedWordByWord(prev => ({
                         ...prev,
-                        [verse._id]: !prev[verse._id]
+                        [groupIndex]: !prev[groupIndex]
                       }))}
-                      aria-expanded={expandedWordByWord[verse._id] || false}
+                      aria-expanded={expandedWordByWord[groupIndex] || false}
                     >
                       <span className="aditya-hridaya-toggle-icon">
-                        {expandedWordByWord[verse._id] ? '▼' : '▶'}
+                        {expandedWordByWord[groupIndex] ? '▼' : '▶'}
                       </span>
                       <span>Word-by-word translation</span>
                     </button>
-                    {expandedWordByWord[verse._id] && (
+                    {expandedWordByWord[groupIndex] && (
                       <div className="aditya-hridaya-word-by-word-content">
-                        {verse.translation}
+                        {group.translation}
                       </div>
                     )}
                   </div>
