@@ -314,13 +314,51 @@ function App() {
     return location.pathname.startsWith(path);
   };
 
-  // Route configuration
+  // Route configuration with sub-items
   const routes = [
-    { path: '/dictionary', label: 'शब्दकोशः | Dictionary', component: Dictionary, exact: false },
-    { path: '/epics', label: 'इतिहासः | Epics', component: EpicsViewer, exact: false },
-    { path: '/katha', label: 'कथा | Fables', component: KathaViewer, exact: false },
-    { path: '/sruti', label: 'श्रुतिः | Scriptures', component: SrutiViewer, exact: false },
-    { path: '/stotras', label: 'स्तोत्राणि | Stotras', component: StotraViewer, exact: false }
+    { 
+      path: '/dictionary', 
+      label: 'शब्दकोशः | Dictionary', 
+      component: Dictionary, 
+      exact: false 
+    },
+    { 
+      path: '/epics', 
+      label: 'इतिहासः | Epics', 
+      component: EpicsViewer, 
+      exact: false,
+      subItems: [
+        { path: '/epics/ramayana', label: 'रामायणम् | Ramayana' }
+      ]
+    },
+    { 
+      path: '/katha', 
+      label: 'कथा | Fables', 
+      component: KathaViewer, 
+      exact: false,
+      subItems: [
+        ...(showPancatantra ? [{ path: '/katha/pancatantra', label: 'पञ्चतन्त्रम् | Pancatantra' }] : []),
+        ...(showHitopadesa ? [{ path: '/katha/hitopadesa', label: 'हितोपदेशः | Hitopadesa' }] : [])
+      ]
+    },
+    { 
+      path: '/sruti', 
+      label: 'श्रुतिः | Scriptures', 
+      component: SrutiViewer, 
+      exact: false,
+      subItems: [
+        { path: '/sruti/bhagavad-gita', label: 'भगवद्गीता | Bhagavad Gita' }
+      ]
+    },
+    { 
+      path: '/stotras', 
+      label: 'स्तोत्राणि | Stotras', 
+      component: StotraViewer, 
+      exact: false,
+      subItems: [
+        { path: '/stotras/aditya-hridaya', label: 'आदित्यहृदयम् | Aditya Hridaya Stotra' }
+      ]
+    }
   ];
 
   return (
@@ -347,19 +385,39 @@ function App() {
                   .filter(route => route.show !== false)
                   .map((route) => {
                     const isActive = isActiveRoute(route.path);
+                    const hasSubItems = route.subItems && route.subItems.length > 0;
+                    const isParentActive = hasSubItems && route.subItems.some(subItem => isActiveRoute(subItem.path));
                     return (
-                      <li
-                        key={route.path}
-                        className={`react-tabs__tab ${isActive ? 'react-tabs__tab--selected' : ''}`}
-                        role="tab"
-                        aria-selected={isActive}
-                      >
-                        <Link
-                          to={route.path}
-                          data-tooltip={route.path === '/dictionary' ? 'Coming soon' : undefined}
+                      <li key={route.path} className="react-tabs__tab-container">
+                        <div
+                          className={`react-tabs__tab ${(isActive && !hasSubItems) || isParentActive ? 'react-tabs__tab--selected' : ''}`}
+                          role="tab"
+                          aria-selected={(isActive && !hasSubItems) || isParentActive}
                         >
-                          {route.label}
-                        </Link>
+                          <Link
+                            to={route.path}
+                            data-tooltip={route.path === '/dictionary' ? 'Coming soon' : undefined}
+                          >
+                            {route.label}
+                          </Link>
+                        </div>
+                        {hasSubItems && (
+                          <ul className="react-tabs__sub-tab-list">
+                            {route.subItems.map((subItem) => {
+                              const isSubActive = isActiveRoute(subItem.path);
+                              return (
+                                <li
+                                  key={subItem.path}
+                                  className={`react-tabs__sub-tab ${isSubActive ? 'react-tabs__sub-tab--selected' : ''}`}
+                                >
+                                  <Link to={subItem.path}>
+                                    {subItem.label}
+                                  </Link>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        )}
                       </li>
                     );
                   })}
