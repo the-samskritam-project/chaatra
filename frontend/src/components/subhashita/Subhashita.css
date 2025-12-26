@@ -100,3 +100,406 @@
   border-left: 3px solid #007bff;
 }
 
+/* Learning aids section */
+.subhashita-learning-aids {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.subhashita-buttons-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.subhashita-action-button {
+  padding: 0.75rem 1.5rem;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.subhashita-action-button:hover:not(:disabled) {
+  background: #218838;
+}
+
+.subhashita-action-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.subhashita-save-button {
+  background: #007bff;
+}
+
+.subhashita-save-button:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.subhashita-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.subhashita-splits-section {
+  margin-bottom: 1.5rem;
+}
+
+.subhashita-splits {
+  font-size: 1.3rem;
+  line-height: 1.8;
+  color: #333;
+  padding: 1rem;
+  background: #f0f8ff;
+  border-radius: 4px;
+  border-left: 3px solid #28a745;
+  font-family: 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', sans-serif;
+  font-weight: bold;
+}
+
+.subhashita-word-by-word-section {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.subhashita-word-by-word {
+  padding: 1rem;
+  background: #fff9e6;
+  border-radius: 4px;
+  border-left: 3px solid #ffc107;
+}
+
+.subhashita-word-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.subhashita-word-item:last-child {
+  border-bottom: none;
+}
+
+.subhashita-word {
+  font-family: 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  min-width: 120px;
+}
+
+.subhashita-word-separator {
+  color: #666;
+  font-size: 1rem;
+}
+
+.subhashita-word-translation {
+  color: #555;
+  font-size: 0.95rem;
+  flex: 1;
+}
+
+/* User translation section */
+.subhashita-user-translation-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.subhashita-translation-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  margin-bottom: 1rem;
+}
+
+.subhashita-translation-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.subhashita-translation-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.subhashita-verification-result {
+  padding: 1rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+}
+
+.subhashita-verification-result.accurate {
+  background: #d4edda;
+  border-left: 3px solid #28a745;
+}
+
+.subhashita-verification-result.needs-improvement {
+  background: #fff3cd;
+  border-left: 3px solid #ffc107;
+}
+
+.subhashita-verification-header {
+  margin-bottom: 0.75rem;
+}
+
+.subhashita-verification-status {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.subhashita-verification-result.accurate .subhashita-verification-status {
+  color: #155724;
+}
+
+.subhashita-verification-result.needs-improvement .subhashita-verification-status {
+  color: #856404;
+}
+
+.subhashita-verification-feedback {
+  color: #333;
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+
+.subhashita-verification-suggestions {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.subhashita-verification-suggestions strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.subhashita-verification-suggestions ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.subhashita-verification-suggestions li {
+  margin-bottom: 0.25rem;
+  color: #555;
+}
+
+.subhashita-saved-translation-info {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #d1ecf1;
+  color: #0c5460;
+  border-radius: 4px;
+  border-left: 3px solid #17a2b8;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.subhashita-saved-translation-info strong {
+  color: #0c5460;
+}
+
+.subhashita-saved-time {
+  font-size: 0.85rem;
+  color: #0c5460;
+  opacity: 0.8;
+}
+
+.subhashita-saved-translation {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #d4edda;
+  color: #155724;
+  border-radius: 4px;
+  border-left: 3px solid #28a745;
+}
+
+/* Tab Navigation */
+.subhashita-tabs {
+  display: flex;
+  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 2rem;
+  gap: 0;
+}
+
+.subhashita-tab {
+  padding: 1rem 2rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.2s;
+  margin-bottom: -2px;
+}
+
+.subhashita-tab:hover {
+  color: #007bff;
+  background: #f8f9fa;
+}
+
+.subhashita-tab.active {
+  color: #007bff;
+  border-bottom-color: #007bff;
+  font-weight: 600;
+}
+
+
+/* My Translations Tab */
+.subhashita-auth-prompt {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #666;
+}
+
+.subhashita-empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #666;
+}
+
+.subhashita-empty-state p {
+  margin: 0.5rem 0;
+}
+
+.subhashita-translations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.subhashita-translation-item {
+  padding: 1.5rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  transition: box-shadow 0.2s;
+}
+
+.subhashita-translation-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.subhashita-translation-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.subhashita-translation-item-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.subhashita-translation-item-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.subhashita-translation-item-date {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.subhashita-edit-button {
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.subhashita-edit-button:hover {
+  background: #0056b3;
+}
+
+.subhashita-translation-item-devanagari {
+  font-size: 1.3rem;
+  line-height: 1.8;
+  color: #333;
+  margin-bottom: 1rem;
+  font-family: 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', sans-serif;
+  font-weight: bold;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 4px;
+}
+
+.subhashita-translation-item-translation {
+  margin-bottom: 1rem;
+}
+
+.subhashita-translation-item-translation strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.subhashita-translation-item-translation p {
+  margin: 0;
+  color: #555;
+  line-height: 1.6;
+  padding: 0.75rem;
+  background: #fff;
+  border-radius: 4px;
+  border-left: 3px solid #007bff;
+}
+
+.subhashita-translation-item-suggestions {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #fff9e6;
+  border-radius: 4px;
+  border-left: 3px solid #ffc107;
+}
+
+.subhashita-translation-item-suggestions strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #856404;
+}
+
+.subhashita-translation-item-suggestions ul {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: #555;
+}
+
+.subhashita-translation-item-suggestions li {
+  margin-bottom: 0.25rem;
+}
+

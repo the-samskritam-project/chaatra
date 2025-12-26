@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	h "chaatra/http"
 
@@ -71,6 +72,34 @@ func main() {
 	mux.HandleFunc("/v2/aditya_hridaya_stotra/verses", h.AdityaHridayaVersesHandler)
 	mux.HandleFunc("/v2/search/semantic", h.SemanticSearchHandler)
 	mux.HandleFunc("/subhashita/random", h.SubhashitaRandomHandler)
+	mux.HandleFunc("/subhashita/translations", h.JWTAuthMiddleware(h.SubhashitaGetAllTranslationsHandler))
+	mux.HandleFunc("/subhashita/", func(w http.ResponseWriter, r *http.Request) {
+		// Handle subhashita routes with path parameters
+		path := r.URL.Path
+		if strings.HasSuffix(path, "/split") {
+			if r.Method == http.MethodPost {
+				h.SubhashitaSplitHandler(w, r)
+			} else {
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			}
+		} else if strings.HasSuffix(path, "/translation") {
+			if r.Method == http.MethodPut {
+				h.JWTAuthMiddleware(h.SubhashitaSaveTranslationHandler)(w, r)
+			} else if r.Method == http.MethodGet {
+				h.JWTAuthMiddleware(h.SubhashitaGetTranslationHandler)(w, r)
+			} else {
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			}
+		} else if strings.HasSuffix(path, "/verify") {
+			if r.Method == http.MethodPost {
+				h.SubhashitaVerifyTranslationHandler(w, r)
+			} else {
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			}
+		} else {
+			http.Error(w, "Not found", http.StatusNotFound)
+		}
+	})
 
 	// Auth endpoints
 	mux.HandleFunc("/v2/auth/signin", h.SignInHandler)

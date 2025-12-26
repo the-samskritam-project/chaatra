@@ -511,7 +511,7 @@ function App() {
               <Route path="/stotras" element={<StotraViewer />} />
               <Route path="/stotras/aditya-hridaya" element={<AdityaHridaya />} />
               <Route path="/subhashita" element={<SubhashitaViewer />} />
-              <Route path="/subhashita/mahasubhasitasamgraha" element={<Subhashita />} />
+              <Route path="/subhashita/mahasubhasitasamgraha" element={<Subhashita user={user} token={token} onSignInSuccess={handleSignInSuccess} />} />
               <Route path="*" element={<Navigate to="/epics/ramayana" replace />} />
             </Routes>
           </div>
