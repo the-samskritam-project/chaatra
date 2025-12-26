@@ -31,7 +31,8 @@ def transliterate_xml(
     corpus_name: str,
     mongodb_uri: str,
     database_name: str = None,
-    batch_size: int = 10
+    batch_size: int = 10,
+    collection_name: str = None
 ):
     """
     Transliterate XML file and write to MongoDB.
@@ -43,15 +44,19 @@ def transliterate_xml(
         mongodb_uri: MongoDB connection string
         database_name: Name of the database (defaults to corpus_name)
         batch_size: Size of batches for writing to MongoDB
+        collection_name: Name of the collection (defaults to {corpus_name}_raw_transliterated)
     """
     if database_name is None:
         database_name = corpus_name
+    
+    if collection_name is None:
+        collection_name = f'{corpus_name}_raw_transliterated'
     
     print(f"{corpus_name.capitalize()} Transliteration to MongoDB")
     print("=" * 60)
     print(f"XML file: {xml_path}")
     print(f"Database: {database_name}")
-    print(f"Collection: {corpus_name}_raw_transliterated")
+    print(f"Collection: {collection_name}")
     print(f"Batch size: {batch_size}")
     print("=" * 60)
     
@@ -70,7 +75,7 @@ def transliterate_xml(
     print(f"\nConnecting to MongoDB...")
     try:
         db, client = connect_mongodb(mongodb_uri, database_name)
-        collection = db[f'{corpus_name}_raw_transliterated']
+        collection = db[collection_name]
     except ConnectionFailure as e:
         print(f"Error: {e}")
         sys.exit(1)

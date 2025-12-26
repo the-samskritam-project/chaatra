@@ -33,12 +33,15 @@ def get_chapter_from_verse_number(verse_number: str) -> Optional[int]:
     Extract chapter number from verse number.
     
     Args:
-        verse_number: Verse number string (e.g., "0.1", "2.146")
+        verse_number: Verse number string (e.g., "0.1", "2.146", "1" for plain numbers)
         
     Returns:
-        Chapter number as integer or None
+        Chapter number as integer or None (returns None for plain numbers without dots)
     """
     if not verse_number:
+        return None
+    # If verse number doesn't contain a dot, it's a plain number (no chapter)
+    if '.' not in verse_number:
         return None
     try:
         chapter = int(verse_number.split('.')[0])

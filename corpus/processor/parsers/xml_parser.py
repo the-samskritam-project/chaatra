@@ -104,13 +104,37 @@ def parse_xml(xml_path: str, verse_pattern: str) -> List[Dict[str, str]]:
             verse_lines = []
             verse_number = None
             
-            for l_elem in l_elements:
-                line_text = (l_elem.text or '').strip()
-                if line_text:
-                    verse_lines.append(line_text)
-                    # Check for verse number in this line
-                    if verse_number is None:
-                        verse_number = extract_verse_number(line_text, verse_pattern)
+            # Check if verse_pattern indicates xml:id extraction (format: "xml_id:PATTERN")
+            use_xml_id = False
+            xml_id_pattern = None
+            if verse_pattern.startswith('xml_id:'):
+                use_xml_id = True
+                xml_id_pattern = verse_pattern[7:]  # Remove "xml_id:" prefix
+            
+            # FIRST: Check xml:id attribute if pattern indicates it
+            if use_xml_id and verse_number is None:
+                xml_id = elem.get('{http://www.w3.org/XML/1998/namespace}id') or elem.get('xml:id') or elem.get('id')
+                if xml_id:
+                    match = re.search(xml_id_pattern, xml_id)
+                    if match:
+                        # Extract number and convert to plain format (remove leading zeros)
+                        verse_number = str(int(match.group(1)))
+            
+            # If not found in xml:id, check text content
+            if verse_number is None:
+                for l_elem in l_elements:
+                    line_text = (l_elem.text or '').strip()
+                    if line_text:
+                        verse_lines.append(line_text)
+                        # Check for verse number in this line
+                        if verse_number is None:
+                            verse_number = extract_verse_number(line_text, verse_pattern)
+            else:
+                # Build verse_lines if we got verse_number from xml:id
+                for l_elem in l_elements:
+                    line_text = (l_elem.text or '').strip()
+                    if line_text:
+                        verse_lines.append(line_text)
             
             if not verse_lines:
                 continue
@@ -119,7 +143,11 @@ def parse_xml(xml_path: str, verse_pattern: str) -> List[Dict[str, str]]:
             full_verse = '\n'.join(verse_lines)
             
             # Clean the verse text (remove verse number markers)
-            clean_verse = clean_verse_text(full_verse, verse_pattern)
+            # Only clean if we didn't get verse_number from xml:id (to avoid removing text)
+            if not use_xml_id or verse_number is None:
+                clean_verse = clean_verse_text(full_verse, verse_pattern)
+            else:
+                clean_verse = full_verse
             
             # Skip if no verse number found
             if verse_number is None:
