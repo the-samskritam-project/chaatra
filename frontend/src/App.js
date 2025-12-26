@@ -9,6 +9,7 @@ import Hitopadesa from './components/hitopadesa/Hitopadesa';
 import Pancatantra from './components/pancatantra/Pancatantra';
 import BhagavadGita from './components/bhagavad_gita/BhagavadGita';
 import AdityaHridaya from './components/aditya_hridaya/AdityaHridaya';
+import Subhashita from './components/subhashita/Subhashita';
 import Footer from './components/Footer';
 import SignInButton from './components/auth/SignInButton';
 
@@ -54,6 +55,61 @@ function StotraViewer() {
             </div>
             <div style={{ color: '#666', fontSize: '0.9rem' }}>
               {stotra.nameEn}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Subhashita viewer component
+function SubhashitaViewer() {
+  const subhashitas = [
+    { 
+      id: 'mahasubhasitasamgraha', 
+      name: 'महासुभाषितसंग्रहः', 
+      nameEn: 'Mahasubhashitasangraha', 
+      path: 'mahasubhasitasamgraha'
+    }
+  ];
+
+  return (
+    <div style={{ padding: '2rem' }}>
+      <h2 style={{ marginBottom: '1.5rem', color: '#333' }}>सुभाषितम् | Subhashita</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {subhashitas.map((subhashita) => (
+          <Link
+            key={subhashita.id}
+            to={`/subhashita/${subhashita.path}`}
+            style={{
+              padding: '1rem 1.5rem',
+              background: '#fff',
+              border: '1px solid #e0e0e0',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.2s ease',
+              fontSize: '1rem',
+              textDecoration: 'none',
+              display: 'block'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#f0f8ff';
+              e.currentTarget.style.borderColor = '#007bff';
+              e.currentTarget.style.transform = 'translateX(4px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#fff';
+              e.currentTarget.style.borderColor = '#e0e0e0';
+              e.currentTarget.style.transform = 'translateX(0)';
+            }}
+          >
+            <div style={{ fontWeight: 600, color: '#007bff', marginBottom: '0.25rem' }}>
+              {subhashita.name}
+            </div>
+            <div style={{ color: '#666', fontSize: '0.9rem' }}>
+              {subhashita.nameEn}
             </div>
           </Link>
         ))}
@@ -358,6 +414,15 @@ function App() {
       subItems: [
         { path: '/stotras/aditya-hridaya', label: 'आदित्यहृदयम् | Aditya Hridaya Stotra' }
       ]
+    },
+    { 
+      path: '/subhashita', 
+      label: 'सुभाषितम् | Subhashita', 
+      component: SubhashitaViewer, 
+      exact: false,
+      subItems: [
+        { path: '/subhashita/mahasubhasitasamgraha', label: 'महासुभाषितसंग्रहः | Mahasubhashitasangraha' }
+      ]
     }
   ];
 
@@ -445,6 +510,8 @@ function App() {
               <Route path="/bhagavad-gita" element={<Navigate to="/sruti/bhagavad-gita" replace />} />
               <Route path="/stotras" element={<StotraViewer />} />
               <Route path="/stotras/aditya-hridaya" element={<AdityaHridaya />} />
+              <Route path="/subhashita" element={<SubhashitaViewer />} />
+              <Route path="/subhashita/mahasubhasitasamgraha" element={<Subhashita />} />
               <Route path="*" element={<Navigate to="/epics/ramayana" replace />} />
             </Routes>
           </div>
