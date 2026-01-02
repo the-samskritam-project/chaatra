@@ -1,6 +1,6 @@
 #!/bin/bash
-# Build ChromaDB locally, build Docker image, and push to Docker Hub
-# This script builds everything locally (fast on M2 Mac) and pushes to Docker Hub
+# Build Docker image and push to Docker Hub
+# This script builds the image locally and pushes to Docker Hub
 # Railway will pull pre-built images from Docker Hub
 
 set -e
@@ -12,22 +12,6 @@ cd "$SCRIPT_DIR"
 DOCKER_USERNAME="${DOCKER_USERNAME:-balagi}"
 IMAGE_NAME="${IMAGE_NAME:-chaatra-backend}"
 FULL_IMAGE_NAME="${DOCKER_USERNAME}/${IMAGE_NAME}"
-
-# Build Ramayana English index (only)
-if [ ! -f "chroma_db/chroma.sqlite3" ]; then
-    echo "🔨 Building Ramayana (English) ChromaDB index locally..."
-    (
-        cd chroma_db
-        ./build_ramayana_index_en.sh
-    )
-    echo ""
-else
-    echo "ℹ️  Existing ChromaDB dataset detected. Skipping Ramayana rebuild."
-    echo ""
-fi
-
-echo "✅ ChromaDB (Ramayana EN) is ready"
-echo ""
 
 # Docker Hub authentication
 if [ -z "$DOCKER_PASSWORD" ]; then
@@ -51,8 +35,6 @@ VERSION="${VERSION:-${TIMESTAMP}}"
 
 echo "🏗️  Building Docker image for linux/amd64 platform..."
 echo "   Image: ${FULL_IMAGE_NAME}:${VERSION}"
-echo ""
-echo "ℹ️  Note: ChromaDB embeddings are included in the image"
 echo ""
 
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
