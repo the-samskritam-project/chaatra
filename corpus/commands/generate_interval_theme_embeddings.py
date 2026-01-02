@@ -2,9 +2,11 @@
 
 import os
 import sys
+import argparse
 
 from processor.generate_interval_theme_embeddings import generate_interval_theme_embeddings
 from . import register_command
+from .common_args import add_common_args, add_batch_size_arg, add_api_key_arg
 
 
 def handle(args):
@@ -30,5 +32,16 @@ def handle(args):
     )
 
 
-register_command('generate_interval_theme_embeddings', handle)
+def add_arguments(subparser: argparse.ArgumentParser):
+    """Add arguments for generate_interval_theme_embeddings command."""
+    add_common_args(subparser)
+    add_batch_size_arg(subparser)
+    add_api_key_arg(subparser)
+    subparser.add_argument(
+        '--corpus',
+        help='Corpus name (defaults to pancatantra if not provided)'
+    )
+
+
+register_command('generate_interval_theme_embeddings', handle, add_arguments, requires_corpus=False)
 

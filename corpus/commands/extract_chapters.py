@@ -2,9 +2,11 @@
 
 import os
 import sys
+import argparse
 
 from processor.extract_chapters import extract_chapters_to_mongodb
 from . import register_command
+from .common_args import add_common_args
 
 
 def handle(corpus_name: str, args):
@@ -58,5 +60,38 @@ def handle(corpus_name: str, args):
     )
 
 
-register_command('extract_chapters', handle)
+def add_arguments(subparser: argparse.ArgumentParser):
+    """Add arguments for extract_chapters command."""
+    add_common_args(subparser)
+    subparser.add_argument(
+        '--extract-xml-path',
+        required=True,
+        help='Path to source XML file'
+    )
+    subparser.add_argument(
+        '--extract-from-chapter',
+        type=int,
+        required=True,
+        help='Starting chapter number (inclusive)'
+    )
+    subparser.add_argument(
+        '--extract-to-chapter',
+        type=int,
+        required=True,
+        help='Ending chapter number (inclusive)'
+    )
+    subparser.add_argument(
+        '--extract-batch-size',
+        type=int,
+        default=50,
+        help='Batch size for MongoDB writes (default: 50)'
+    )
+    subparser.add_argument(
+        '--extract-clear-existing',
+        action='store_true',
+        help='Clear existing chapter data before importing'
+    )
+
+
+register_command('extract_chapters', handle, add_arguments, requires_corpus=True, corpus_specific='bhagavad_gita')
 

@@ -2,9 +2,11 @@
 
 import os
 import sys
+import argparse
 
 from processor.extract_aditya_hridaya import extract_aditya_hridaya_to_mongodb
 from . import register_command
+from .common_args import add_common_args
 
 
 def handle(args):
@@ -37,5 +39,15 @@ def handle(args):
     )
 
 
-register_command('extract_aditya_hridaya_stotra', handle)
+def add_arguments(subparser: argparse.ArgumentParser):
+    """Add arguments for extract_aditya_hridaya_stotra command."""
+    add_common_args(subparser)
+    subparser.add_argument(
+        '--stotra-json-path',
+        dest='stotra_json_path',
+        help='Path to Ramayana JSON file (default: backend/chroma_db/valmiki_ramayan_shlokas.json)'
+    )
+
+
+register_command('extract_aditya_hridaya_stotra', handle, add_arguments, requires_corpus=False)
 

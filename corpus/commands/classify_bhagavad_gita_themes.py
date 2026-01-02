@@ -2,9 +2,11 @@
 
 import os
 import sys
+import argparse
 
 from processor.classify_bhagavad_gita_themes import classify_bhagavad_gita_themes
 from . import register_command
+from .common_args import add_common_args, add_api_key_arg, add_model_arg
 
 
 def handle(corpus_name: str, args):
@@ -54,5 +56,33 @@ def handle(corpus_name: str, args):
     )
 
 
-register_command('classify_bhagavad_gita_themes', handle)
+def add_arguments(subparser: argparse.ArgumentParser):
+    """Add arguments for classify_bhagavad_gita_themes command."""
+    add_common_args(subparser)
+    add_api_key_arg(subparser)
+    add_model_arg(subparser, default='gpt-5.1')
+    subparser.add_argument(
+        '--theme-start-chapter',
+        type=int,
+        help='First chapter to process (inclusive)'
+    )
+    subparser.add_argument(
+        '--theme-end-chapter',
+        type=int,
+        help='Last chapter to process (inclusive)'
+    )
+    subparser.add_argument(
+        '--theme-delay',
+        type=float,
+        default=1.0,
+        help='Delay between API calls (seconds, default: 1.0)'
+    )
+    subparser.add_argument(
+        '--theme-force',
+        action='store_true',
+        help='Overwrite existing theme classifications'
+    )
+
+
+register_command('classify_bhagavad_gita_themes', handle, add_arguments, requires_corpus=True, corpus_specific='bhagavad_gita')
 

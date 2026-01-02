@@ -2,9 +2,11 @@
 
 import os
 import sys
+import argparse
 
 from processor.import_to_mongodb import import_to_mongodb
 from . import register_command
+from .common_args import add_common_args
 
 
 def handle(corpus_name: str, args):
@@ -22,5 +24,15 @@ def handle(corpus_name: str, args):
     )
 
 
-register_command('import_to_mongo', handle)
+def add_arguments(subparser: argparse.ArgumentParser):
+    """Add arguments for import_to_mongo command."""
+    add_common_args(subparser)
+    subparser.add_argument(
+        '--clear-existing',
+        action='store_true',
+        help='Clear existing collections before importing'
+    )
+
+
+register_command('import_to_mongo', handle, add_arguments, requires_corpus=True)
 

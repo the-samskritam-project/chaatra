@@ -2,9 +2,11 @@
 
 import os
 import sys
+import argparse
 
 from processor.translate_verses import translate_verses
 from . import register_command
+from .common_args import add_common_args, add_batch_size_arg, add_api_key_arg, add_model_arg, add_delay_arg
 
 
 def handle(corpus_name: str, args):
@@ -32,5 +34,19 @@ def handle(corpus_name: str, args):
     )
 
 
-register_command('translate', handle)
+def add_arguments(subparser: argparse.ArgumentParser):
+    """Add arguments for translate command."""
+    add_common_args(subparser)
+    add_batch_size_arg(subparser)
+    add_api_key_arg(subparser)
+    add_model_arg(subparser)
+    add_delay_arg(subparser)
+    subparser.add_argument(
+        '--skip-translation',
+        action='store_true',
+        help='Skip translation and only update metadata'
+    )
+
+
+register_command('translate', handle, add_arguments, requires_corpus=True)
 

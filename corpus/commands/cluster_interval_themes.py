@@ -2,9 +2,11 @@
 
 import os
 import sys
+import argparse
 
 from processor.cluster_interval_themes import cluster_interval_themes
 from . import register_command
+from .common_args import add_common_args
 
 
 def handle(args):
@@ -30,5 +32,34 @@ def handle(args):
     )
 
 
-register_command('cluster_interval_themes', handle)
+def add_arguments(subparser: argparse.ArgumentParser):
+    """Add arguments for cluster_interval_themes command."""
+    add_common_args(subparser)
+    subparser.add_argument(
+        '--corpus',
+        help='Corpus name (defaults to pancatantra if not provided)'
+    )
+    subparser.add_argument(
+        '--source-collection',
+        help='Source collection for clustering (default: {corpus}_interval_theme_docs)'
+    )
+    subparser.add_argument(
+        '--target-collection',
+        help='Target collection for clusters (default: {corpus}_theme_clusters)'
+    )
+    subparser.add_argument(
+        '--min-cluster-size',
+        type=int,
+        default=5,
+        help='Minimum cluster size for HDBSCAN (default: 5)'
+    )
+    subparser.add_argument(
+        '--min-samples',
+        type=int,
+        default=5,
+        help='Minimum samples for HDBSCAN (default: 5)'
+    )
+
+
+register_command('cluster_interval_themes', handle, add_arguments, requires_corpus=False)
 

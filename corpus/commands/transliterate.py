@@ -2,9 +2,11 @@
 
 import os
 import sys
+import argparse
 
 from config import get_corpus_config
 from . import register_command
+from .common_args import add_common_args, add_batch_size_arg
 
 
 def handle(corpus_name: str, args):
@@ -96,5 +98,15 @@ def handle(corpus_name: str, args):
         )
 
 
-register_command('transliterate', handle)
+def add_arguments(subparser: argparse.ArgumentParser):
+    """Add arguments for transliterate command."""
+    add_common_args(subparser)
+    subparser.add_argument(
+        '--xml-path',
+        help='Path to XML file (defaults to data/{corpus}.xml)'
+    )
+    add_batch_size_arg(subparser)
+
+
+register_command('transliterate', handle, add_arguments, requires_corpus=True)
 

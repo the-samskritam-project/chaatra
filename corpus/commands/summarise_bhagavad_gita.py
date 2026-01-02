@@ -2,9 +2,11 @@
 
 import os
 import sys
+import argparse
 
 from processor.summarise_bhagavad_gita import summarise_bhagavad_gita
 from . import register_command
+from .common_args import add_common_args
 
 
 def handle(args):
@@ -21,5 +23,15 @@ def handle(args):
     )
 
 
-register_command('summarise_bhagavad_gita', handle)
+def add_arguments(subparser: argparse.ArgumentParser):
+    """Add arguments for summarise_bhagavad_gita command."""
+    add_common_args(subparser)
+    subparser.add_argument(
+        '--clear-existing',
+        action='store_true',
+        help='Clear existing summaries before generating new ones'
+    )
+
+
+register_command('summarise_bhagavad_gita', handle, add_arguments, requires_corpus=False)
 

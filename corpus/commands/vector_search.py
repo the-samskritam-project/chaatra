@@ -2,9 +2,11 @@
 
 import os
 import sys
+import argparse
 
 from processor.search.vector_search import search_semantic
 from . import register_command
+from .common_args import add_common_args, add_api_key_arg
 
 
 def handle(args):
@@ -46,5 +48,39 @@ def handle(args):
             print(f"   Sanskrit: {result.get('original_iast')[:100]}...")
 
 
-register_command('vector_search', handle)
+def add_arguments(subparser: argparse.ArgumentParser):
+    """Add arguments for vector_search command."""
+    add_common_args(subparser)
+    add_api_key_arg(subparser)
+    subparser.add_argument(
+        '--query',
+        required=True,
+        help='Search query string'
+    )
+    subparser.add_argument(
+        '--collection',
+        default='corpus_vector_search',
+        help='Vector search collection name (default: corpus_vector_search)'
+    )
+    subparser.add_argument(
+        '--corpus',
+        help='Filter results by corpus name (e.g., hitopadesa, pancatantra)'
+    )
+    subparser.add_argument(
+        '--limit',
+        type=int,
+        default=10,
+        help='Maximum number of search results (default: 10)'
+    )
+    subparser.add_argument(
+        '--provider',
+        help='Embedding provider (openai, huggingface)'
+    )
+    subparser.add_argument(
+        '--embedding-model',
+        help='Embedding model name (e.g., text-embedding-3-small)'
+    )
+
+
+register_command('vector_search', handle, add_arguments, requires_corpus=False)
 

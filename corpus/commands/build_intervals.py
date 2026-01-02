@@ -2,9 +2,11 @@
 
 import os
 import sys
+import argparse
 
 from processor.build_intervals import build_intervals
 from . import register_command
+from .common_args import add_common_args
 
 
 def handle(corpus_name: str, args):
@@ -28,5 +30,44 @@ def handle(corpus_name: str, args):
     )
 
 
-register_command('build_intervals', handle)
+def add_arguments(subparser: argparse.ArgumentParser):
+    """Add arguments for build_intervals command."""
+    add_common_args(subparser)
+    subparser.add_argument(
+        '--output-collection',
+        help='Target collection for intervals (default: {corpus}_intervals)'
+    )
+    subparser.add_argument(
+        '--interval-label-field',
+        default='narrative_label',
+        help='Label field to split intervals on (default: narrative_label)'
+    )
+    subparser.add_argument(
+        '--interval-start-chapter',
+        type=int,
+        help='First chapter number for interval building (inclusive)'
+    )
+    subparser.add_argument(
+        '--interval-end-chapter',
+        type=int,
+        help='Last chapter number for interval building (inclusive)'
+    )
+    subparser.add_argument(
+        '--interval-max-per-chapter',
+        type=int,
+        help='Max docs to read per chapter when building intervals'
+    )
+    subparser.add_argument(
+        '--verses-only',
+        action='store_true',
+        help='When set, include only type=verse docs in intervals (default: include all)'
+    )
+    subparser.add_argument(
+        '--keep-output',
+        action='store_true',
+        help='Do not drop the output interval collection before writing (default: drop first)'
+    )
+
+
+register_command('build_intervals', handle, add_arguments, requires_corpus=True)
 

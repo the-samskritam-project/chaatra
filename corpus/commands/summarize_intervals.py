@@ -2,9 +2,11 @@
 
 import os
 import sys
+import argparse
 
 from processor.summarize_intervals import summarize_intervals
 from . import register_command
+from .common_args import add_common_args, add_api_key_arg, add_model_arg
 
 
 def handle(corpus_name: str, args):
@@ -36,5 +38,53 @@ def handle(corpus_name: str, args):
     )
 
 
-register_command('summarize_intervals', handle)
+def add_arguments(subparser: argparse.ArgumentParser):
+    """Add arguments for summarize_intervals command."""
+    add_common_args(subparser)
+    add_api_key_arg(subparser)
+    add_model_arg(subparser)
+    subparser.add_argument(
+        '--intervals-collection',
+        help='Collection containing intervals (default: {corpus}_intervals)'
+    )
+    subparser.add_argument(
+        '--summary-label-field',
+        default='narrative_label',
+        help='Label field used for context (default: narrative_label)'
+    )
+    subparser.add_argument(
+        '--summary-start-chapter',
+        type=int,
+        help='First chapter number to summarize (inclusive)'
+    )
+    subparser.add_argument(
+        '--summary-end-chapter',
+        type=int,
+        help='Last chapter number to summarize (inclusive)'
+    )
+    subparser.add_argument(
+        '--summary-max-intervals',
+        type=int,
+        help='Max intervals to summarize'
+    )
+    subparser.add_argument(
+        '--summary-batch-size',
+        type=int,
+        default=5,
+        help='How many intervals per API batch (default: 5)'
+    )
+    subparser.add_argument(
+        '--summary-force',
+        action='store_true',
+        help='Overwrite existing summaries/themes'
+    )
+    subparser.add_argument(
+        '--summary-delay',
+        type=float,
+        default=0.0,
+        help='Delay between API calls (seconds)'
+    )
+
+
+register_command('summarize_intervals', handle, add_arguments, requires_corpus=True)
 

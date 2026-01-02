@@ -2,9 +2,11 @@
 
 import os
 import sys
+import argparse
 
 from processor.process_bhagavad_gita import process_bhagavad_gita_verses
 from . import register_command
+from .common_args import add_common_args
 
 
 def handle(corpus_name: str, args):
@@ -32,5 +34,30 @@ def handle(corpus_name: str, args):
     )
 
 
-register_command('process_bhagavad_gita', handle)
+def add_arguments(subparser: argparse.ArgumentParser):
+    """Add arguments for process_bhagavad_gita command."""
+    add_common_args(subparser)
+    subparser.add_argument(
+        '--api-url',
+        help='API base URL (default: http://localhost:8081, or API_BASE_URL env var)'
+    )
+    subparser.add_argument(
+        '--process-start-chapter',
+        type=int,
+        help='First chapter to process (inclusive)'
+    )
+    subparser.add_argument(
+        '--process-end-chapter',
+        type=int,
+        help='Last chapter to process (inclusive)'
+    )
+    subparser.add_argument(
+        '--process-delay',
+        type=float,
+        default=0.5,
+        help='Delay between API calls in seconds (default: 0.5)'
+    )
+
+
+register_command('process_bhagavad_gita', handle, add_arguments, requires_corpus=True, corpus_specific='bhagavad_gita')
 

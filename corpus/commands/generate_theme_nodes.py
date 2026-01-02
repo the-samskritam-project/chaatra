@@ -2,9 +2,11 @@
 
 import os
 import sys
+import argparse
 
 from processor.generate_theme_nodes import generate_theme_nodes
 from . import register_command
+from .common_args import add_common_args, add_api_key_arg, add_model_arg
 
 
 def handle(args):
@@ -36,5 +38,35 @@ def handle(args):
     )
 
 
-register_command('generate_theme_nodes', handle)
+def add_arguments(subparser: argparse.ArgumentParser):
+    """Add arguments for generate_theme_nodes command."""
+    add_common_args(subparser)
+    add_api_key_arg(subparser)
+    add_model_arg(subparser)
+    subparser.add_argument(
+        '--corpus',
+        help='Corpus name (defaults to pancatantra if not provided)'
+    )
+    subparser.add_argument(
+        '--clusters-collection',
+        help='Source clusters collection (default: {corpus}_theme_clusters)'
+    )
+    subparser.add_argument(
+        '--theme-nodes-collection',
+        help='Target theme nodes collection (default: {corpus}_theme_nodes)'
+    )
+    subparser.add_argument(
+        '--theme-nodes-delay',
+        type=float,
+        default=0.0,
+        help='Delay between API calls for theme node generation (seconds, default: 0.0)'
+    )
+    subparser.add_argument(
+        '--theme-nodes-force',
+        action='store_true',
+        help='Overwrite existing theme nodes'
+    )
+
+
+register_command('generate_theme_nodes', handle, add_arguments, requires_corpus=False)
 

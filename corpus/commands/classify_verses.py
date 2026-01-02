@@ -2,9 +2,11 @@
 
 import os
 import sys
+import argparse
 
 from processor.classify_verses import classify_verses
 from . import register_command
+from .common_args import add_common_args, add_api_key_arg, add_model_arg
 
 
 def handle(corpus_name: str, args):
@@ -33,5 +35,37 @@ def handle(corpus_name: str, args):
     )
 
 
-register_command('classify_verses', handle)
+def add_arguments(subparser: argparse.ArgumentParser):
+    """Add arguments for classify_verses command."""
+    add_common_args(subparser)
+    add_api_key_arg(subparser)
+    add_model_arg(subparser)
+    subparser.add_argument(
+        '--label-field',
+        default='narrative_label',
+        help='Document field name to store the label (default: narrative_label)'
+    )
+    subparser.add_argument(
+        '--start-chapter',
+        type=int,
+        help='First chapter number to process (inclusive)'
+    )
+    subparser.add_argument(
+        '--end-chapter',
+        type=int,
+        help='Last chapter number to process (inclusive)'
+    )
+    subparser.add_argument(
+        '--max-per-chapter',
+        type=int,
+        help='Maximum number of verses to classify per chapter'
+    )
+    subparser.add_argument(
+        '--force',
+        action='store_true',
+        help='Overwrite existing labels (default: skip labeled verses)'
+    )
+
+
+register_command('classify_verses', handle, add_arguments, requires_corpus=True)
 

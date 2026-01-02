@@ -2,9 +2,11 @@
 
 import os
 import sys
+import argparse
 
 from processor.create_interval_theme_docs import create_interval_theme_docs
 from . import register_command
+from .common_args import add_common_args, add_batch_size_arg
 
 
 def handle(corpus_name: str, args):
@@ -24,5 +26,20 @@ def handle(corpus_name: str, args):
     )
 
 
-register_command('create_interval_theme_docs', handle)
+def add_arguments(subparser: argparse.ArgumentParser):
+    """Add arguments for create_interval_theme_docs command."""
+    add_common_args(subparser)
+    add_batch_size_arg(subparser)
+    subparser.add_argument(
+        '--intervals-collection',
+        help='Collection containing intervals (default: {corpus}_intervals)'
+    )
+    subparser.add_argument(
+        '--require-summarized',
+        action='store_true',
+        help='Skip intervals missing interval_summary or interval_themes'
+    )
+
+
+register_command('create_interval_theme_docs', handle, add_arguments, requires_corpus=True)
 
