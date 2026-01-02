@@ -5,14 +5,20 @@ import argparse
 
 def add_common_args(parser: argparse.ArgumentParser):
     """Add common arguments to a parser."""
-    parser.add_argument(
-        '--mongodb-uri',
-        help='MongoDB connection URI (or set MONGODB_URI env var)'
-    )
-    parser.add_argument(
-        '--database',
-        help='Database name (defaults to corpus name)'
-    )
+    # Check if arguments already exist to avoid conflicts
+    existing_options = {opt for action in parser._actions for opt in action.option_strings}
+    
+    if '--mongodb-uri' not in existing_options:
+        parser.add_argument(
+            '--mongodb-uri',
+            help='MongoDB connection URI (or set MONGODB_URI env var)'
+        )
+    
+    if '--database' not in existing_options:
+        parser.add_argument(
+            '--database',
+            help='Database name (defaults to corpus name)'
+        )
 
 
 def add_batch_size_arg(parser: argparse.ArgumentParser, default: int = 10):
