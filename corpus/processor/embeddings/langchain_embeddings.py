@@ -19,7 +19,8 @@ DEFAULT_EMBEDDING_PROVIDER = "openai"
 def get_embedding_model(
     provider: Optional[str] = None,
     model_name: Optional[str] = None,
-    api_key: Optional[str] = None
+    api_key: Optional[str] = None,
+    dimensions: Optional[int] = None
 ):
     """
     Get an embedding model instance using LangChain.
@@ -31,6 +32,8 @@ def get_embedding_model(
                     If None, reads from LANGCHAIN_EMBEDDING_MODEL env var
         api_key: API key for the provider
                 If None, reads from LANGCHAIN_API_KEY or OPENAI_API_KEY env var
+        dimensions: Number of dimensions for embeddings (OpenAI only, e.g., 384)
+                   If None, reads from LANGCHAIN_EMBEDDING_DIMENSIONS env var
     
     Returns:
         Embedding model instance (LangChain Embeddings object)
@@ -41,6 +44,15 @@ def get_embedding_model(
     # Get configuration from environment or parameters
     provider = provider or os.getenv('LANGCHAIN_EMBEDDING_PROVIDER', DEFAULT_EMBEDDING_PROVIDER).lower()
     model_name = model_name or os.getenv('LANGCHAIN_EMBEDDING_MODEL', DEFAULT_EMBEDDING_MODEL)
+    
+    # Get dimensions for OpenAI
+    if dimensions is None:
+        dims_str = os.getenv('LANGCHAIN_EMBEDDING_DIMENSIONS')
+        if dims_str:
+            try:
+                dimensions = int(dims_str)
+            except ValueError:
+                dimensions = None
     
     # Get API key
     if api_key is None:
@@ -55,10 +67,17 @@ def get_embedding_model(
         if not model_name:
             model_name = DEFAULT_EMBEDDING_MODEL
         
-        return OpenAIEmbeddings(
-            model=model_name,
-            openai_api_key=api_key
-        )
+        # Build kwargs for OpenAIEmbeddings
+        kwargs = {
+            'model': model_name,
+            'openai_api_key': api_key
+        }
+        
+        # Add dimensions if specified (for text-embedding-3 models)
+        if dimensions is not None:
+            kwargs['dimensions'] = dimensions
+        
+        return OpenAIEmbeddings(**kwargs)
     
     elif provider == 'huggingface':
         # HuggingFace embeddings don't require API key for local models

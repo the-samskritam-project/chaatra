@@ -23,9 +23,11 @@ def generate_apte_embeddings(
     database_name: str = "apte_dictionary",
     collection_name: str = "entries",
     batch_size: int = 100,
-    skip_existing: bool = True,
+    skip_existing: bool = False,
     provider: Optional[str] = None,
-    model_name: Optional[str] = None
+    model_name: Optional[str] = None,
+    api_key: Optional[str] = None,
+    dimensions: Optional[int] = None
 ):
     """
     Generate embeddings for Apte dictionary entries and update MongoDB documents.
@@ -35,19 +37,28 @@ def generate_apte_embeddings(
         database_name: Database name (default: apte_dictionary)
         collection_name: Collection name (default: entries)
         batch_size: Batch size for processing (default: 100)
-        skip_existing: If True, skip documents that already have embeddings
-        provider: Embedding provider ('huggingface' or 'openai', default: 'huggingface')
-        model_name: Model identifier (default: 'sentence-transformers/all-MiniLM-L6-v2' for HuggingFace)
+        skip_existing: If True, skip documents that already have embeddings (default: False - overwrite)
+        provider: Embedding provider ('openai' or 'huggingface', default: 'openai')
+        model_name: Model identifier (default: 'text-embedding-3-small' for OpenAI)
+        api_key: API key for the provider (optional, uses env vars if not provided)
+        dimensions: Number of dimensions for embeddings (default: 384 for OpenAI)
     """
-    # Default to HuggingFace for local, no-cost embeddings
+    # Default to OpenAI for consistent embeddings
     if provider is None:
-        provider = os.getenv('LANGCHAIN_EMBEDDING_PROVIDER', 'huggingface').lower()
+        provider = os.getenv('LANGCHAIN_EMBEDDING_PROVIDER', 'openai').lower()
     
     if model_name is None:
-        if provider == 'huggingface':
+        if provider == 'openai':
+            model_name = os.getenv('LANGCHAIN_EMBEDDING_MODEL', 'text-embedding-3-small')
+        elif provider == 'huggingface':
             model_name = os.getenv('LANGCHAIN_EMBEDDING_MODEL', 'sentence-transformers/all-MiniLM-L6-v2')
         else:
             model_name = os.getenv('LANGCHAIN_EMBEDDING_MODEL')
+    
+    # Default dimensions to 384 for OpenAI (balance of quality and storage efficiency)
+    # Note: Cost is the same regardless of dimensions (based on input tokens only)
+    if dimensions is None and provider == 'openai':
+        dimensions = int(os.getenv('LANGCHAIN_EMBEDDING_DIMENSIONS', '384'))
     
     # Connect to MongoDB
     print(f"Connecting to MongoDB...")
@@ -60,12 +71,16 @@ def generate_apte_embeddings(
     collection = db[collection_name]
     
     # Initialize embedding model
-    print(f"Initializing embedding model: {provider}/{model_name}...")
+    model_desc = f"{provider}/{model_name}"
+    if dimensions:
+        model_desc += f" (dimensions: {dimensions})"
+    print(f"Initializing embedding model: {model_desc}...")
     try:
         embedding_model = get_embedding_model(
             provider=provider,
             model_name=model_name,
-            api_key=None  # HuggingFace doesn't need API key
+            api_key=api_key,
+            dimensions=dimensions if provider == 'openai' else None
         )
         print(f"✓ Embedding model initialized")
     except Exception as e:
@@ -162,7 +177,10 @@ def generate_apte_embeddings(
     print(f"Embedding Generation Summary:")
     print(f"  Total documents processed: {total_processed}")
     print(f"  Total errors: {total_errors}")
-    print(f"  Embedding model: {provider}/{model_name}")
+    model_info = f"{provider}/{model_name}"
+    if dimensions:
+        model_info += f" (dimensions: {dimensions})"
+    print(f"  Embedding model: {model_info}")
     print(f"{'='*60}")
     
     client.close()
@@ -178,14 +196,30 @@ def handle(args):
     
     database_name = args.database or "apte_dictionary"
     
+    # Get API key from args or environment
+    api_key = args.api_key or os.getenv('OPENAI_API_KEY') or os.getenv('LANGCHAIN_API_KEY')
+    
+    # Parse dimensions if provided
+    dimensions = None
+    if args.dimensions:
+        try:
+            dimensions = int(args.dimensions)
+        except ValueError:
+            print(f"Warning: Invalid dimensions value '{args.dimensions}', using default")
+    
+    # Default is False (overwrite existing), unless --skip-existing flag is set
+    skip_existing = getattr(args, 'skip_existing', False)
+    
     generate_apte_embeddings(
         mongodb_uri=mongodb_uri,
         database_name=database_name,
         collection_name=args.collection,
         batch_size=args.batch_size,
-        skip_existing=not args.no_skip_existing,
+        skip_existing=skip_existing,
         provider=args.provider,
-        model_name=args.embedding_model
+        model_name=args.embedding_model,
+        api_key=api_key,
+        dimensions=dimensions
     )
 
 
@@ -199,17 +233,25 @@ def add_arguments(subparser: argparse.ArgumentParser):
         help='Collection name (default: entries)'
     )
     subparser.add_argument(
-        '--no-skip-existing',
+        '--skip-existing',
         action='store_true',
-        help='Regenerate embeddings for existing documents'
+        help='Skip documents that already have embeddings (default: False - will overwrite existing)'
     )
     subparser.add_argument(
         '--provider',
-        help='Embedding provider (huggingface, openai). Default: huggingface'
+        help='Embedding provider (openai, huggingface). Default: openai'
     )
     subparser.add_argument(
         '--embedding-model',
-        help='Embedding model name (default: sentence-transformers/all-MiniLM-L6-v2 for HuggingFace)'
+        help='Embedding model name (default: text-embedding-3-small for OpenAI)'
+    )
+    subparser.add_argument(
+        '--api-key',
+        help='API key for embedding provider (or set OPENAI_API_KEY env var)'
+    )
+    subparser.add_argument(
+        '--dimensions',
+        help='Number of dimensions for embeddings (default: 384 for OpenAI)'
     )
 
 
