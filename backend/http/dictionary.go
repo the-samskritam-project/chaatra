@@ -6,6 +6,7 @@ import (
 	"chaatra/service"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -94,12 +95,25 @@ func SearchV2EnglishHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	entries, err := persistence.SearchChromaDB(query, nResults, persistence.ChromaIndexEnglish)
+	// Generate embedding for the query with 384 dimensions (matching stored embeddings)
+	log.Printf("SearchV2EnglishHandler: generating embedding for query: %q", query)
+	queryEmbedding, err := generateEmbedding(query, 384)
 	if err != nil {
+		log.Printf("ERROR: Failed to generate embedding: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to generate embedding: %v", err), http.StatusInternalServerError)
+		return
+	}
+	log.Printf("Generated embedding with length: %d", len(queryEmbedding))
+
+	// Perform vector search on Apte dictionary
+	entries, err := persistence.SearchApteDictionary(queryEmbedding, nResults)
+	if err != nil {
+		log.Printf("ERROR: Vector search failed: %v", err)
 		http.Error(w, fmt.Sprintf("Search error: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
+	log.Printf("SearchV2EnglishHandler: returning %d results", len(entries))
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(entries)
 }

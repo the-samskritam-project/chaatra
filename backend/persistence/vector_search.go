@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"chaatra/core/parser"
 	"context"
 	"fmt"
 	"log"
@@ -172,4 +173,102 @@ func GetVectorSearchCollections() []string {
 func GetVectorSearchIndexNames() []string {
 	// Return index names matching the collections
 	return []string{"vector_index_hitopadesa", "vector_index_pancatantra"}
+}
+
+// ApteDictionaryResult represents a result from Apte dictionary search
+type ApteDictionaryResult struct {
+	ID             interface{}   `json:"_id" bson:"_id"`
+	Slp1Str        string        `json:"slp1Str" bson:"slp1Str"`
+	SanskritString string        `json:"sanskritString" bson:"sanskritString"`
+	Meaning        string        `json:"meaning" bson:"meaning"`
+	Sense          string        `json:"sense" bson:"sense"`
+	PartOfSpeech   string        `json:"partOfSpeech" bson:"partOfSpeech"`
+	Examples       []interface{} `json:"examples" bson:"examples"`
+	Score          float64       `json:"score" bson:"score"`
+}
+
+// SearchApteDictionary performs vector search on the Apte dictionary collection
+func SearchApteDictionary(queryEmbedding []float64, limit int) ([]*parser.Entry, error) {
+	log.Printf("SearchApteDictionary called: limit=%d, embeddingLen=%d", limit, len(queryEmbedding))
+
+	if mongoClient == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	databaseName := "apte_dictionary"
+	collectionName := "entries"
+	indexName := "vector_index_apte"
+
+	db := mongoClient.Database(databaseName)
+	collection := db.Collection(collectionName)
+
+	log.Printf("Searching collection %s.%s with index %s", databaseName, collectionName, indexName)
+
+	// Build aggregation pipeline for vector search
+	pipeline := []bson.M{
+		{
+			"$vectorSearch": bson.M{
+				"index":         indexName,
+				"path":          "embedding",
+				"queryVector":   queryEmbedding,
+				"numCandidates": limit * 10,
+				"limit":         limit,
+			},
+		},
+		{
+			"$project": bson.M{
+				"_id":            1,
+				"slp1Str":        1,
+				"sanskritString": 1,
+				"meaning":        1,
+				"sense":          1,
+				"partOfSpeech":   1,
+				"examples":       1,
+				"score": bson.M{
+					"$meta": "vectorSearchScore",
+				},
+			},
+		},
+	}
+
+	log.Printf("Executing aggregation pipeline on collection %s.%s (index: %s)", databaseName, collectionName, indexName)
+	cursor, err := collection.Aggregate(ctx, pipeline)
+	if err != nil {
+		log.Printf("ERROR: Vector search failed for collection %s.%s (index: %s): %v", databaseName, collectionName, indexName, err)
+		return nil, fmt.Errorf("vector search failed: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var results []ApteDictionaryResult
+	if err := cursor.All(ctx, &results); err != nil {
+		log.Printf("ERROR: Failed to decode results from %s.%s: %v", databaseName, collectionName, err)
+		return nil, fmt.Errorf("failed to decode results: %w", err)
+	}
+
+	log.Printf("Found %d results from collection %s.%s", len(results), databaseName, collectionName)
+
+	// Convert to parser.Entry format
+	entries := make([]*parser.Entry, len(results))
+	for i, result := range results {
+		// Build metadata
+		metadata := make(map[string]interface{})
+		metadata["id"] = result.ID
+		metadata["sense"] = result.Sense
+		metadata["partOfSpeech"] = result.PartOfSpeech
+		metadata["examples"] = result.Examples
+		metadata["score"] = result.Score
+
+		entries[i] = &parser.Entry{
+			DevanagariWord:     result.SanskritString,
+			TransliteratedWord: result.Slp1Str,
+			EnglishMeaning:     result.Meaning,
+			Metadata:           metadata,
+		}
+	}
+
+	log.Printf("Returning %d dictionary entries", len(entries))
+	return entries, nil
 }

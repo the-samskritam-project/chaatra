@@ -14,7 +14,8 @@ import (
 )
 
 // generateEmbedding generates an embedding vector for text using OpenAI API
-func generateEmbedding(text string) ([]float64, error) {
+// dimensions: optional, if 0 uses default (1536), otherwise uses specified dimensions
+func generateEmbedding(text string, dimensions ...int) ([]float64, error) {
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	if apiKey == "" {
 		return nil, fmt.Errorf("OPENAI_API_KEY environment variable not set")
@@ -24,6 +25,11 @@ func generateEmbedding(text string) ([]float64, error) {
 	requestBody := map[string]interface{}{
 		"input": text,
 		"model": "text-embedding-3-small",
+	}
+
+	// Add dimensions if specified (for text-embedding-3 models)
+	if len(dimensions) > 0 && dimensions[0] > 0 {
+		requestBody["dimensions"] = dimensions[0]
 	}
 
 	jsonData, err := json.Marshal(requestBody)
