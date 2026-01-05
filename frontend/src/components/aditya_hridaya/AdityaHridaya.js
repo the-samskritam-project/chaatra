@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import DictionaryLookup from '../dictionary/DictionaryLookup';
 import './AdityaHridaya.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || 'http://localhost:8081';
@@ -298,6 +299,7 @@ function AdityaHridaya() {
           </div>
         ))}
       </div>
+      <DictionaryLookup apiUrl={API_BASE_URL} />
     </div>
   );
 }

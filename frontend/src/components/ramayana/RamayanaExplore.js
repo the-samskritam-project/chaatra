@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import RamayanaModal from './RamayanaModal';
+import DictionaryLookup from '../dictionary/DictionaryLookup';
 import { splitShlokaLines, splitTranslationTokens } from './shlokaUtils';
 import './RamayanaExplore.css';
 
@@ -269,6 +270,7 @@ function RamayanaExplore() {
         summaryError={summaryError}
         disableSummarize={!contextData}
       />
+      <DictionaryLookup apiUrl={apiUrl} />
     </div>
   );
 }

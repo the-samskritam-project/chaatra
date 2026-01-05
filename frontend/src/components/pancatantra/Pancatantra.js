@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import CorpusViewer from '../corpus/CorpusViewer';
+import DictionaryLookup from '../dictionary/DictionaryLookup';
 import './Pancatantra.css';
 
 function Pancatantra() {
@@ -484,6 +485,7 @@ function Pancatantra() {
           </div>
         </div>
       )}
+      <DictionaryLookup apiUrl={apiUrl} />
     </div>
   );
 }

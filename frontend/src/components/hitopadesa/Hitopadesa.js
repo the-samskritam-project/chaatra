@@ -1,11 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import CorpusViewer from '../corpus/CorpusViewer';
+import DictionaryLookup from '../dictionary/DictionaryLookup';
 
 function Hitopadesa() {
   const navigate = useNavigate();
   const location = useLocation();
   const showBackButton = location.pathname.startsWith('/katha/');
+  const [apiUrl, setApiUrl] = useState('');
+
+  useEffect(() => {
+    const url = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || 'http://localhost:8081';
+    setApiUrl(url);
+  }, []);
 
   return (
     <div>
@@ -33,6 +40,7 @@ function Hitopadesa() {
         </button>
       )}
       <CorpusViewer corpusName="hitopadesa" />
+      <DictionaryLookup apiUrl={apiUrl} />
     </div>
   );
 }

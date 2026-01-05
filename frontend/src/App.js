@@ -10,11 +10,12 @@ import Pancatantra from './components/pancatantra/Pancatantra';
 import BhagavadGita from './components/bhagavad_gita/BhagavadGita';
 import AdityaHridaya from './components/aditya_hridaya/AdityaHridaya';
 import Subhashita from './components/subhashita/Subhashita';
+import DictionaryLookup from './components/dictionary/DictionaryLookup';
 import Footer from './components/Footer';
 import SignInButton from './components/auth/SignInButton';
 
 // Stotra viewer component
-function StotraViewer() {
+function StotraViewer({ apiUrl }) {
   const stotras = [
     { id: 'aditya_hridaya', name: 'आदित्यहृदयम्', nameEn: 'Aditya Hridaya Stotra', path: 'aditya-hridaya' }
   ];
@@ -59,12 +60,13 @@ function StotraViewer() {
           </Link>
         ))}
       </div>
+      <DictionaryLookup apiUrl={apiUrl} />
     </div>
   );
 }
 
 // Subhashita viewer component
-function SubhashitaViewer() {
+function SubhashitaViewer({ apiUrl }) {
   const subhashitas = [
     { 
       id: 'mahasubhasitasamgraha', 
@@ -114,12 +116,13 @@ function SubhashitaViewer() {
           </Link>
         ))}
       </div>
+      <DictionaryLookup apiUrl={apiUrl} />
     </div>
   );
 }
 
 // Sruti/Scripture viewer component
-function SrutiViewer({ user, token, onSignInSuccess }) {
+function SrutiViewer({ user, token, onSignInSuccess, apiUrl }) {
   const scriptures = [
     { 
       id: 'bhagavad_gita', 
@@ -170,12 +173,13 @@ function SrutiViewer({ user, token, onSignInSuccess }) {
           </Link>
         ))}
       </div>
+      <DictionaryLookup apiUrl={apiUrl} />
     </div>
   );
 }
 
 // Epics viewer component
-function EpicsViewer() {
+function EpicsViewer({ apiUrl }) {
   const epics = [
     { 
       id: 'ramayana', 
@@ -225,12 +229,13 @@ function EpicsViewer() {
           </Link>
         ))}
       </div>
+      <DictionaryLookup apiUrl={apiUrl} />
     </div>
   );
 }
 
 // Katha/Fables viewer component
-function KathaViewer() {
+function KathaViewer({ apiUrl }) {
   const showHitopadesa = process.env.REACT_APP_SHOW_HITOPADESA === 'true';
   const showPancatantra = process.env.REACT_APP_SHOW_PANCATANTRA !== 'false';
 
@@ -291,6 +296,7 @@ function KathaViewer() {
           </Link>
         ))}
       </div>
+      <DictionaryLookup apiUrl={apiUrl} />
     </div>
   );
 }
@@ -494,23 +500,23 @@ function App() {
             <Routes>
               <Route path="/" element={<Navigate to="/epics/ramayana" replace />} />
               <Route path="/dictionary" element={<Dictionary />} />
-              <Route path="/epics" element={<EpicsViewer />} />
+              <Route path="/epics" element={<EpicsViewer apiUrl={apiUrl} />} />
               <Route path="/epics/ramayana" element={<RamayanaExplore />} />
               {/* Redirect old route for backward compatibility */}
               <Route path="/ramayana" element={<Navigate to="/epics/ramayana" replace />} />
-              <Route path="/katha" element={<KathaViewer />} />
+              <Route path="/katha" element={<KathaViewer apiUrl={apiUrl} />} />
               {showHitopadesa && <Route path="/katha/hitopadesa" element={<Hitopadesa />} />}
               {showPancatantra && <Route path="/katha/pancatantra" element={<Pancatantra />} />}
               {/* Redirect old routes for backward compatibility */}
               {showHitopadesa && <Route path="/hitopadesa" element={<Navigate to="/katha/hitopadesa" replace />} />}
               {showPancatantra && <Route path="/pancatantra" element={<Navigate to="/katha/pancatantra" replace />} />}
-              <Route path="/sruti" element={<SrutiViewer user={user} token={token} onSignInSuccess={handleSignInSuccess} />} />
+              <Route path="/sruti" element={<SrutiViewer user={user} token={token} onSignInSuccess={handleSignInSuccess} apiUrl={apiUrl} />} />
               <Route path="/sruti/bhagavad-gita" element={<BhagavadGita user={user} token={token} onSignInSuccess={handleSignInSuccess} />} />
               {/* Redirect old route for backward compatibility */}
               <Route path="/bhagavad-gita" element={<Navigate to="/sruti/bhagavad-gita" replace />} />
-              <Route path="/stotras" element={<StotraViewer />} />
+              <Route path="/stotras" element={<StotraViewer apiUrl={apiUrl} />} />
               <Route path="/stotras/aditya-hridaya" element={<AdityaHridaya />} />
-              <Route path="/subhashita" element={<SubhashitaViewer />} />
+              <Route path="/subhashita" element={<SubhashitaViewer apiUrl={apiUrl} />} />
               <Route path="/subhashita/mahasubhasitasamgraha" element={<Subhashita user={user} token={token} onSignInSuccess={handleSignInSuccess} />} />
               <Route path="*" element={<Navigate to="/epics/ramayana" replace />} />
             </Routes>
