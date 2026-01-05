@@ -60,10 +60,10 @@ function SearchBar({ devanagariString, slp1LatinStr, onInputChange, onFocus, han
                     setShowDropdown(combined.length > 0);
                 } else {
                     // English mode: Call only /v2/search/english
-                    const searchResponse = await fetch(`${apiUrl}/v2/search/english?q=${encodeURIComponent(query)}&n=5`);
+                    const searchResponse = await fetch(`${apiUrl}/v2/search/english?q=${encodeURIComponent(query)}`);
                     if (searchResponse.ok) {
                         const searchResults = await searchResponse.json();
-                        const combined = searchResults.slice(0, 5).map(entry => ({ 
+                        const combined = searchResults.slice(0, 20).map(entry => ({ 
                             type: 'search', 
                             ...entry 
                         }));

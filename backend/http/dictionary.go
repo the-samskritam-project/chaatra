@@ -87,11 +87,11 @@ func SearchV2EnglishHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nResults := 5
+	nResults := 20
 	if n := r.URL.Query().Get("n"); n != "" {
 		fmt.Sscanf(n, "%d", &nResults)
 		if nResults < 1 || nResults > 50 {
-			nResults = 5
+			nResults = 20
 		}
 	}
 
