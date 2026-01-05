@@ -5,13 +5,13 @@ FROM golang:1.25 AS builder
 WORKDIR /go/src/chaatra/backend
 
 # Copy go.mod and go.sum first for better caching
-COPY backend/go.mod backend/go.sum ./
+COPY go.mod go.sum ./
 
 # Download dependencies
 RUN go mod download
 
 # Copy the rest of the backend source
-COPY backend/ .
+COPY . .
 
 # Build your application statically
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o samskritam .
@@ -34,10 +34,10 @@ COPY --from=builder /go/src/chaatra/backend/samskritam /root/samskritam
 COPY --from=builder /go/src/chaatra/backend/core/parser/dictionary.xml /root/dictionary.xml
 
 RUN mkdir -p /root/chroma_db
-COPY corpus/data/valmiki_ramayan_shlokas_filtered.json /root/chroma_db/valmiki_ramayan_shlokas_filtered.json
+COPY data/valmiki_ramayan_shlokas_filtered.json /root/chroma_db/valmiki_ramayan_shlokas_filtered.json
 
 # Copy ramayana rarity data if needed
-COPY ramayana_classifier/shlokas_with_rarity.json /root/shlokas_with_rarity.json
+COPY data/shlokas_with_rarity.json /root/shlokas_with_rarity.json
 
 # Ensure executable permissions for Go binary
 RUN chmod +x /root/samskritam
