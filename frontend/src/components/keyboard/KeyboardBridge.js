@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useEffect, useImperativeHandle, forwardRef, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Keyboard from './Keyboard';
 import { vowels, consonants } from '../../utils/constants';
@@ -14,6 +14,7 @@ const KeyboardBridge = forwardRef(({
   const [activeKeys, setActiveKeys] = useState([]);
   const [completionResults, setCompletionResults] = useState([]);
   const [apiUrl, setApiUrl] = useState('');
+  const isFocusedRef = useRef(isFocused);
 
   useEffect(() => {
     // Use prop if provided, otherwise get from env with fallback
@@ -75,10 +76,17 @@ const KeyboardBridge = forwardRef(({
     return () => clearTimeout(timeoutId);
   }, [value, apiUrl]);
 
+  // Keep ref in sync with isFocused prop
+  useEffect(() => {
+    isFocusedRef.current = isFocused;
+  }, [isFocused]);
+
   useEffect(() => {
     // Show keyboard whenever search bar is focused in devanagari mode
     if (isFocused) {
       setIsKeyboardDocked(false);
+    } else {
+      setIsKeyboardDocked(true);
     }
   }, [isFocused]);
 
@@ -112,7 +120,29 @@ const KeyboardBridge = forwardRef(({
   };
 
   useEffect(() => {
+    // Only add keydown listener when the dictionary search input is focused
+    if (!isFocused) {
+      return;
+    }
+
     const handleKeyDown = (event) => {
+      // Only process if the dictionary search input is still focused
+      // Check the ref to get the current value
+      if (!isFocusedRef.current) {
+        return;
+      }
+
+      // Check if the active element is an input/textarea that's not the dictionary search
+      const activeElement = document.activeElement;
+      if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+        // Check if it's the dictionary search input by checking if it's in the search-bar container
+        const searchBarContainer = activeElement.closest('.search-bar');
+        if (!searchBarContainer) {
+          // This is not the dictionary search input, ignore the event
+          return;
+        }
+      }
+
       if (event.key === 'Enter') {
         setIsKeyboardDocked(true);
         onInput({ type: 'enter', value });
