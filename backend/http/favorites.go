@@ -68,7 +68,7 @@ func StarVerseHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate corpus unit ID
-	if err := service.ValidateCorpusUnitIDForFavorite(req.CorpusUnit, req.CorpusUnitID); err != nil {
+	if err := service.ValidateCorpusUnitIDForFavorite(req.CorpusName, req.CorpusUnit, req.CorpusUnitID); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

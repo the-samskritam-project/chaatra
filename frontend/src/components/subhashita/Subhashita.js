@@ -2,9 +2,91 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DictionaryLookup from '../dictionary/DictionaryLookup';
 import SignInModal from '../auth/SignInModal';
+import FavoritesService from '../../services/FavoritesService';
 import './Subhashita.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || 'http://localhost:8081';
+
+// Component to display a favorite item
+function FavoriteItem({ favorite, apiUrl, onView, onRemove }) {
+  const [verse, setVerse] = useState(null);
+  const [isLoadingVerse, setIsLoadingVerse] = useState(false);
+
+  useEffect(() => {
+    const fetchVerseDetails = async () => {
+      if (!apiUrl || !favorite.corpus_unit_id) return;
+      
+      setIsLoadingVerse(true);
+      try {
+        const response = await fetch(`${apiUrl}/subhashita/random?verse_number=${favorite.corpus_unit_id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setVerse(data);
+        }
+      } catch (err) {
+        console.error('Error fetching verse details:', err);
+      } finally {
+        setIsLoadingVerse(false);
+      }
+    };
+
+    fetchVerseDetails();
+  }, [apiUrl, favorite.corpus_unit_id]);
+
+  return (
+    <div className="subhashita-favorite-item">
+      <div className="subhashita-favorite-item-header">
+        <h3>Verse {favorite.corpus_unit_id}</h3>
+        <div className="subhashita-favorite-item-header-right">
+          <span className="subhashita-favorite-item-date">
+            {favorite.created_at ? 
+              `Favorited: ${new Date(favorite.created_at).toLocaleDateString()}` :
+              ''
+            }
+          </span>
+          <div className="subhashita-favorite-item-actions">
+            <button
+              type="button"
+              className="subhashita-view-button"
+              onClick={onView}
+            >
+              View
+            </button>
+            <button
+              type="button"
+              className="subhashita-remove-button"
+              onClick={onRemove}
+              title="Remove from favorites"
+            >
+              ★
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {isLoadingVerse ? (
+        <div className="subhashita-loading">Loading verse details...</div>
+      ) : verse ? (
+        <>
+          {verse.transliterated_devanagari && (
+            <div className="subhashita-favorite-item-devanagari">
+              {verse.transliterated_devanagari.split('\n').map((line, idx) => (
+                <div key={idx} className="subhashita-line">{line}</div>
+              ))}
+            </div>
+          )}
+          {verse.full_translation && (
+            <div className="subhashita-favorite-item-translation">
+              {verse.full_translation}
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="subhashita-error">Unable to load verse details</div>
+      )}
+    </div>
+  );
+}
 
 function Subhashita({ user, token, onSignInSuccess }) {
   const navigate = useNavigate();
@@ -36,16 +118,48 @@ function Subhashita({ user, token, onSignInSuccess }) {
   const [allTranslations, setAllTranslations] = useState([]);
   const [isLoadingTranslations, setIsLoadingTranslations] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
+  
+  // State for favorites
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const [pendingStarAction, setPendingStarAction] = useState(false);
+  
+  // State for "Favorites" tab
+  const [allFavorites, setAllFavorites] = useState([]);
+  const [isLoadingFavorites, setIsLoadingFavorites] = useState(false);
 
   const requireSignIn = () => {
     setShowSignInModal(true);
   };
 
-  const handleSignInSuccessInternal = (result) => {
+  const handleSignInSuccessInternal = async (result) => {
     if (onSignInSuccess) {
       onSignInSuccess(result);
     }
     setShowSignInModal(false);
+    
+    // If there was a pending star action, execute it now
+    if (pendingStarAction && verse && verse.verse_number) {
+      setPendingStarAction(false);
+      // Small delay to ensure token is set
+      setTimeout(async () => {
+        await handleToggleFavorite();
+      }, 100);
+    } else if (verse && verse.verse_number) {
+      // Refresh favorite status after sign-in
+      try {
+        const favoritesService = new FavoritesService(apiUrl);
+        const status = await favoritesService.getFavoriteStatus(
+          'subhashita',
+          'Verse',
+          verse.verse_number,
+          result.token
+        );
+        setIsFavorite(status.is_favorite || false);
+      } catch (error) {
+        console.error('Error fetching favorite status after sign-in:', error);
+      }
+    }
   };
 
   useEffect(() => {
@@ -89,11 +203,18 @@ function Subhashita({ user, token, onSignInSuccess }) {
       if (!skipLoadTranslation) {
         if (user && token && data.verse_number) {
           await loadSavedTranslation(data.verse_number);
+          await checkFavoriteStatus(data.verse_number);
         } else {
           // Clear translation if user is not logged in
           setUserTranslation('');
           setSavedTranslation(null);
+          setIsFavorite(false);
         }
+      } else if (user && token && data.verse_number) {
+        // Still check favorite status even if skipping translation load
+        await checkFavoriteStatus(data.verse_number);
+      } else {
+        setIsFavorite(false);
       }
     } catch (err) {
       console.error('Subhashita fetch error:', err);
@@ -187,6 +308,27 @@ function Subhashita({ user, token, onSignInSuccess }) {
     } catch (err) {
       console.error('Error loading saved translation:', err);
       setSavedTranslation(null);
+    }
+  };
+
+  const checkFavoriteStatus = async (verseNumber) => {
+    if (!apiUrl || !user || !token || !verseNumber) {
+      setIsFavorite(false);
+      return;
+    }
+    
+    try {
+      const favoritesService = new FavoritesService(apiUrl);
+      const status = await favoritesService.getFavoriteStatus(
+        'subhashita',
+        'Verse',
+        verseNumber,
+        token
+      );
+      setIsFavorite(status.is_favorite || false);
+    } catch (err) {
+      console.error('Error checking favorite status:', err);
+      setIsFavorite(false);
     }
   };
 
@@ -327,6 +469,77 @@ function Subhashita({ user, token, onSignInSuccess }) {
     }
   }, [activeTab, user, token]);
 
+  const fetchAllFavorites = async () => {
+    if (!apiUrl || !user || !token) {
+      // Require sign-in before loading favorites
+      requireSignIn();
+      return;
+    }
+    
+    setIsLoadingFavorites(true);
+    setError(null);
+    
+    try {
+      const favoritesService = new FavoritesService(apiUrl);
+      const favorites = await favoritesService.getFavorites(
+        { corpusName: 'subhashita', corpusUnit: 'Verse' },
+        token
+      );
+      setAllFavorites(favorites || []);
+    } catch (err) {
+      console.error('Error fetching favorites:', err);
+      if (err.message.includes('Authentication required')) {
+        setError('Please sign in to view your favorites.');
+        requireSignIn();
+      } else {
+        setError('Unable to fetch favorites. Please try again.');
+      }
+    } finally {
+      setIsLoadingFavorites(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'favorites' && user && token) {
+      fetchAllFavorites();
+    }
+  }, [activeTab, user, token]);
+
+  const handleFavoriteClick = async (verseNumber) => {
+    // Switch to random tab and load the specific verse
+    setActiveTab('random');
+    await fetchVerse(verseNumber, false);
+  };
+
+  const handleRemoveFavorite = async (favorite) => {
+    if (!apiUrl || !user || !token) {
+      return;
+    }
+
+    try {
+      const favoritesService = new FavoritesService(apiUrl);
+      await favoritesService.unstarVerse(
+        favorite.corpus_name,
+        favorite.corpus_unit,
+        favorite.corpus_unit_id,
+        token
+      );
+      
+      // Remove from local state
+      setAllFavorites(allFavorites.filter(fav => 
+        fav.corpus_unit_id !== favorite.corpus_unit_id
+      ));
+      
+      // If the current verse is the one being unfavorited, update its favorite status
+      if (verse && verse.verse_number === favorite.corpus_unit_id) {
+        setIsFavorite(false);
+      }
+    } catch (err) {
+      console.error('Error removing favorite:', err);
+      setError('Unable to remove favorite. Please try again.');
+    }
+  };
+
   const handleVerifyTranslation = async () => {
     if (!verse || !verse.verse_number) {
       setError('No verse selected.');
@@ -377,6 +590,56 @@ function Subhashita({ user, token, onSignInSuccess }) {
     }
   };
 
+  const handleToggleFavorite = async () => {
+    if (!verse || !verse.verse_number) {
+      return;
+    }
+
+    if (!user || !token) {
+      // Set pending action and show sign-in modal
+      setPendingStarAction(true);
+      setShowSignInModal(true);
+      return;
+    }
+
+    if (isTogglingFavorite) return;
+
+    setIsTogglingFavorite(true);
+    try {
+      const favoritesService = new FavoritesService(apiUrl);
+      if (isFavorite) {
+        await favoritesService.unstarVerse(
+          'subhashita',
+          'Verse',
+          verse.verse_number,
+          token
+        );
+        setIsFavorite(false);
+        // If favorites tab is active, refresh the list
+        if (activeTab === 'favorites') {
+          await fetchAllFavorites();
+        }
+      } else {
+        await favoritesService.starVerse(
+          'subhashita',
+          'Verse',
+          verse.verse_number,
+          token
+        );
+        setIsFavorite(true);
+        // If favorites tab is active, refresh the list
+        if (activeTab === 'favorites') {
+          await fetchAllFavorites();
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      // Optionally show error message to user
+    } finally {
+      setIsTogglingFavorite(false);
+    }
+  };
+
   return (
     <div className="subhashita-container">
       <DictionaryLookup apiUrl={apiUrl} />
@@ -414,6 +677,12 @@ function Subhashita({ user, token, onSignInSuccess }) {
             Get a Random Subhashita
           </button>
           <button
+            className={`subhashita-tab ${activeTab === 'favorites' ? 'active' : ''}`}
+            onClick={() => setActiveTab('favorites')}
+          >
+            Favorites
+          </button>
+          <button
             className={`subhashita-tab ${activeTab === 'translations' ? 'active' : ''}`}
             onClick={() => setActiveTab('translations')}
           >
@@ -449,6 +718,15 @@ function Subhashita({ user, token, onSignInSuccess }) {
               <div className="subhashita-result">
                 <div className="subhashita-meta">
                   <span>Verse {verse.verse_number}</span>
+                  <button
+                    className={`favorite-star-button ${isFavorite ? 'favorited' : ''}`}
+                    onClick={handleToggleFavorite}
+                    disabled={isTogglingFavorite}
+                    type="button"
+                    title={isFavorite ? 'Unstar verse' : 'Star verse'}
+                  >
+                    {isTogglingFavorite ? '...' : (isFavorite ? '★' : '☆')}
+                  </button>
                 </div>
                 {verse.transliterated_devanagari && (
                   <div className="subhashita-devanagari">
@@ -475,7 +753,7 @@ function Subhashita({ user, token, onSignInSuccess }) {
                         onClick={handleViewSplits}
                         disabled={isLoadingSplits}
                       >
-                        {isLoadingSplits ? 'Loading...' : 'View Word Splits'}
+                        {isLoadingSplits ? 'Loading...' : 'Hint'}
                       </button>
                     )}
                     {splits && !showWordByWord && (
@@ -484,7 +762,7 @@ function Subhashita({ user, token, onSignInSuccess }) {
                         className="subhashita-action-button"
                         onClick={handleViewWordByWord}
                       >
-                        View Word-by-Word Translation
+                        More Hints
                       </button>
                     )}
                   </div>
@@ -540,7 +818,7 @@ function Subhashita({ user, token, onSignInSuccess }) {
                     className="subhashita-translation-input"
                     value={userTranslation}
                     onChange={(e) => setUserTranslation(e.target.value)}
-                    placeholder="Enter your translation here, or click 'Get Translation' to generate one with AI..."
+                    placeholder="Enter your translation here, or click 'Evaluate Translation' to generate one with AI..."
                     rows={4}
                   />
                   <div className="subhashita-translation-buttons">
@@ -552,7 +830,7 @@ function Subhashita({ user, token, onSignInSuccess }) {
                     >
                       {isVerifying ? 
                         (userTranslation.trim() ? 'Verifying...' : 'Generating...') :
-                        (userTranslation.trim() ? 'Verify Translation' : 'Get Translation')
+                        (userTranslation.trim() ? 'Verify Translation' : 'Evaluate Translation')
                       }
                     </button>
                     <button
@@ -595,6 +873,53 @@ function Subhashita({ user, token, onSignInSuccess }) {
                   )}
                 </div>
               </div>
+            )}
+          </div>
+        )}
+        
+        {activeTab === 'favorites' && (
+          <div className="subhashita-tab-content">
+            <div className="subhashita-header">
+              <h2>Favorites</h2>
+              <p className="subhashita-description">
+                View all your favorited subhashitas.
+              </p>
+            </div>
+            
+            {!user || !token ? (
+              <div className="subhashita-auth-prompt">
+                <p>Please sign in to view your favorites.</p>
+                <button
+                  type="button"
+                  className="subhashita-action-button"
+                  onClick={requireSignIn}
+                >
+                  Sign In
+                </button>
+              </div>
+            ) : (
+              <>
+                {isLoadingFavorites ? (
+                  <div className="subhashita-loading">Loading your favorites...</div>
+                ) : allFavorites.length === 0 ? (
+                  <div className="subhashita-empty-state">
+                    <p>You haven't favorited any subhashitas yet.</p>
+                    <p>Go to "Get a Random Subhashita" to start favoriting verses!</p>
+                  </div>
+                ) : (
+                  <div className="subhashita-favorites-list">
+                    {allFavorites.map((favorite, index) => (
+                      <FavoriteItem
+                        key={index}
+                        favorite={favorite}
+                        apiUrl={apiUrl}
+                        onView={() => handleFavoriteClick(favorite.corpus_unit_id)}
+                        onRemove={() => handleRemoveFavorite(favorite)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

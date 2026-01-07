@@ -74,6 +74,56 @@
   color: #666;
   font-size: 0.9rem;
   margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Favorite Star Button */
+.favorite-star-button {
+  padding: 4px 8px;
+  border: 1px solid rgba(25, 118, 210, 0.5);
+  border-radius: 4px;
+  background-color: rgba(144, 202, 249, 0.2);
+  color: #1565c0;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1rem;
+  min-width: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Roboto', sans-serif;
+  vertical-align: middle;
+}
+
+.favorite-star-button:hover:not(:disabled) {
+  background-color: rgba(144, 202, 249, 0.35);
+  border-color: rgba(25, 118, 210, 0.7);
+  color: #0d47a1;
+  transform: scale(1.1);
+}
+
+.favorite-star-button:disabled {
+  background-color: rgba(227, 242, 253, 0.3);
+  border-color: rgba(25, 118, 210, 0.3);
+  color: rgba(21, 101, 192, 0.5);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Filled star styling - when button contains filled star */
+.favorite-star-button.favorited {
+  color: #ffc107;
+  border-color: #ffc107;
+  background-color: rgba(255, 193, 7, 0.1);
+}
+
+.favorite-star-button.favorited:hover:not(:disabled) {
+  background-color: rgba(255, 193, 7, 0.2);
+  border-color: #ffb300;
+  color: #ff8f00;
 }
 
 .subhashita-devanagari {
@@ -501,5 +551,116 @@
 
 .subhashita-translation-item-suggestions li {
   margin-bottom: 0.25rem;
+}
+
+/* Favorites Tab */
+.subhashita-favorites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.subhashita-favorite-item {
+  padding: 1.5rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  transition: box-shadow 0.2s;
+}
+
+.subhashita-favorite-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.subhashita-favorite-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.subhashita-favorite-item-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.subhashita-favorite-item-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.subhashita-favorite-item-date {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.subhashita-favorite-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.subhashita-view-button {
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.subhashita-view-button:hover {
+  background: #0056b3;
+}
+
+.subhashita-remove-button {
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  color: #ffc107;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subhashita-remove-button:hover {
+  background-color: rgba(255, 193, 7, 0.1);
+  border-color: #ffb300;
+  color: #ff8f00;
+  transform: scale(1.1);
+}
+
+.subhashita-favorite-item-devanagari {
+  font-size: 1.3rem;
+  line-height: 1.8;
+  color: #333;
+  margin-bottom: 1rem;
+  font-family: 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', sans-serif;
+  font-weight: bold;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 4px;
+}
+
+.subhashita-favorite-item-translation {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #555;
+  padding: 0.75rem;
+  background: #fff;
+  border-radius: 4px;
+  border-left: 3px solid #007bff;
 }
 

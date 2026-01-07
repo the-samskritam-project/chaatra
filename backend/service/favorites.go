@@ -7,7 +7,7 @@ import (
 
 // ValidateCorpusNameForFavorite validates that the corpus name is one of the supported corpora
 func ValidateCorpusNameForFavorite(corpusName string) error {
-	validCorpora := []string{"bhagavad_gita", "pancatantra", "hitopadesa"}
+	validCorpora := []string{"bhagavad_gita", "pancatantra", "hitopadesa", "subhashita"}
 	corpusNameLower := strings.ToLower(corpusName)
 
 	for _, valid := range validCorpora {
@@ -31,7 +31,8 @@ func ValidateCorpusUnitForFavorite(corpusUnit string) error {
 }
 
 // ValidateCorpusUnitIDForFavorite validates the corpus unit ID format for verses
-func ValidateCorpusUnitIDForFavorite(corpusUnit string, corpusUnitID string) error {
+func ValidateCorpusUnitIDForFavorite(corpusName string, corpusUnit string, corpusUnitID string) error {
+	corpusName = strings.ToLower(strings.TrimSpace(corpusName))
 	corpusUnit = strings.TrimSpace(corpusUnit)
 	corpusUnitID = strings.TrimSpace(corpusUnitID)
 
@@ -41,7 +42,13 @@ func ValidateCorpusUnitIDForFavorite(corpusUnit string, corpusUnitID string) err
 
 	switch corpusUnit {
 	case "Verse":
-		// Verse ID should be in format "chapter.verse" (e.g., "1.1", "2.5")
+		// For subhashita, verse numbers are simple strings/numbers (e.g., "1", "42", "123")
+		if corpusName == "subhashita" {
+			// Subhashita verse numbers can be any non-empty string
+			// No specific format validation needed beyond non-empty check
+			return nil
+		}
+		// For other corpora (bhagavad_gita, pancatantra, hitopadesa), verse ID should be in format "chapter.verse" (e.g., "1.1", "2.5")
 		parts := strings.Split(corpusUnitID, ".")
 		if len(parts) != 2 {
 			return fmt.Errorf("corpus_unit_id for Verse should be in format 'chapter.verse' (e.g., '1.1')")
