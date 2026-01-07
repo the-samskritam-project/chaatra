@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DictionaryLookup from '../dictionary/DictionaryLookup';
+import SignInModal from '../auth/SignInModal';
 import './Subhashita.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || 'http://localhost:8081';
@@ -34,6 +35,18 @@ function Subhashita({ user, token, onSignInSuccess }) {
   // State for "My Translations" tab
   const [allTranslations, setAllTranslations] = useState([]);
   const [isLoadingTranslations, setIsLoadingTranslations] = useState(false);
+  const [showSignInModal, setShowSignInModal] = useState(false);
+
+  const requireSignIn = () => {
+    setShowSignInModal(true);
+  };
+
+  const handleSignInSuccessInternal = (result) => {
+    if (onSignInSuccess) {
+      onSignInSuccess(result);
+    }
+    setShowSignInModal(false);
+  };
 
   useEffect(() => {
     const url = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || 'http://localhost:8081';
@@ -221,10 +234,8 @@ function Subhashita({ user, token, onSignInSuccess }) {
 
   const handleSaveTranslation = async () => {
     if (!user || !token) {
-      // Show sign-in modal
-      if (onSignInSuccess) {
-        onSignInSuccess();
-      }
+      // Require sign-in before saving
+      requireSignIn();
       return;
     }
     
@@ -256,9 +267,7 @@ function Subhashita({ user, token, onSignInSuccess }) {
       if (!response.ok) {
         if (response.status === 401) {
           setError('Please sign in to save translations.');
-          if (onSignInSuccess) {
-            onSignInSuccess();
-          }
+          requireSignIn();
           return;
         }
         throw new Error(`Failed to save translation: ${response.statusText}`);
@@ -277,9 +286,8 @@ function Subhashita({ user, token, onSignInSuccess }) {
 
   const fetchAllTranslations = async () => {
     if (!apiUrl || !user || !token) {
-      if (onSignInSuccess) {
-        onSignInSuccess();
-      }
+      // Require sign-in before loading translations
+      requireSignIn();
       return;
     }
     
@@ -297,9 +305,7 @@ function Subhashita({ user, token, onSignInSuccess }) {
       if (!response.ok) {
         if (response.status === 401) {
           setError('Please sign in to view your translations.');
-          if (onSignInSuccess) {
-            onSignInSuccess();
-          }
+          requireSignIn();
           return;
         }
         throw new Error(`Failed to fetch translations: ${response.statusText}`);
@@ -605,15 +611,13 @@ function Subhashita({ user, token, onSignInSuccess }) {
             {!user || !token ? (
               <div className="subhashita-auth-prompt">
                 <p>Please sign in to view your translations.</p>
-                {onSignInSuccess && (
-                  <button
-                    type="button"
-                    className="subhashita-action-button"
-                    onClick={onSignInSuccess}
-                  >
-                    Sign In
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className="subhashita-action-button"
+                  onClick={requireSignIn}
+                >
+                  Sign In
+                </button>
               </div>
             ) : (
               <>
@@ -679,6 +683,15 @@ function Subhashita({ user, token, onSignInSuccess }) {
           </div>
         )}
       </div>
+      
+      {/* Sign In Modal */}
+      {showSignInModal && (
+        <SignInModal
+          onClose={() => setShowSignInModal(false)}
+          onSignInSuccess={handleSignInSuccessInternal}
+          apiUrl={apiUrl}
+        />
+      )}
     </div>
   );
 }
