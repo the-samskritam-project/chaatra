@@ -7,6 +7,52 @@ import './Subhashita.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || 'http://localhost:8081';
 
+// Component to display feedback and suggestions in a collapsed state
+function TranslationFeedback({ feedback, suggestions }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const hasContent = (feedback && feedback.trim()) || (suggestions && suggestions.length > 0);
+
+  if (!hasContent) {
+    return null;
+  }
+
+  return (
+    <div className="subhashita-translation-feedback-container">
+      <button
+        type="button"
+        className="subhashita-feedback-toggle"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <span>{isExpanded ? '▼' : '▶'}</span>
+        <span>Learning Tips & Suggestions</span>
+      </button>
+      {isExpanded && (
+        <div className="subhashita-translation-feedback-content">
+          {feedback && feedback.trim() && (
+            <div className="subhashita-translation-item-feedback">
+              <strong>💡 Learning Tips:</strong>
+              <div className="subhashita-feedback-text" style={{ whiteSpace: 'pre-wrap' }}>
+                {feedback}
+              </div>
+            </div>
+          )}
+          {suggestions && suggestions.length > 0 && (
+            <div className="subhashita-translation-item-suggestions">
+              <strong>Suggestions:</strong>
+              <ul>
+                {suggestions.map((suggestion, idx) => (
+                  <li key={idx}>{suggestion}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Component to display a favorite item
 function FavoriteItem({ favorite, apiUrl, onView, onRemove }) {
   const [verse, setVerse] = useState(null);
@@ -850,7 +896,7 @@ function Subhashita({ user, token, onSignInSuccess }) {
                           {verificationResult.is_accurate ? '✓ Good work!' : '💡 Learning tips'}
                         </span>
                       </div>
-                      <div className="subhashita-verification-feedback">
+                      <div className="subhashita-verification-feedback" style={{ whiteSpace: 'pre-wrap' }}>
                         {verificationResult.feedback}
                       </div>
                       {verificationResult.suggestions && verificationResult.suggestions.length > 0 && (
@@ -989,15 +1035,11 @@ function Subhashita({ user, token, onSignInSuccess }) {
                           <p>{item.translation}</p>
                         </div>
                         
-                        {item.ai_suggestions && item.ai_suggestions.length > 0 && (
-                          <div className="subhashita-translation-item-suggestions">
-                            <strong>AI Suggestions:</strong>
-                            <ul>
-                              {item.ai_suggestions.map((suggestion, idx) => (
-                                <li key={idx}>{suggestion}</li>
-                              ))}
-                            </ul>
-                          </div>
+                        {(item.feedback || (item.ai_suggestions && item.ai_suggestions.length > 0)) && (
+                          <TranslationFeedback
+                            feedback={item.feedback}
+                            suggestions={item.ai_suggestions}
+                          />
                         )}
                       </div>
                     ))}

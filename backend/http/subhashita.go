@@ -233,13 +233,13 @@ func SubhashitaVerifyTranslationHandler(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	// If user is authenticated and there are suggestions, save them to the user translation document
-	if userID != nil && len(verificationResult.Suggestions) > 0 {
-		// Try to update AI suggestions (don't fail if translation doesn't exist yet)
-		err := persistence.UpdateUserTranslationAISuggestions(userID, verseNumber, verificationResult.Suggestions)
+	// If user is authenticated, save feedback and suggestions to the user translation document
+	if userID != nil {
+		// Try to update feedback and AI suggestions (don't fail if translation doesn't exist yet)
+		err := persistence.UpdateUserTranslationFeedback(userID, verseNumber, verificationResult.Feedback, verificationResult.Suggestions)
 		if err != nil {
-			// Log but don't fail - suggestions are optional
-			log.Printf("Note: Could not save AI suggestions for verse %s: %v", verseNumber, err)
+			// Log but don't fail - feedback and suggestions are optional
+			log.Printf("Note: Could not save feedback and suggestions for verse %s: %v", verseNumber, err)
 		}
 	}
 

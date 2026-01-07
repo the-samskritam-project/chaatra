@@ -96,10 +96,17 @@ Consider:
 
 IMPORTANT: Be encouraging and helpful. Even if the translation is incomplete or incorrect, frame your feedback as guidance for learning, not as criticism. Help the user understand what the verse is about and how to approach translating it.
 
+FORMATTING REQUIREMENTS:
+- Format the feedback with clean line breaks and bullet points for readability
+- Use bullet points (- or •) for lists and key points
+- Separate major sections with line breaks
+- Keep paragraphs concise and well-structured
+- The feedback should be easy to scan and read
+
 Return your response as a JSON object with the following structure:
 {
   "is_accurate": true/false,
-  "feedback": "helpful, encouraging feedback text that guides the user",
+  "feedback": "helpful, encouraging feedback text with clean line breaks and bullet points that guides the user",
   "suggestions": ["helpful suggestion 1", "helpful suggestion 2"]
 }
 

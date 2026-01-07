@@ -18,6 +18,7 @@ type UserTranslation struct {
 	UserID        interface{} `json:"user_id" bson:"user_id"`
 	VerseNumber   string      `json:"verse_number" bson:"verse_number"`
 	Translation   string      `json:"translation" bson:"translation"`
+	Feedback      string      `json:"feedback,omitempty" bson:"feedback,omitempty"`
 	AISuggestions []string    `json:"ai_suggestions,omitempty" bson:"ai_suggestions,omitempty"`
 	CreatedAt     time.Time   `json:"created_at" bson:"created_at"`
 	UpdatedAt     time.Time   `json:"updated_at" bson:"updated_at"`
@@ -241,5 +242,45 @@ func UpdateUserTranslationAISuggestions(userID interface{}, verseNumber string, 
 	}
 
 	log.Printf("Updated AI suggestions for verse %s, user: %v", verseNumber, userID)
+	return nil
+}
+
+// UpdateUserTranslationFeedback updates the feedback and AI suggestions for a user translation
+func UpdateUserTranslationFeedback(userID interface{}, verseNumber string, feedback string, suggestions []string) error {
+	if mongoClient == nil {
+		return fmt.Errorf("MongoDB not initialized")
+	}
+
+	collection, err := getUserTranslationsCollection(userID)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	filter := bson.M{
+		"user_id":      userID,
+		"verse_number": verseNumber,
+	}
+
+	update := bson.M{
+		"$set": bson.M{
+			"feedback":       feedback,
+			"ai_suggestions": suggestions,
+			"updated_at":     time.Now(),
+		},
+	}
+
+	result, err := collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return fmt.Errorf("failed to update feedback and suggestions: %w", err)
+	}
+
+	if result.MatchedCount == 0 {
+		return fmt.Errorf("user translation not found")
+	}
+
+	log.Printf("Updated feedback and suggestions for verse %s, user: %v", verseNumber, userID)
 	return nil
 }
