@@ -441,15 +441,27 @@ function Subhashita({ user, token, onSignInSuccess }) {
     setError(null);
     
     try {
+      // Include feedback and suggestions if verification was done
+      const requestBody = {
+        user_translation: userTranslation.trim(),
+      };
+      
+      if (verificationResult) {
+        if (verificationResult.feedback) {
+          requestBody.feedback = verificationResult.feedback;
+        }
+        if (verificationResult.suggestions && verificationResult.suggestions.length > 0) {
+          requestBody.ai_suggestions = verificationResult.suggestions;
+        }
+      }
+      
       const response = await fetch(`${apiUrl}/subhashita/${verse.verse_number}/translation`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          user_translation: userTranslation.trim(),
-        }),
+        body: JSON.stringify(requestBody),
       });
       
       if (!response.ok) {

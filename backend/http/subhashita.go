@@ -134,7 +134,9 @@ func SubhashitaSaveTranslationHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Parse request body
 	var req struct {
-		Translation string `json:"user_translation"`
+		Translation   string   `json:"user_translation"`
+		Feedback      string   `json:"feedback,omitempty"`
+		AISuggestions []string `json:"ai_suggestions,omitempty"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
@@ -147,7 +149,7 @@ func SubhashitaSaveTranslationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Save the translation
-	userTranslation, err := persistence.CreateUserTranslation(userID, verseNumber, req.Translation)
+	userTranslation, err := persistence.CreateUserTranslationWithFeedback(userID, verseNumber, req.Translation, req.Feedback, req.AISuggestions)
 	if err != nil {
 		log.Printf("Error saving user translation for verse %s: %v", verseNumber, err)
 		http.Error(w, fmt.Sprintf("Failed to save translation: %v", err), http.StatusInternalServerError)

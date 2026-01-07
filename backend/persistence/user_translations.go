@@ -87,11 +87,16 @@ func CreateUserTranslation(userID interface{}, verseNumber string, translation s
 	err = collection.FindOne(ctx, filter).Decode(&existing)
 	if err == nil {
 		// Translation exists, update it
+		// Preserve existing feedback and suggestions if not provided
+		updateSet := bson.M{
+			"translation": translation,
+			"updated_at":  time.Now(),
+		}
+
+		// Only update feedback/suggestions if they're being explicitly set (not empty)
+		// This preserves existing feedback/suggestions if not provided in the update
 		update := bson.M{
-			"$set": bson.M{
-				"translation": translation,
-				"updated_at":  time.Now(),
-			},
+			"$set": updateSet,
 		}
 
 		result, err := collection.UpdateOne(ctx, filter, update)
@@ -130,6 +135,95 @@ func CreateUserTranslation(userID interface{}, verseNumber string, translation s
 		if mongo.IsDuplicateKeyError(err) {
 			// Race condition - try to update instead
 			return CreateUserTranslation(userID, verseNumber, translation)
+		}
+		return nil, fmt.Errorf("failed to create user translation: %w", err)
+	}
+
+	userTranslation.ID = result.InsertedID
+	log.Printf("Created user translation with ID: %v for verse %s, user: %v", result.InsertedID, verseNumber, userID)
+
+	return userTranslation, nil
+}
+
+// CreateUserTranslationWithFeedback creates or updates a user translation with feedback and suggestions
+func CreateUserTranslationWithFeedback(userID interface{}, verseNumber string, translation string, feedback string, suggestions []string) (*UserTranslation, error) {
+	if mongoClient == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+
+	collection, err := getUserTranslationsCollection(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Check if translation already exists for this verse
+	filter := bson.M{
+		"user_id":      userID,
+		"verse_number": verseNumber,
+	}
+
+	var existing UserTranslation
+	err = collection.FindOne(ctx, filter).Decode(&existing)
+	if err == nil {
+		// Translation exists, update it
+		updateSet := bson.M{
+			"translation": translation,
+			"updated_at":  time.Now(),
+		}
+
+		// Update feedback and suggestions if provided
+		if feedback != "" {
+			updateSet["feedback"] = feedback
+		}
+		if suggestions != nil && len(suggestions) > 0 {
+			updateSet["ai_suggestions"] = suggestions
+		}
+
+		update := bson.M{
+			"$set": updateSet,
+		}
+
+		result, err := collection.UpdateOne(ctx, filter, update)
+		if err != nil {
+			return nil, fmt.Errorf("failed to update user translation: %w", err)
+		}
+
+		if result.MatchedCount == 0 {
+			return nil, fmt.Errorf("translation not found")
+		}
+
+		// Retrieve updated translation
+		var updated UserTranslation
+		err = collection.FindOne(ctx, filter).Decode(&updated)
+		if err != nil {
+			return nil, fmt.Errorf("failed to retrieve updated translation: %w", err)
+		}
+
+		log.Printf("Updated user translation for verse %s, user: %v", verseNumber, userID)
+		return &updated, nil
+	} else if err != mongo.ErrNoDocuments {
+		return nil, fmt.Errorf("failed to check existing translation: %w", err)
+	}
+
+	// Create new translation
+	userTranslation := &UserTranslation{
+		UserID:        userID,
+		VerseNumber:   verseNumber,
+		Translation:   translation,
+		Feedback:      feedback,
+		AISuggestions: suggestions,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
+	}
+
+	result, err := collection.InsertOne(ctx, userTranslation)
+	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			// Race condition - try to update instead
+			return CreateUserTranslationWithFeedback(userID, verseNumber, translation, feedback, suggestions)
 		}
 		return nil, fmt.Errorf("failed to create user translation: %w", err)
 	}
