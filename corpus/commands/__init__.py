@@ -119,3 +119,4 @@ from . import classify_bhagavad_gita_themes
 from . import generate_bhagavad_gita_embeddings
 from . import import_apte_dictionary
 from . import generate_apte_embeddings
+from . import translate_subhashitas

@@ -30,7 +30,7 @@ def make_openai_request(
         user_prompt: User prompt for the API
         model: OpenAI model to use
         temperature: Temperature for the API call
-        max_tokens: Maximum tokens for the response
+        max_tokens: Maximum tokens for the response (uses max_completion_tokens for newer models)
         
     Returns:
         Response text from OpenAI
@@ -42,15 +42,28 @@ def make_openai_request(
     if not api_key:
         raise ValueError("OpenAI API key is required")
     
+    # Newer models (gpt-5.x, o1, etc.) use max_completion_tokens instead of max_tokens
+    # Check if model requires max_completion_tokens
+    requires_max_completion_tokens = (
+        model.startswith('gpt-5') or 
+        model.startswith('o1') or
+        'max_completion_tokens' in model.lower()
+    )
+    
     payload = {
         "model": model,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
         ],
-        "temperature": temperature,
-        "max_tokens": max_tokens
+        "temperature": temperature
     }
+    
+    # Use the appropriate parameter based on model
+    if requires_max_completion_tokens:
+        payload["max_completion_tokens"] = max_tokens
+    else:
+        payload["max_tokens"] = max_tokens
     
     headers = {
         "Authorization": f"Bearer {api_key}",
