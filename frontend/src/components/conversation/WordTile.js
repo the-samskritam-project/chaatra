@@ -23,6 +23,13 @@ const WordTile = ({
       onClick={handleClick}
     >
       <div className="word-tile-content">
+        {/* Visual indicator for revealed state - on the left */}
+        {isUncompoundedRevealed && (
+          <div className="word-tile-indicator">
+            {isMeaningRevealed ? '✓✓' : '✓'}
+          </div>
+        )}
+        
         {/* Default state: Show original word */}
         {!isUncompoundedRevealed && (
           <div className="word-tile-original">
@@ -52,13 +59,6 @@ const WordTile = ({
               )}
             </div>
             <span className="word-tile-index">[{index}]</span>
-          </div>
-        )}
-
-        {/* Visual indicator for revealed state */}
-        {isUncompoundedRevealed && (
-          <div className="word-tile-indicator">
-            {isMeaningRevealed ? '✓✓' : '✓'}
           </div>
         )}
       </div>

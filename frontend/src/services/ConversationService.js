@@ -51,7 +51,7 @@ class ConversationService {
    * @param {string} shlokaID - Verse ID
    * @param {string} userTranslation - User's translation
    * @param {object} hintsUsed - Hints that were used
-   * @returns {Promise<{score: number, feedback: string, strengths: string[], areas_for_improvement: string[]}>}
+   * @returns {Promise<{language_mastery: string, translation_fidelity: string, nuance: string, feedback: string, strengths: string[], areas_for_improvement: string[]}>}
    * @throws {Error} If evaluation fails
    */
   async evaluateTranslation(corpus, shlokaID, userTranslation, hintsUsed) {

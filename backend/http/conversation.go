@@ -188,7 +188,9 @@ type EvaluationRequest struct {
 
 // EvaluationResponse represents the response from translation evaluation
 type EvaluationResponse struct {
-	Score               int      `json:"score"`
+	LanguageMastery     string   `json:"language_mastery"`
+	TranslationFidelity string   `json:"translation_fidelity"`
+	Nuance              string   `json:"nuance"`
 	Feedback            string   `json:"feedback"`
 	Strengths           []string `json:"strengths"`
 	AreasForImprovement []string `json:"areas_for_improvement"`
@@ -265,7 +267,9 @@ func EvaluationHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Build response
 	response := EvaluationResponse{
-		Score:               evaluation.Score,
+		LanguageMastery:     evaluation.LanguageMastery,
+		TranslationFidelity: evaluation.TranslationFidelity,
+		Nuance:              evaluation.Nuance,
 		Feedback:            evaluation.Feedback,
 		Strengths:           evaluation.Strengths,
 		AreasForImprovement: evaluation.AreasForImprovement,

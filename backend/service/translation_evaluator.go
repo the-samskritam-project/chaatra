@@ -21,7 +21,9 @@ type HintsUsed struct {
 
 // EvaluationResult represents the result of translation evaluation
 type EvaluationResult struct {
-	Score               int      `json:"score"`
+	LanguageMastery     string   `json:"language_mastery"`     // Subjective rating (e.g., "Excellent", "Good", "Fair", "Needs Improvement")
+	TranslationFidelity string   `json:"translation_fidelity"` // Subjective rating
+	Nuance              string   `json:"nuance"`               // Subjective rating
 	Feedback            string   `json:"feedback"`
 	Strengths           []string `json:"strengths"`
 	AreasForImprovement []string `json:"areas_for_improvement"`
@@ -31,26 +33,41 @@ type EvaluationResult struct {
 const evaluationSystemPrompt = `You are evaluating a student's Sanskrit translation attempt.
 
 TASK:
-1. Assess how independently the student worked (fewer hints = higher score for independence)
-2. Evaluate translation accuracy (0-100 score based on correctness)
-3. Provide detailed feedback with specific corrections
-4. Highlight strengths and areas for improvement
+Evaluate the translation across three dimensions and provide subjective ratings:
 
-SCORING GUIDELINES:
-- Independence (30 points): Fewer hints used = higher score
-  - No hints: 30 points
-  - Some word hints: 20-25 points
-  - Many word hints: 10-15 points
-  - Full translation shown: 0-5 points
-- Accuracy (70 points): Based on translation correctness
-  - Excellent (90-100% correct): 60-70 points
-  - Good (70-89% correct): 45-60 points
-  - Fair (50-69% correct): 30-45 points
-  - Poor (<50% correct): 0-30 points
+1. LANGUAGE MASTERY:
+   - Assess based on hints used and their necessity
+   - Consider: Did the student need hints for difficult/rare terms vs. basic vocabulary?
+   - Fewer hints for difficult terms = higher mastery
+   - Rating options: "Excellent", "Good", "Fair", "Needs Improvement"
+   - Excellent: No hints or only hints for very rare/complex terms
+   - Good: Some hints used, mostly for moderately difficult terms
+   - Fair: Many hints used, including for common terms
+   - Needs Improvement: Full translation shown or excessive hints for basic vocabulary
+
+2. TRANSLATION FIDELITY:
+   - How closely does the translation match the canonical meaning?
+   - Consider accuracy of word meanings, grammar, and overall sense
+   - Rating options: "Excellent", "Good", "Fair", "Needs Improvement"
+   - Excellent: Very close match, minor differences only
+   - Good: Mostly accurate with some minor errors
+   - Fair: Generally correct but with notable errors or omissions
+   - Needs Improvement: Significant errors or major deviations from meaning
+
+3. NUANCE:
+   - Does the translation capture nuanced ideas, philosophical depth, or subtle meanings?
+   - Consider: Are complex concepts preserved? Is the poetic/philosophical essence maintained?
+   - Rating options: "Excellent", "Good", "Fair", "Needs Improvement"
+   - Excellent: Captures subtle meanings, philosophical depth, and nuanced expressions
+   - Good: Generally captures main ideas with some nuance
+   - Fair: Basic meaning conveyed but nuance is lost
+   - Needs Improvement: Literal translation without capturing deeper meaning
 
 OUTPUT FORMAT (JSON only):
 {
-  "score": 85,
+  "language_mastery": "Excellent|Good|Fair|Needs Improvement",
+  "translation_fidelity": "Excellent|Good|Fair|Needs Improvement",
+  "nuance": "Excellent|Good|Fair|Needs Improvement",
   "feedback": "Detailed feedback with specific corrections and suggestions...",
   "strengths": ["Strength 1", "Strength 2"],
   "areas_for_improvement": ["Area 1", "Area 2"]
@@ -109,10 +126,30 @@ func buildEvaluationPrompt(canonicalData *CanonicalData, userTranslation string,
 	// Hints used
 	builder.WriteString("Hints Used:\n")
 	if len(hintsUsed.RevealedUncompoundedIndices) > 0 {
-		builder.WriteString(fmt.Sprintf("- Uncompounded forms revealed for words: %v\n", hintsUsed.RevealedUncompoundedIndices))
+		builder.WriteString(fmt.Sprintf("- Uncompounded forms revealed for words at indices: %v\n", hintsUsed.RevealedUncompoundedIndices))
+		// Show which words these are
+		if len(canonicalData.WordToWordTranslation) > 0 {
+			builder.WriteString("  Words with uncompounded forms revealed:\n")
+			for _, idx := range hintsUsed.RevealedUncompoundedIndices {
+				if idx < len(canonicalData.WordToWordTranslation) {
+					word := canonicalData.WordToWordTranslation[idx]
+					builder.WriteString(fmt.Sprintf("    [%d] %s: %s\n", idx, word.Word, word.Translation))
+				}
+			}
+		}
 	}
 	if len(hintsUsed.RevealedWordIndices) > 0 {
-		builder.WriteString(fmt.Sprintf("- Word meanings revealed for words: %v\n", hintsUsed.RevealedWordIndices))
+		builder.WriteString(fmt.Sprintf("- Word meanings revealed for words at indices: %v\n", hintsUsed.RevealedWordIndices))
+		// Show which words these are
+		if len(canonicalData.WordToWordTranslation) > 0 {
+			builder.WriteString("  Words with meanings revealed:\n")
+			for _, idx := range hintsUsed.RevealedWordIndices {
+				if idx < len(canonicalData.WordToWordTranslation) {
+					word := canonicalData.WordToWordTranslation[idx]
+					builder.WriteString(fmt.Sprintf("    [%d] %s: %s\n", idx, word.Word, word.Translation))
+				}
+			}
+		}
 	}
 	if hintsUsed.FullTranslationShown {
 		builder.WriteString("- Full translation was shown\n")
@@ -121,6 +158,17 @@ func buildEvaluationPrompt(canonicalData *CanonicalData, userTranslation string,
 		builder.WriteString("- No hints were used (excellent independence!)\n")
 	}
 	builder.WriteString("\n")
+
+	// Total word count for context
+	if len(canonicalData.WordToWordTranslation) > 0 {
+		totalWords := len(canonicalData.WordToWordTranslation)
+		hintsCount := len(hintsUsed.RevealedUncompoundedIndices) + len(hintsUsed.RevealedWordIndices)
+		if hintsUsed.FullTranslationShown {
+			builder.WriteString(fmt.Sprintf("Context: Total words in shloka: %d, Hints used: %d (full translation shown)\n\n", totalWords, hintsCount))
+		} else {
+			builder.WriteString(fmt.Sprintf("Context: Total words in shloka: %d, Hints used: %d\n\n", totalWords, hintsCount))
+		}
+	}
 
 	// User's translation
 	builder.WriteString("User's Translation:\n")
@@ -171,9 +219,22 @@ func parseEvaluationResponse(response string) (*EvaluationResult, error) {
 		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
 	}
 
-	// Validate score range
-	if result.Score < 0 || result.Score > 100 {
-		return nil, fmt.Errorf("invalid score: %d (must be 0-100)", result.Score)
+	// Validate ratings
+	validRatings := map[string]bool{
+		"Excellent":         true,
+		"Good":              true,
+		"Fair":              true,
+		"Needs Improvement": true,
+	}
+
+	if !validRatings[result.LanguageMastery] {
+		return nil, fmt.Errorf("invalid language_mastery rating: %s (must be Excellent, Good, Fair, or Needs Improvement)", result.LanguageMastery)
+	}
+	if !validRatings[result.TranslationFidelity] {
+		return nil, fmt.Errorf("invalid translation_fidelity rating: %s (must be Excellent, Good, Fair, or Needs Improvement)", result.TranslationFidelity)
+	}
+	if !validRatings[result.Nuance] {
+		return nil, fmt.Errorf("invalid nuance rating: %s (must be Excellent, Good, Fair, or Needs Improvement)", result.Nuance)
 	}
 
 	return &result, nil

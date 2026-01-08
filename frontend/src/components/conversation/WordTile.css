@@ -41,10 +41,12 @@
 
 .word-tile-content {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.5rem;
   width: 100%;
+  position: relative;
+  justify-content: center;
 }
 
 .word-tile-original,
@@ -102,11 +104,15 @@
 }
 
 .word-tile-indicator {
-  position: absolute;
-  top: 0.25rem;
-  right: 0.25rem;
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   color: #28a745;
   font-weight: bold;
+  line-height: 1;
+  flex-shrink: 0;
+  padding: 0.1rem 0.2rem;
+  border-radius: 3px;
+  background: rgba(40, 167, 69, 0.1);
+  min-width: 1.2rem;
+  text-align: center;
 }
 

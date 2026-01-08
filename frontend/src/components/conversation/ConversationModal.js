@@ -423,10 +423,12 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl }) => {
         <div className="conversation-modal-header">
           <div className="conversation-header-left">
             <h2 className="conversation-modal-title">Sanskrit Translation Tutor</h2>
-            <div className="conversation-verse-number">{getVerseNumber()}</div>
+            <div className="conversation-header-meta">
+              <div className="conversation-verse-number">{getVerseNumber()}</div>
+              <div className="conversation-hint-counter">Hints used: {hintsUsed}</div>
+            </div>
           </div>
           <div className="conversation-header-right">
-            <div className="conversation-hint-counter">Hints used: {hintsUsed}</div>
             <button className="modal-close" onClick={handleClose} disabled={isEvaluating}>
               ×
             </button>
@@ -552,10 +554,35 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl }) => {
           {/* Evaluation Display */}
           {evaluation && (
             <div className="conversation-evaluation-section">
-              <div className="conversation-evaluation-score">
-                <div className="conversation-score-label">Score</div>
-                <div className={`conversation-score-value score-${evaluation.score >= 80 ? 'excellent' : evaluation.score >= 60 ? 'good' : 'needs-work'}`}>
-                  {evaluation.score}/100
+              <div className="conversation-evaluation-ratings">
+                <div className="conversation-rating-item">
+                  <div className="conversation-rating-label">Language Mastery</div>
+                  <div className={`conversation-rating-value rating-${evaluation.language_mastery?.toLowerCase().replace(/\s+/g, '-') || 'fair'}`}>
+                    {evaluation.language_mastery || 'Fair'}
+                  </div>
+                  <div className="conversation-rating-description">
+                    Based on hints used and their necessity for difficult terms
+                  </div>
+                </div>
+                
+                <div className="conversation-rating-item">
+                  <div className="conversation-rating-label">Translation Fidelity</div>
+                  <div className={`conversation-rating-value rating-${evaluation.translation_fidelity?.toLowerCase().replace(/\s+/g, '-') || 'fair'}`}>
+                    {evaluation.translation_fidelity || 'Fair'}
+                  </div>
+                  <div className="conversation-rating-description">
+                    How closely the translation matches the canonical meaning
+                  </div>
+                </div>
+                
+                <div className="conversation-rating-item">
+                  <div className="conversation-rating-label">Nuance</div>
+                  <div className={`conversation-rating-value rating-${evaluation.nuance?.toLowerCase().replace(/\s+/g, '-') || 'fair'}`}>
+                    {evaluation.nuance || 'Fair'}
+                  </div>
+                  <div className="conversation-rating-description">
+                    Whether the translation captures nuanced ideas and philosophical depth
+                  </div>
                 </div>
               </div>
               
