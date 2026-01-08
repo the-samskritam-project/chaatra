@@ -74,6 +74,20 @@
   align-items: center;
 }
 
+.word-tile-part-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: white;
+  border: 1px solid #007bff;
+  border-radius: 6px;
+  font-family: 'Noto Sans Devanagari', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1565c0;
+}
+
 .word-tile-part {
   font-family: 'Noto Sans Devanagari', sans-serif;
   font-size: 0.9rem;
@@ -82,6 +96,13 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+}
+
+.word-tile-part-text {
+  font-family: 'Noto Sans Devanagari', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1565c0;
 }
 
 .word-tile-meaning {
@@ -94,7 +115,10 @@
 .word-tile-separator {
   color: #6c757d;
   font-weight: 600;
-  margin: 0 0.1rem;
+  margin: 0 0.25rem;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
 }
 
 .word-tile-index {

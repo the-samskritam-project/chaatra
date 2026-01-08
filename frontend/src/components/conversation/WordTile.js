@@ -44,15 +44,17 @@ const WordTile = ({
             <div className="word-tile-uncompounded-parts">
               {uncompoundedParts && uncompoundedParts.length > 0 ? (
                 uncompoundedParts.map((part, idx) => (
-                  <span key={idx} className="word-tile-part">
-                    {part}
-                    {isMeaningRevealed && meanings && meanings[idx] && (
-                      <span className="word-tile-meaning"> ({meanings[idx]})</span>
-                    )}
+                  <React.Fragment key={idx}>
+                    <div className="word-tile-part-card">
+                      <span className="word-tile-part-text">{part}</span>
+                      {isMeaningRevealed && meanings && meanings[idx] && (
+                        <span className="word-tile-meaning"> ({meanings[idx]})</span>
+                      )}
+                    </div>
                     {idx < uncompoundedParts.length - 1 && (
                       <span className="word-tile-separator"> - </span>
                     )}
-                  </span>
+                  </React.Fragment>
                 ))
               ) : (
                 <span className="word-tile-text">{word}</span>
