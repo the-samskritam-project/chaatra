@@ -791,6 +791,9 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
           isOpen={showConversationModal}
           onClose={() => setShowConversationModal(false)}
           apiUrl={apiUrl}
+          user={user}
+          token={token}
+          onSignInSuccess={onSignInSuccess}
         />
       )}
     </div>

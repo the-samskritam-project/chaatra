@@ -1,15 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import ConversationService from '../../services/ConversationService';
+import SignInModal from '../auth/SignInModal';
 import WordTile from './WordTile';
 import './ConversationModal.css';
 
-const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl }) => {
+const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl, user, token, onSignInSuccess }) => {
   const [verseData, setVerseData] = useState(null);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [userTranslation, setUserTranslation] = useState('');
   const [evaluation, setEvaluation] = useState(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showSignInModal, setShowSignInModal] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [error, setError] = useState('');
   const [state, setState] = useState({
     revealed: {
@@ -386,6 +390,74 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl }) => {
     }
   };
 
+  const requireSignIn = () => {
+    setShowSignInModal(true);
+  };
+
+  const handleSignInSuccess = (result) => {
+    if (onSignInSuccess) {
+      onSignInSuccess(result);
+    }
+    setShowSignInModal(false);
+  };
+
+  const handleSavePractice = async () => {
+    if (!user || !token) {
+      requireSignIn();
+      return;
+    }
+
+    if (!userTranslation.trim()) {
+      setError('Please enter a translation before saving.');
+      return;
+    }
+
+    if (!verse || !verse.verse_number) {
+      setError('No verse selected.');
+      return;
+    }
+
+    setIsSaving(true);
+    setError('');
+    setSaveSuccess(false);
+
+    try {
+      // Build hints used object
+      const hintsUsedObj = {
+        revealed_uncompounded_indices: state.revealed.revealed_uncompounded_indices,
+        revealed_word_indices: state.revealed.revealed_word_indices,
+        full_translation_shown: state.revealed.full_translation,
+      };
+
+      await conversationService.savePracticeSession(
+        corpusName,
+        verse.verse_number,
+        userTranslation.trim(),
+        hintsUsedObj,
+        evaluation,
+        token
+      );
+
+      setSaveSuccess(true);
+      setError(null);
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 3000);
+    } catch (err) {
+      console.error('Error saving practice session:', err);
+      if (err.message && err.message.includes('401')) {
+        setError('Please sign in to save practice sessions.');
+        requireSignIn();
+      } else {
+        setError(err.message || 'Unable to save practice session. Please try again.');
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Handle try again
   const handleTryAgain = () => {
     setState({
@@ -399,6 +471,7 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl }) => {
     setUserTranslation('');
     setEvaluation(null);
     setError('');
+    setSaveSuccess(false);
   };
 
   if (!isOpen) {
@@ -613,13 +686,29 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl }) => {
                 </div>
               )}
 
-              <button
-                type="button"
-                onClick={handleTryAgain}
-                className="conversation-try-again-button"
-              >
-                Try Again
-              </button>
+              <div className="conversation-evaluation-actions">
+                <button
+                  type="button"
+                  onClick={handleSavePractice}
+                  className="conversation-save-button"
+                  disabled={isSaving}
+                >
+                  {isSaving ? 'Saving...' : 'Save Practice Session'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleTryAgain}
+                  className="conversation-try-again-button"
+                >
+                  Try Again
+                </button>
+              </div>
+
+              {saveSuccess && (
+                <div className="conversation-save-success">
+                  ✓ Practice session saved successfully!
+                </div>
+              )}
             </div>
           )}
 
@@ -630,6 +719,13 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl }) => {
           )}
         </div>
       </div>
+      {showSignInModal && (
+        <SignInModal
+          onClose={() => setShowSignInModal(false)}
+          onSignInSuccess={handleSignInSuccess}
+          apiUrl={apiUrl}
+        />
+      )}
     </div>,
     document.body
   );

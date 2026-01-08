@@ -805,14 +805,41 @@
   margin-bottom: 0.5rem;
 }
 
+.conversation-evaluation-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  justify-content: center;
+}
+
+.conversation-save-button {
+  padding: 0.75rem 1.5rem;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.conversation-save-button:hover:not(:disabled) {
+  background: #218838;
+}
+
+.conversation-save-button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
 .conversation-try-again-button {
-  width: 100%;
   padding: 0.75rem 1.5rem;
   background: #6c757d;
   color: white;
   border: none;
   border-radius: 6px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s;
@@ -820,5 +847,17 @@
 
 .conversation-try-again-button:hover {
   background: #5a6268;
+}
+
+.conversation-save-success {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 

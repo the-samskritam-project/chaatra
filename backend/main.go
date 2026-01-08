@@ -118,6 +118,14 @@ func main() {
 			} else {
 				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			}
+		} else if strings.Contains(path, "/shloka/") && strings.HasSuffix(path, "/practice") {
+			// Check if this is a practice session save endpoint: /v2/{corpus}/shloka/{id}/practice
+			// Requires JWT authentication
+			if r.Method == http.MethodPost || r.Method == http.MethodPut {
+				h.JWTAuthMiddleware(h.SavePracticeSessionHandler)(w, r)
+			} else {
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			}
 		} else {
 			// Let other v2 routes handle it
 			http.Error(w, "Not found", http.StatusNotFound)

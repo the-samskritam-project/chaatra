@@ -282,3 +282,80 @@ func EvaluationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// SavePracticeSessionRequest represents the request body for saving a practice session
+type SavePracticeSessionRequest struct {
+	UserTranslation  string                        `json:"user_translation"`
+	HintsUsed        *persistence.HintsUsed        `json:"hints_used,omitempty"`
+	EvaluationResult *persistence.EvaluationResult `json:"evaluation_result,omitempty"`
+}
+
+// SavePracticeSessionHandler handles POST /v2/{corpus}/shloka/{id}/practice
+// This endpoint saves a translation practice session with hints and evaluation results
+// Requires JWT authentication
+func SavePracticeSessionHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost && r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Get user ID from context (requires JWT auth middleware)
+	userID, ok := GetUserIDFromContext(r)
+	if !ok {
+		http.Error(w, "User ID not found in context. Authentication required.", http.StatusUnauthorized)
+		return
+	}
+
+	// Extract corpus and shloka ID from path
+	// Expected format: /v2/{corpus}/shloka/{id}/practice
+	path := strings.TrimPrefix(r.URL.Path, "/v2/")
+	path = strings.TrimSuffix(path, "/practice")
+
+	parts := strings.Split(path, "/shloka/")
+	if len(parts) != 2 {
+		http.Error(w, "Invalid path format. Expected: /v2/{corpus}/shloka/{id}/practice", http.StatusBadRequest)
+		return
+	}
+
+	corpus := parts[0]
+	shlokaID := parts[1]
+
+	if corpus == "" || shlokaID == "" {
+		http.Error(w, "Corpus and shloka ID are required", http.StatusBadRequest)
+		return
+	}
+
+	// Parse request body
+	var req SavePracticeSessionRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	if req.UserTranslation == "" {
+		http.Error(w, "user_translation is required", http.StatusBadRequest)
+		return
+	}
+
+	// Save the practice session
+	practiceSession, err := persistence.CreatePracticeSession(
+		userID,
+		corpus,
+		shlokaID,
+		req.UserTranslation,
+		req.HintsUsed,
+		req.EvaluationResult,
+	)
+	if err != nil {
+		log.Printf("Error saving practice session for corpus %s, verse %s: %v", corpus, shlokaID, err)
+		http.Error(w, fmt.Sprintf("Failed to save practice session: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(practiceSession); err != nil {
+		log.Printf("Error encoding response: %v", err)
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
+}

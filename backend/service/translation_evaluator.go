@@ -1,6 +1,7 @@
 package service
 
 import (
+	"chaatra/persistence"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -12,22 +13,11 @@ import (
 	"github.com/tmc/langchaingo/llms/openai"
 )
 
-// HintsUsed represents the hints that were used by the user
-type HintsUsed struct {
-	RevealedUncompoundedIndices []int `json:"revealed_uncompounded_indices"`
-	RevealedWordIndices         []int `json:"revealed_word_indices"`
-	FullTranslationShown        bool  `json:"full_translation_shown"`
-}
+// HintsUsed is an alias for persistence.HintsUsed to maintain backward compatibility
+type HintsUsed = persistence.HintsUsed
 
-// EvaluationResult represents the result of translation evaluation
-type EvaluationResult struct {
-	LanguageMastery     string   `json:"language_mastery"`     // Subjective rating (e.g., "Excellent", "Good", "Fair", "Needs Improvement")
-	TranslationFidelity string   `json:"translation_fidelity"` // Subjective rating
-	Nuance              string   `json:"nuance"`               // Subjective rating
-	Feedback            string   `json:"feedback"`
-	Strengths           []string `json:"strengths"`
-	AreasForImprovement []string `json:"areas_for_improvement"`
-}
+// EvaluationResult is an alias for persistence.EvaluationResult to maintain backward compatibility
+type EvaluationResult = persistence.EvaluationResult
 
 // System prompt for translation evaluation
 const evaluationSystemPrompt = `You are evaluating a student's Sanskrit translation attempt.
