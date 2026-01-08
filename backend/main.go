@@ -173,6 +173,9 @@ func main() {
 	})
 	mux.HandleFunc("/v2/favorites/status", h.JWTAuthMiddleware(h.GetFavoriteStatusHandler))
 
+	// Translations endpoints (protected by JWT)
+	mux.HandleFunc("/v2/translations", h.JWTAuthMiddleware(h.GetTranslationsHandler))
+
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "https://chaatra-frontend-production.up.railway.app", "https://vijayasamskritam.org", "http://vijayasamskritam.org"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "OPTIONS"},

@@ -13,6 +13,7 @@ import Subhashita from './components/subhashita/Subhashita';
 import DictionaryLookup from './components/dictionary/DictionaryLookup';
 import Footer from './components/Footer';
 import SignInButton from './components/auth/SignInButton';
+import UserDashboard from './components/user/UserDashboard';
 
 // Stotra viewer component
 function StotraViewer({ apiUrl }) {
@@ -434,7 +435,14 @@ function App() {
 
   return (
     <div>
-      <SignInButton user={user} onSignInSuccess={handleSignInSuccess} onSignOut={handleSignOut} apiUrl={apiUrl} />
+      <div className="top-nav-container">
+        <SignInButton user={user} onSignInSuccess={handleSignInSuccess} onSignOut={handleSignOut} apiUrl={apiUrl} />
+        {user && (
+          <Link to="/user/dashboard" className="dashboard-icon-button" title="My Content">
+            📚
+          </Link>
+        )}
+      </div>
       <div className={`tabs-container ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <button 
           className="sidebar-toggle"
@@ -518,6 +526,7 @@ function App() {
               <Route path="/stotras/aditya-hridaya" element={<AdityaHridaya />} />
               <Route path="/subhashita" element={<SubhashitaViewer apiUrl={apiUrl} />} />
               <Route path="/subhashita/mahasubhasitasamgraha" element={<Subhashita user={user} token={token} onSignInSuccess={handleSignInSuccess} />} />
+              <Route path="/user/dashboard" element={<UserDashboard user={user} token={token} onSignInSuccess={handleSignInSuccess} apiUrl={apiUrl} />} />
               <Route path="*" element={<Navigate to="/epics/ramayana" replace />} />
             </Routes>
           </div>
