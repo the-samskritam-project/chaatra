@@ -197,7 +197,13 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
   const groupByCorpus = (items) => {
     const grouped = {};
     items.forEach(item => {
-      const corpusName = item.corpus_name || 'unknown';
+      // Fallback: if corpus_name is missing, infer from context (likely subhashita for old translations)
+      let corpusName = item.corpus_name;
+      if (!corpusName) {
+        // If verse_number doesn't contain a dot (like "1.1"), it's likely subhashita
+        const verseNumber = item.corpus_unit_id || item.verse_number || '';
+        corpusName = verseNumber && !verseNumber.includes('.') ? 'subhashita' : 'unknown';
+      }
       const categoryInfo = getCorpusCategory(corpusName);
       const categoryKey = categoryInfo.category;
       
@@ -349,10 +355,16 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
       const items = activeTab === 'notes' ? notes : activeTab === 'favorites' ? favorites : translations;
       
       const fetchPromises = items.map(async (item) => {
-        const corpusName = item.corpus_name;
         // For notes and favorites, verse number is in corpus_unit_id
         // For translations, verse number is in verse_number
         const verseNumber = item.corpus_unit_id || item.verse_number;
+        
+        // Fallback: if corpus_name is missing, infer from context (likely subhashita for old translations)
+        let corpusName = item.corpus_name;
+        if (!corpusName && verseNumber) {
+          // If verse_number doesn't contain a dot (like "1.1"), it's likely subhashita
+          corpusName = !verseNumber.includes('.') ? 'subhashita' : null;
+        }
         
         if (corpusName && verseNumber) {
           await fetchVerseDetails(corpusName, verseNumber);
@@ -623,7 +635,9 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
                             {isCorpusExpanded && (
                               <div className="user-dashboard-items">
                                 {grouped[category][corpusName].items.map((translation) => {
-                                  const verseKey = `${translation.corpus_name || 'unknown'}-${translation.verse_number}`;
+                                  // Fallback: if corpus_name is missing, infer from context (likely subhashita for old translations)
+                                  const inferredCorpusName = translation.corpus_name || (translation.verse_number && !translation.verse_number.includes('.') ? 'subhashita' : translation.corpus_name) || 'unknown';
+                                  const verseKey = `${inferredCorpusName}-${translation.verse_number}`;
                                   const verseData = verseDetailsCache[verseKey];
                                   return (
                                     <div key={translation.id || translation._id} className="user-dashboard-item">

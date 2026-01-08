@@ -86,7 +86,7 @@ func getUserTranslationsCollection(userID interface{}) (*mongo.Collection, error
 }
 
 // CreateUserTranslation creates a new user translation for a subhashita verse
-func CreateUserTranslation(userID interface{}, verseNumber string, translation string) (*UserTranslation, error) {
+func CreateUserTranslation(userID interface{}, corpusName string, verseNumber string, translation string) (*UserTranslation, error) {
 	if mongoClient == nil {
 		return nil, fmt.Errorf("MongoDB not initialized")
 	}
@@ -102,6 +102,7 @@ func CreateUserTranslation(userID interface{}, verseNumber string, translation s
 	// Check if translation already exists for this verse
 	filter := bson.M{
 		"user_id":      userID,
+		"corpus_name":  corpusName,
 		"verse_number": verseNumber,
 	}
 
@@ -112,6 +113,7 @@ func CreateUserTranslation(userID interface{}, verseNumber string, translation s
 		// Preserve existing feedback and suggestions if not provided
 		updateSet := bson.M{
 			"translation": translation,
+			"corpus_name": corpusName, // Update corpus_name in case it was missing
 			"updated_at":  time.Now(),
 		}
 
@@ -146,6 +148,7 @@ func CreateUserTranslation(userID interface{}, verseNumber string, translation s
 	// Create new translation
 	userTranslation := &UserTranslation{
 		UserID:      userID,
+		CorpusName:  corpusName,
 		VerseNumber: verseNumber,
 		Translation: translation,
 		CreatedAt:   time.Now(),
@@ -156,7 +159,7 @@ func CreateUserTranslation(userID interface{}, verseNumber string, translation s
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
 			// Race condition - try to update instead
-			return CreateUserTranslation(userID, verseNumber, translation)
+			return CreateUserTranslation(userID, corpusName, verseNumber, translation)
 		}
 		return nil, fmt.Errorf("failed to create user translation: %w", err)
 	}
@@ -168,7 +171,7 @@ func CreateUserTranslation(userID interface{}, verseNumber string, translation s
 }
 
 // CreateUserTranslationWithFeedback creates or updates a user translation with feedback and suggestions
-func CreateUserTranslationWithFeedback(userID interface{}, verseNumber string, translation string, feedback string, suggestions []string) (*UserTranslation, error) {
+func CreateUserTranslationWithFeedback(userID interface{}, corpusName string, verseNumber string, translation string, feedback string, suggestions []string) (*UserTranslation, error) {
 	if mongoClient == nil {
 		return nil, fmt.Errorf("MongoDB not initialized")
 	}
@@ -184,6 +187,7 @@ func CreateUserTranslationWithFeedback(userID interface{}, verseNumber string, t
 	// Check if translation already exists for this verse
 	filter := bson.M{
 		"user_id":      userID,
+		"corpus_name":  corpusName,
 		"verse_number": verseNumber,
 	}
 
@@ -193,6 +197,7 @@ func CreateUserTranslationWithFeedback(userID interface{}, verseNumber string, t
 		// Translation exists, update it
 		updateSet := bson.M{
 			"translation": translation,
+			"corpus_name": corpusName, // Update corpus_name in case it was missing
 			"updated_at":  time.Now(),
 		}
 
@@ -200,7 +205,7 @@ func CreateUserTranslationWithFeedback(userID interface{}, verseNumber string, t
 		if feedback != "" {
 			updateSet["feedback"] = feedback
 		}
-		if suggestions != nil && len(suggestions) > 0 {
+		if len(suggestions) > 0 {
 			updateSet["ai_suggestions"] = suggestions
 		}
 
@@ -233,6 +238,7 @@ func CreateUserTranslationWithFeedback(userID interface{}, verseNumber string, t
 	// Create new translation
 	userTranslation := &UserTranslation{
 		UserID:        userID,
+		CorpusName:    corpusName,
 		VerseNumber:   verseNumber,
 		Translation:   translation,
 		Feedback:      feedback,
@@ -245,7 +251,7 @@ func CreateUserTranslationWithFeedback(userID interface{}, verseNumber string, t
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
 			// Race condition - try to update instead
-			return CreateUserTranslationWithFeedback(userID, verseNumber, translation, feedback, suggestions)
+			return CreateUserTranslationWithFeedback(userID, corpusName, verseNumber, translation, feedback, suggestions)
 		}
 		return nil, fmt.Errorf("failed to create user translation: %w", err)
 	}

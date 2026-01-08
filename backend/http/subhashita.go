@@ -149,7 +149,7 @@ func SubhashitaSaveTranslationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Save the translation
-	userTranslation, err := persistence.CreateUserTranslationWithFeedback(userID, verseNumber, req.Translation, req.Feedback, req.AISuggestions)
+	userTranslation, err := persistence.CreateUserTranslationWithFeedback(userID, "subhashita", verseNumber, req.Translation, req.Feedback, req.AISuggestions)
 	if err != nil {
 		log.Printf("Error saving user translation for verse %s: %v", verseNumber, err)
 		http.Error(w, fmt.Sprintf("Failed to save translation: %v", err), http.StatusInternalServerError)
