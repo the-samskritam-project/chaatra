@@ -26,6 +26,10 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
   const [translationsError, setTranslationsError] = useState(null);
   
   const [showSignInModal, setShowSignInModal] = useState(false);
+  
+  // Collapsible state - track which categories and corpus sections are expanded
+  const [expandedCategories, setExpandedCategories] = useState(new Set());
+  const [expandedCorpus, setExpandedCorpus] = useState(new Set());
 
   useEffect(() => {
     if (!user || !token) {
@@ -174,6 +178,88 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
     return corpusMap[corpusName] || corpusName;
   };
 
+  const getCorpusCategory = (corpusName) => {
+    // Map corpus to main category (like sidebar structure)
+    const categoryMap = {
+      'bhagavad_gita': { category: 'श्रुतिः | Scriptures', label: 'भगवद्गीता | Bhagavad Gita' },
+      'ramayana': { category: 'इतिहासः | Epics', label: 'रामायणम् | Ramayana' },
+      'hitopadesa': { category: 'कथा | Fables', label: 'हितोपदेशः | Hitopadesa' },
+      'pancatantra': { category: 'कथा | Fables', label: 'पञ्चतन्त्रम् | Pancatantra' },
+      'aditya_hridaya_stotra': { category: 'स्तोत्राणि | Stotras', label: 'आदित्यहृदयम् | Aditya Hridaya Stotra' },
+      'subhashita': { category: 'सुभाषितम् | Subhashita', label: 'महासुभाषितसंग्रहः | Mahasubhashitasangraha' }
+    };
+    return categoryMap[corpusName] || { category: 'Other', label: formatCorpusName(corpusName) };
+  };
+
+  const groupByCorpus = (items) => {
+    const grouped = {};
+    items.forEach(item => {
+      const corpusName = item.corpus_name || 'unknown';
+      const categoryInfo = getCorpusCategory(corpusName);
+      const categoryKey = categoryInfo.category;
+      
+      if (!grouped[categoryKey]) {
+        grouped[categoryKey] = {};
+      }
+      
+      if (!grouped[categoryKey][corpusName]) {
+        grouped[categoryKey][corpusName] = {
+          label: categoryInfo.label,
+          items: []
+        };
+      }
+      
+      grouped[categoryKey][corpusName].items.push(item);
+    });
+    return grouped;
+  };
+
+  const toggleCategory = (categoryKey) => {
+    setExpandedCategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(categoryKey)) {
+        newSet.delete(categoryKey);
+      } else {
+        newSet.add(categoryKey);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleCorpus = (corpusKey) => {
+    setExpandedCorpus(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(corpusKey)) {
+        newSet.delete(corpusKey);
+      } else {
+        newSet.add(corpusKey);
+      }
+      return newSet;
+    });
+  };
+
+  // Initialize all sections as expanded when data loads
+  useEffect(() => {
+    const items = activeTab === 'notes' ? notes : activeTab === 'favorites' ? favorites : translations;
+    if (items.length > 0) {
+      const allCategories = new Set();
+      const allCorpus = new Set();
+      
+      const grouped = groupByCorpus(items);
+      
+      Object.keys(grouped).forEach(categoryKey => {
+        allCategories.add(categoryKey);
+        Object.keys(grouped[categoryKey]).forEach(corpusName => {
+          allCorpus.add(`${categoryKey}-${corpusName}`);
+        });
+      });
+      
+      setExpandedCategories(allCategories);
+      setExpandedCorpus(allCorpus);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notes, favorites, translations, activeTab]);
+
   const getCorpusRoute = (corpusName, corpusUnitID) => {
     const routeMap = {
       'bhagavad_gita': `/sruti/bhagavad-gita`,
@@ -243,23 +329,57 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
             ) : notes.length === 0 ? (
               <div className="user-dashboard-empty">No notes yet. Start adding notes to verses you're studying!</div>
             ) : (
-              <div className="user-dashboard-items">
-                {notes.map((note) => (
-                  <div key={note.id || note._id} className="user-dashboard-item">
-                    <div className="user-dashboard-item-header">
-                      <span className="user-dashboard-item-corpus">{formatCorpusName(note.corpus_name)}</span>
-                      <span className="user-dashboard-item-id">{note.corpus_unit}: {note.corpus_unit_id}</span>
+              (() => {
+                const grouped = groupByCorpus(notes);
+                return Object.keys(grouped).map(category => {
+                  const isCategoryExpanded = expandedCategories.has(category);
+                  return (
+                    <div key={category} className="user-dashboard-category">
+                      <h3 
+                        className="user-dashboard-category-title user-dashboard-collapsible"
+                        onClick={() => toggleCategory(category)}
+                      >
+                        <span className="user-dashboard-collapse-icon">{isCategoryExpanded ? '▼' : '▶'}</span>
+                        {category}
+                      </h3>
+                      {isCategoryExpanded && Object.keys(grouped[category]).map(corpusName => {
+                        const corpusKey = `${category}-${corpusName}`;
+                        const isCorpusExpanded = expandedCorpus.has(corpusKey);
+                        return (
+                          <div key={corpusName} className="user-dashboard-corpus-section">
+                            <h4 
+                              className="user-dashboard-corpus-title user-dashboard-collapsible"
+                              onClick={() => toggleCorpus(corpusKey)}
+                            >
+                              <span className="user-dashboard-collapse-icon">{isCorpusExpanded ? '▼' : '▶'}</span>
+                              {grouped[category][corpusName].label}
+                              <span className="user-dashboard-item-count"> ({grouped[category][corpusName].items.length})</span>
+                            </h4>
+                            {isCorpusExpanded && (
+                              <div className="user-dashboard-items">
+                                {grouped[category][corpusName].items.map((note) => (
+                                  <div key={note.id || note._id} className="user-dashboard-item">
+                                    <div className="user-dashboard-item-header">
+                                      <span className="user-dashboard-item-id">{note.corpus_unit}: {note.corpus_unit_id}</span>
+                                    </div>
+                                    <div className="user-dashboard-item-content">{note.content}</div>
+                                    <div className="user-dashboard-item-footer">
+                                      {formatDate(note.created_at)}
+                                      {note.updated_at && note.updated_at !== note.created_at && (
+                                        <span> (updated {formatDate(note.updated_at)})</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div className="user-dashboard-item-content">{note.content}</div>
-                    <div className="user-dashboard-item-footer">
-                      {formatDate(note.created_at)}
-                      {note.updated_at && note.updated_at !== note.created_at && (
-                        <span> (updated {formatDate(note.updated_at)})</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  );
+                });
+              })()
             )}
           </div>
         )}
@@ -274,19 +394,53 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
             ) : favorites.length === 0 ? (
               <div className="user-dashboard-empty">No favorites yet. Star verses you want to revisit!</div>
             ) : (
-              <div className="user-dashboard-items">
-                {favorites.map((favorite) => (
-                  <div key={favorite.id || favorite._id} className="user-dashboard-item">
-                    <div className="user-dashboard-item-header">
-                      <span className="user-dashboard-item-corpus">{formatCorpusName(favorite.corpus_name)}</span>
-                      <span className="user-dashboard-item-id">{favorite.corpus_unit}: {favorite.corpus_unit_id}</span>
+              (() => {
+                const grouped = groupByCorpus(favorites);
+                return Object.keys(grouped).map(category => {
+                  const isCategoryExpanded = expandedCategories.has(category);
+                  return (
+                    <div key={category} className="user-dashboard-category">
+                      <h3 
+                        className="user-dashboard-category-title user-dashboard-collapsible"
+                        onClick={() => toggleCategory(category)}
+                      >
+                        <span className="user-dashboard-collapse-icon">{isCategoryExpanded ? '▼' : '▶'}</span>
+                        {category}
+                      </h3>
+                      {isCategoryExpanded && Object.keys(grouped[category]).map(corpusName => {
+                        const corpusKey = `${category}-${corpusName}`;
+                        const isCorpusExpanded = expandedCorpus.has(corpusKey);
+                        return (
+                          <div key={corpusName} className="user-dashboard-corpus-section">
+                            <h4 
+                              className="user-dashboard-corpus-title user-dashboard-collapsible"
+                              onClick={() => toggleCorpus(corpusKey)}
+                            >
+                              <span className="user-dashboard-collapse-icon">{isCorpusExpanded ? '▼' : '▶'}</span>
+                              {grouped[category][corpusName].label}
+                              <span className="user-dashboard-item-count"> ({grouped[category][corpusName].items.length})</span>
+                            </h4>
+                            {isCorpusExpanded && (
+                              <div className="user-dashboard-items">
+                                {grouped[category][corpusName].items.map((favorite) => (
+                                  <div key={favorite.id || favorite._id} className="user-dashboard-item">
+                                    <div className="user-dashboard-item-header">
+                                      <span className="user-dashboard-item-id">{favorite.corpus_unit}: {favorite.corpus_unit_id}</span>
+                                    </div>
+                                    <div className="user-dashboard-item-footer">
+                                      Favorited on {formatDate(favorite.created_at)}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div className="user-dashboard-item-footer">
-                      Favorited on {formatDate(favorite.created_at)}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  );
+                });
+              })()
             )}
           </div>
         )}
@@ -301,33 +455,67 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
             ) : translations.length === 0 ? (
               <div className="user-dashboard-empty">No translations yet. Practice translating verses to see them here!</div>
             ) : (
-              <div className="user-dashboard-items">
-                {translations.map((translation) => (
-                  <div key={translation.id || translation._id} className="user-dashboard-item">
-                    <div className="user-dashboard-item-header">
-                      <span className="user-dashboard-item-corpus">{formatCorpusName(translation.corpus_name || 'unknown')}</span>
-                      <span className="user-dashboard-item-id">Verse: {translation.verse_number}</span>
+              (() => {
+                const grouped = groupByCorpus(translations);
+                return Object.keys(grouped).map(category => {
+                  const isCategoryExpanded = expandedCategories.has(category);
+                  return (
+                    <div key={category} className="user-dashboard-category">
+                      <h3 
+                        className="user-dashboard-category-title user-dashboard-collapsible"
+                        onClick={() => toggleCategory(category)}
+                      >
+                        <span className="user-dashboard-collapse-icon">{isCategoryExpanded ? '▼' : '▶'}</span>
+                        {category}
+                      </h3>
+                      {isCategoryExpanded && Object.keys(grouped[category]).map(corpusName => {
+                        const corpusKey = `${category}-${corpusName}`;
+                        const isCorpusExpanded = expandedCorpus.has(corpusKey);
+                        return (
+                          <div key={corpusName} className="user-dashboard-corpus-section">
+                            <h4 
+                              className="user-dashboard-corpus-title user-dashboard-collapsible"
+                              onClick={() => toggleCorpus(corpusKey)}
+                            >
+                              <span className="user-dashboard-collapse-icon">{isCorpusExpanded ? '▼' : '▶'}</span>
+                              {grouped[category][corpusName].label}
+                              <span className="user-dashboard-item-count"> ({grouped[category][corpusName].items.length})</span>
+                            </h4>
+                            {isCorpusExpanded && (
+                              <div className="user-dashboard-items">
+                                {grouped[category][corpusName].items.map((translation) => (
+                                  <div key={translation.id || translation._id} className="user-dashboard-item">
+                                    <div className="user-dashboard-item-header">
+                                      <span className="user-dashboard-item-id">Verse: {translation.verse_number}</span>
+                                    </div>
+                                    <div className="user-dashboard-item-content">
+                                      <strong>Your Translation:</strong>
+                                      <div style={{ marginTop: '0.5rem' }}>{translation.translation}</div>
+                                    </div>
+                                    {translation.evaluation_result && (
+                                      <div className="user-dashboard-evaluation">
+                                        <div><strong>Language Mastery:</strong> {translation.evaluation_result.language_mastery || 'N/A'}</div>
+                                        <div><strong>Translation Fidelity:</strong> {translation.evaluation_result.translation_fidelity || 'N/A'}</div>
+                                        <div><strong>Nuance:</strong> {translation.evaluation_result.nuance || 'N/A'}</div>
+                                      </div>
+                                    )}
+                                    <div className="user-dashboard-item-footer">
+                                      {formatDate(translation.created_at)}
+                                      {translation.updated_at && translation.updated_at !== translation.created_at && (
+                                        <span> (updated {formatDate(translation.updated_at)})</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div className="user-dashboard-item-content">
-                      <strong>Your Translation:</strong>
-                      <div style={{ marginTop: '0.5rem' }}>{translation.translation}</div>
-                    </div>
-                    {translation.evaluation_result && (
-                      <div className="user-dashboard-evaluation">
-                        <div><strong>Language Mastery:</strong> {translation.evaluation_result.language_mastery || 'N/A'}</div>
-                        <div><strong>Translation Fidelity:</strong> {translation.evaluation_result.translation_fidelity || 'N/A'}</div>
-                        <div><strong>Nuance:</strong> {translation.evaluation_result.nuance || 'N/A'}</div>
-                      </div>
-                    )}
-                    <div className="user-dashboard-item-footer">
-                      {formatDate(translation.created_at)}
-                      {translation.updated_at && translation.updated_at !== translation.created_at && (
-                        <span> (updated {formatDate(translation.updated_at)})</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  );
+                });
+              })()
             )}
           </div>
         )}
