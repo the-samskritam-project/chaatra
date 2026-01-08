@@ -101,6 +101,22 @@ func main() {
 		}
 	})
 
+	// Conversation tutor endpoint - generic for any corpus
+	mux.HandleFunc("/v2/", func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		// Check if this is a conversation endpoint: /v2/{corpus}/shloka/{id}/conversation
+		if strings.Contains(path, "/shloka/") && strings.HasSuffix(path, "/conversation") {
+			if r.Method == http.MethodPost {
+				h.ConversationHandler(w, r)
+			} else {
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			}
+		} else {
+			// Let other v2 routes handle it
+			http.Error(w, "Not found", http.StatusNotFound)
+		}
+	})
+
 	// Auth endpoints
 	mux.HandleFunc("/v2/auth/signin", h.SignInHandler)
 	mux.HandleFunc("/v2/auth/users", h.APIKeyMiddleware(h.CreateUserHandler))
