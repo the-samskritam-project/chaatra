@@ -71,6 +71,7 @@ func main() {
 	mux.HandleFunc("/v2/bhagavad_gita/search", h.BhagavadGitaSemanticSearchHandler)
 	mux.HandleFunc("/v2/aditya_hridaya_stotra/verses", h.AdityaHridayaVersesHandler)
 	mux.HandleFunc("/v2/search/semantic", h.SemanticSearchHandler)
+	mux.HandleFunc("/v2/word/analyze", h.WordAnalysisHandler)
 	mux.HandleFunc("/subhashita/random", h.SubhashitaRandomHandler)
 	mux.HandleFunc("/subhashita/translations", h.JWTAuthMiddleware(h.SubhashitaGetAllTranslationsHandler))
 	mux.HandleFunc("/subhashita/", func(w http.ResponseWriter, r *http.Request) {

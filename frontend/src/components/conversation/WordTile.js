@@ -9,11 +9,19 @@ const WordTile = ({
   uncompoundedParts,
   meanings,
   onClick,
+  onPartClick,
   disabled,
 }) => {
   const handleClick = () => {
     if (!disabled && onClick) {
       onClick(index);
+    }
+  };
+
+  const handlePartClick = (e, part) => {
+    e.stopPropagation(); // Prevent main tile click
+    if (!disabled && onPartClick) {
+      onPartClick(part, e);
     }
   };
 
@@ -38,7 +46,10 @@ const WordTile = ({
               {uncompoundedParts && uncompoundedParts.length > 0 ? (
                 uncompoundedParts.map((part, idx) => (
                   <React.Fragment key={idx}>
-                    <div className="word-tile-part-card">
+                    <div 
+                      className="word-tile-part-card"
+                      onClick={(e) => handlePartClick(e, part)}
+                    >
                       <span className="word-tile-part-text">{part}</span>
                       {isMeaningRevealed && meanings && meanings[idx] && (
                         <span className="word-tile-meaning"> ({meanings[idx]})</span>

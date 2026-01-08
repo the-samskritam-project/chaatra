@@ -1,0 +1,277 @@
+.word-analysis-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.word-analysis-modal-content {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 700px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 2rem;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -40%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.word-analysis-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #666;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.word-analysis-modal-close:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.word-analysis-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.word-analysis-word {
+  margin: 0;
+  font-family: 'Noto Sans Devanagari', sans-serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #1565c0;
+  text-align: center;
+}
+
+.word-analysis-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  gap: 1rem;
+}
+
+.word-analysis-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.word-analysis-error {
+  padding: 1.5rem;
+  background: #fee;
+  color: #c33;
+  border-radius: 8px;
+  border: 1px solid #fcc;
+  text-align: center;
+}
+
+.word-analysis-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.word-analysis-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.word-analysis-info-item {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.word-analysis-label {
+  font-weight: 600;
+  color: #495057;
+  min-width: 100px;
+}
+
+.word-analysis-value {
+  color: #212529;
+  font-family: 'Noto Sans Devanagari', sans-serif;
+}
+
+.word-analysis-forms {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.word-analysis-forms-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 0.5rem;
+}
+
+.word-analysis-table-container {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.word-analysis-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.word-analysis-table thead {
+  background: #f8f9fa;
+}
+
+.word-analysis-table th {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.word-analysis-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.word-analysis-case-label {
+  font-weight: 500;
+  color: #6c757d;
+  min-width: 180px;
+}
+
+.word-analysis-form-cell {
+  font-family: 'Noto Sans Devanagari', sans-serif;
+  color: #1565c0;
+  text-align: center;
+  min-width: 120px;
+}
+
+.word-analysis-verb-tense {
+  margin-bottom: 2rem;
+}
+
+.word-analysis-tense-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.word-analysis-verb-table-container {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.word-analysis-verb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.word-analysis-verb-table thead {
+  background: #f8f9fa;
+}
+
+.word-analysis-verb-table th {
+  padding: 0.5rem;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.word-analysis-verb-table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.word-analysis-person-label {
+  font-weight: 500;
+  color: #6c757d;
+  min-width: 100px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .word-analysis-modal-content {
+    width: 95%;
+    padding: 1.5rem;
+    max-height: 90vh;
+  }
+
+  .word-analysis-word {
+    font-size: 1.5rem;
+  }
+
+  .word-analysis-table-container,
+  .word-analysis-verb-table-container {
+    font-size: 0.8rem;
+  }
+
+  .word-analysis-table th,
+  .word-analysis-table td,
+  .word-analysis-verb-table th,
+  .word-analysis-verb-table td {
+    padding: 0.5rem 0.25rem;
+  }
+}
+

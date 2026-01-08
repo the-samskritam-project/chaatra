@@ -86,6 +86,15 @@
   font-size: 0.9rem;
   font-weight: 500;
   color: #1565c0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.word-tile-part-card:hover {
+  background: #e7f3ff;
+  border-color: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
 }
 
 .word-tile-part {

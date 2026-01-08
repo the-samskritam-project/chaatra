@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import ConversationService from '../../services/ConversationService';
 import SignInModal from '../auth/SignInModal';
 import WordTile from './WordTile';
+import WordAnalysisModal from './WordAnalysisModal';
 import './ConversationModal.css';
 
 const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl, user, token, onSignInSuccess }) => {
@@ -23,6 +24,13 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl, user, t
     },
   });
   const translationInputRef = useRef(null);
+  
+  // Word analysis modal state
+  const [selectedWord, setSelectedWord] = useState(null);
+  const [wordAnalysis, setWordAnalysis] = useState(null);
+  const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
+  const [analysisError, setAnalysisError] = useState('');
+  const [clickedTilePosition, setClickedTilePosition] = useState(null);
 
   const conversationService = new ConversationService(apiUrl);
 
@@ -356,6 +364,56 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl, user, t
     setHintsUsed(prev => prev + 1);
   };
 
+  // Handle word part click for analysis
+  const handleWordPartClick = async (word, event) => {
+    if (isEvaluating) return;
+    
+    // Get the position of the clicked element
+    const rect = event.currentTarget.getBoundingClientRect();
+    setClickedTilePosition({
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height,
+    });
+    
+    setSelectedWord(word);
+    setWordAnalysis(null);
+    setAnalysisError('');
+    setIsLoadingAnalysis(true);
+
+    try {
+      const response = await fetch(`${apiUrl}/v2/word/analyze`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ word }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to analyze word');
+      }
+
+      const analysis = await response.json();
+      setWordAnalysis(analysis);
+    } catch (err) {
+      setAnalysisError(err.message || 'Failed to analyze word. Please try again.');
+      console.error('Error analyzing word:', err);
+    } finally {
+      setIsLoadingAnalysis(false);
+    }
+  };
+
+  // Close word analysis modal
+  const handleCloseWordAnalysis = () => {
+    setSelectedWord(null);
+    setWordAnalysis(null);
+    setAnalysisError('');
+    setClickedTilePosition(null);
+  };
+
   // Handle translation submission
   const handleSubmitTranslation = async (e) => {
     e.preventDefault();
@@ -545,6 +603,7 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl, user, t
                         uncompoundedParts={wordData?.uncompoundedParts || []}
                         meanings={wordData?.meanings || []}
                         onClick={handleWordTileClick}
+                        onPartClick={handleWordPartClick}
                         disabled={isEvaluating}
                       />
                     );
@@ -567,6 +626,7 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl, user, t
                         uncompoundedParts={wordData?.uncompoundedParts || []}
                         meanings={wordData?.meanings || []}
                         onClick={handleWordTileClick}
+                        onPartClick={handleWordPartClick}
                         disabled={isEvaluating}
                       />
                     );
@@ -724,6 +784,16 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl, user, t
           onClose={() => setShowSignInModal(false)}
           onSignInSuccess={handleSignInSuccess}
           apiUrl={apiUrl}
+        />
+      )}
+      {selectedWord && (
+        <WordAnalysisModal
+          word={selectedWord}
+          analysis={wordAnalysis}
+          isLoading={isLoadingAnalysis}
+          error={analysisError}
+          onClose={handleCloseWordAnalysis}
+          position={clickedTilePosition}
         />
       )}
     </div>,
