@@ -242,6 +242,59 @@
   margin-left: 0.25rem;
 }
 
+/* Verse context display */
+.user-dashboard-verse-context {
+  background: #f0f8ff;
+  border-left: 3px solid #007bff;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.user-dashboard-verse-original {
+  margin-bottom: 1rem;
+}
+
+.user-dashboard-verse-original:last-child {
+  margin-bottom: 0;
+}
+
+.user-dashboard-verse-original strong {
+  display: block;
+  color: #007bff;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.user-dashboard-devanagari {
+  font-family: 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', sans-serif;
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #333;
+  font-weight: bold;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.user-dashboard-verse-translation {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #cce5ff;
+}
+
+.user-dashboard-verse-translation strong {
+  display: block;
+  color: #007bff;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.user-dashboard-verse-translation > div {
+  color: #333;
+  line-height: 1.6;
+  font-style: italic;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .user-dashboard-container {

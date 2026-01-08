@@ -30,6 +30,9 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
   // Collapsible state - track which categories and corpus sections are expanded
   const [expandedCategories, setExpandedCategories] = useState(new Set());
   const [expandedCorpus, setExpandedCorpus] = useState(new Set());
+  
+  // Verse details cache - store fetched verse data
+  const [verseDetailsCache, setVerseDetailsCache] = useState({});
 
   useEffect(() => {
     if (!user || !token) {
@@ -272,6 +275,99 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
     return routeMap[corpusName] || '/';
   };
 
+  const fetchVerseDetails = async (corpusName, verseNumber) => {
+    if (!apiUrl || !corpusName || !verseNumber) return null;
+    
+    const cacheKey = `${corpusName}-${verseNumber}`;
+    if (verseDetailsCache[cacheKey]) {
+      return verseDetailsCache[cacheKey];
+    }
+    
+    try {
+      let verseData = null;
+      
+      if (corpusName === 'subhashita') {
+        const response = await fetch(`${apiUrl}/subhashita/random?verse_number=${verseNumber}`);
+        if (response.ok) {
+          verseData = await response.json();
+        }
+      } else if (corpusName === 'bhagavad_gita') {
+        // Extract chapter from verse_number (e.g., "1.1" -> chapter 1)
+        const chapterMatch = verseNumber.match(/^(\d+)/);
+        if (chapterMatch) {
+          const chapter = chapterMatch[1];
+          const response = await fetch(`${apiUrl}/v2/bhagavad_gita/verses?chapter=${chapter}`);
+          if (response.ok) {
+            const verses = await response.json();
+            verseData = Array.isArray(verses) 
+              ? verses.find(v => v.verse_number === verseNumber && v.type === 'original_verse')
+              : null;
+          }
+        }
+      } else if (corpusName === 'hitopadesa' || corpusName === 'pancatantra') {
+        // For hitopadesa and pancatantra, we need to fetch by chapter
+        // The verse_number might be in format like "1.1" or just a number
+        const chapterMatch = verseNumber.match(/^(\d+)/);
+        if (chapterMatch) {
+          const chapter = chapterMatch[1];
+          const response = await fetch(`${apiUrl}/v2/${corpusName}/verses?chapter=${chapter}`);
+          if (response.ok) {
+            const verses = await response.json();
+            const verseArray = Array.isArray(verses) ? verses : (verses ? [verses] : []);
+            verseData = verseArray.find(v => 
+              (v.verse_number === verseNumber || v.prose_number === verseNumber) &&
+              (v.type === 'verse' || v.type === 'prose' || v.type === 'original_verse')
+            );
+          }
+        }
+      } else if (corpusName === 'aditya_hridaya_stotra') {
+        const response = await fetch(`${apiUrl}/v2/aditya_hridaya_stotra/verses`);
+        if (response.ok) {
+          const verses = await response.json();
+          const verseArray = Array.isArray(verses) ? verses : (verses ? [verses] : []);
+          verseData = verseArray.find(v => v.verse_number === verseNumber);
+        }
+      }
+      
+      if (verseData) {
+        setVerseDetailsCache(prev => ({
+          ...prev,
+          [cacheKey]: verseData
+        }));
+        return verseData;
+      }
+    } catch (err) {
+      console.error(`Error fetching verse details for ${corpusName} ${verseNumber}:`, err);
+    }
+    
+    return null;
+  };
+
+  // Fetch verse details for all items when data loads
+  useEffect(() => {
+    const fetchAllVerseDetails = async () => {
+      const items = activeTab === 'notes' ? notes : activeTab === 'favorites' ? favorites : translations;
+      
+      const fetchPromises = items.map(async (item) => {
+        const corpusName = item.corpus_name;
+        // For notes and favorites, verse number is in corpus_unit_id
+        // For translations, verse number is in verse_number
+        const verseNumber = item.corpus_unit_id || item.verse_number;
+        
+        if (corpusName && verseNumber) {
+          await fetchVerseDetails(corpusName, verseNumber);
+        }
+      });
+      
+      await Promise.all(fetchPromises);
+    };
+    
+    if ((notes.length > 0 || favorites.length > 0 || translations.length > 0) && apiUrl) {
+      fetchAllVerseDetails();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notes, favorites, translations, activeTab, apiUrl]);
+
   if (!user || !token) {
     return (
       <>
@@ -357,20 +453,43 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
                             </h4>
                             {isCorpusExpanded && (
                               <div className="user-dashboard-items">
-                                {grouped[category][corpusName].items.map((note) => (
-                                  <div key={note.id || note._id} className="user-dashboard-item">
-                                    <div className="user-dashboard-item-header">
-                                      <span className="user-dashboard-item-id">{note.corpus_unit}: {note.corpus_unit_id}</span>
-                                    </div>
-                                    <div className="user-dashboard-item-content">{note.content}</div>
-                                    <div className="user-dashboard-item-footer">
-                                      {formatDate(note.created_at)}
-                                      {note.updated_at && note.updated_at !== note.created_at && (
-                                        <span> (updated {formatDate(note.updated_at)})</span>
+                                {grouped[category][corpusName].items.map((note) => {
+                                  const verseKey = `${note.corpus_name}-${note.corpus_unit_id}`;
+                                  const verseData = verseDetailsCache[verseKey];
+                                  return (
+                                    <div key={note.id || note._id} className="user-dashboard-item">
+                                      {verseData && (
+                                        <div className="user-dashboard-verse-context">
+                                          <div className="user-dashboard-verse-original">
+                                            <strong>Original Verse:</strong>
+                                            <div className="user-dashboard-devanagari">
+                                              {verseData.transliterated_devanagari || verseData.devanagari || verseData.text}
+                                            </div>
+                                          </div>
+                                          {verseData.full_translation && (
+                                            <div className="user-dashboard-verse-translation">
+                                              <strong>Translation:</strong>
+                                              <div>{verseData.full_translation}</div>
+                                            </div>
+                                          )}
+                                        </div>
                                       )}
+                                      <div className="user-dashboard-item-header">
+                                        <span className="user-dashboard-item-id">{note.corpus_unit}: {note.corpus_unit_id}</span>
+                                      </div>
+                                      <div className="user-dashboard-item-content">
+                                        <strong>Your Note:</strong>
+                                        <div style={{ marginTop: '0.5rem' }}>{note.content}</div>
+                                      </div>
+                                      <div className="user-dashboard-item-footer">
+                                        {formatDate(note.created_at)}
+                                        {note.updated_at && note.updated_at !== note.created_at && (
+                                          <span> (updated {formatDate(note.updated_at)})</span>
+                                        )}
+                                      </div>
                                     </div>
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             )}
                           </div>
@@ -422,16 +541,36 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
                             </h4>
                             {isCorpusExpanded && (
                               <div className="user-dashboard-items">
-                                {grouped[category][corpusName].items.map((favorite) => (
-                                  <div key={favorite.id || favorite._id} className="user-dashboard-item">
-                                    <div className="user-dashboard-item-header">
-                                      <span className="user-dashboard-item-id">{favorite.corpus_unit}: {favorite.corpus_unit_id}</span>
+                                {grouped[category][corpusName].items.map((favorite) => {
+                                  const verseKey = `${favorite.corpus_name}-${favorite.corpus_unit_id}`;
+                                  const verseData = verseDetailsCache[verseKey];
+                                  return (
+                                    <div key={favorite.id || favorite._id} className="user-dashboard-item">
+                                      {verseData && (
+                                        <div className="user-dashboard-verse-context">
+                                          <div className="user-dashboard-verse-original">
+                                            <strong>Original Verse:</strong>
+                                            <div className="user-dashboard-devanagari">
+                                              {verseData.transliterated_devanagari || verseData.devanagari || verseData.text}
+                                            </div>
+                                          </div>
+                                          {verseData.full_translation && (
+                                            <div className="user-dashboard-verse-translation">
+                                              <strong>Translation:</strong>
+                                              <div>{verseData.full_translation}</div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                      <div className="user-dashboard-item-header">
+                                        <span className="user-dashboard-item-id">{favorite.corpus_unit}: {favorite.corpus_unit_id}</span>
+                                      </div>
+                                      <div className="user-dashboard-item-footer">
+                                        Favorited on {formatDate(favorite.created_at)}
+                                      </div>
                                     </div>
-                                    <div className="user-dashboard-item-footer">
-                                      Favorited on {formatDate(favorite.created_at)}
-                                    </div>
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             )}
                           </div>
@@ -483,30 +622,50 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
                             </h4>
                             {isCorpusExpanded && (
                               <div className="user-dashboard-items">
-                                {grouped[category][corpusName].items.map((translation) => (
-                                  <div key={translation.id || translation._id} className="user-dashboard-item">
-                                    <div className="user-dashboard-item-header">
-                                      <span className="user-dashboard-item-id">Verse: {translation.verse_number}</span>
-                                    </div>
-                                    <div className="user-dashboard-item-content">
-                                      <strong>Your Translation:</strong>
-                                      <div style={{ marginTop: '0.5rem' }}>{translation.translation}</div>
-                                    </div>
-                                    {translation.evaluation_result && (
-                                      <div className="user-dashboard-evaluation">
-                                        <div><strong>Language Mastery:</strong> {translation.evaluation_result.language_mastery || 'N/A'}</div>
-                                        <div><strong>Translation Fidelity:</strong> {translation.evaluation_result.translation_fidelity || 'N/A'}</div>
-                                        <div><strong>Nuance:</strong> {translation.evaluation_result.nuance || 'N/A'}</div>
-                                      </div>
-                                    )}
-                                    <div className="user-dashboard-item-footer">
-                                      {formatDate(translation.created_at)}
-                                      {translation.updated_at && translation.updated_at !== translation.created_at && (
-                                        <span> (updated {formatDate(translation.updated_at)})</span>
+                                {grouped[category][corpusName].items.map((translation) => {
+                                  const verseKey = `${translation.corpus_name || 'unknown'}-${translation.verse_number}`;
+                                  const verseData = verseDetailsCache[verseKey];
+                                  return (
+                                    <div key={translation.id || translation._id} className="user-dashboard-item">
+                                      {verseData && (
+                                        <div className="user-dashboard-verse-context">
+                                          <div className="user-dashboard-verse-original">
+                                            <strong>Original Verse:</strong>
+                                            <div className="user-dashboard-devanagari">
+                                              {verseData.transliterated_devanagari || verseData.devanagari || verseData.text}
+                                            </div>
+                                          </div>
+                                          {verseData.full_translation && (
+                                            <div className="user-dashboard-verse-translation">
+                                              <strong>AI Translation:</strong>
+                                              <div>{verseData.full_translation}</div>
+                                            </div>
+                                          )}
+                                        </div>
                                       )}
+                                      <div className="user-dashboard-item-header">
+                                        <span className="user-dashboard-item-id">Verse: {translation.verse_number}</span>
+                                      </div>
+                                      <div className="user-dashboard-item-content">
+                                        <strong>Your Translation:</strong>
+                                        <div style={{ marginTop: '0.5rem' }}>{translation.translation}</div>
+                                      </div>
+                                      {translation.evaluation_result && (
+                                        <div className="user-dashboard-evaluation">
+                                          <div><strong>Language Mastery:</strong> {translation.evaluation_result.language_mastery || 'N/A'}</div>
+                                          <div><strong>Translation Fidelity:</strong> {translation.evaluation_result.translation_fidelity || 'N/A'}</div>
+                                          <div><strong>Nuance:</strong> {translation.evaluation_result.nuance || 'N/A'}</div>
+                                        </div>
+                                      )}
+                                      <div className="user-dashboard-item-footer">
+                                        {formatDate(translation.created_at)}
+                                        {translation.updated_at && translation.updated_at !== translation.created_at && (
+                                          <span> (updated {formatDate(translation.updated_at)})</span>
+                                        )}
+                                      </div>
                                     </div>
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             )}
                           </div>
