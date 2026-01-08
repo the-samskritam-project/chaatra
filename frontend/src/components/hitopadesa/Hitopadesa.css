@@ -578,6 +578,27 @@
   opacity: 0.5;
 }
 
+.hitopadesa-translate-icon-button {
+  padding: 4px 10px;
+  border: 1px solid rgba(25, 118, 210, 0.5);
+  border-radius: 6px;
+  background-color: rgba(144, 202, 249, 0.2);
+  color: #1565c0;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1rem;
+  margin-left: 8px;
+  line-height: 1.2;
+}
+
+.hitopadesa-translate-icon-button:hover {
+  background-color: rgba(144, 202, 249, 0.35);
+  border-color: rgba(25, 118, 210, 0.7);
+  color: #0d47a1;
+  transform: scale(1.05);
+}
+
 .hitopadesa-translation-section {
   margin-bottom: 16px;
   display: flex;

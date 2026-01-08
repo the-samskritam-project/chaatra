@@ -111,6 +111,13 @@ func main() {
 			} else {
 				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			}
+		} else if strings.Contains(path, "/shloka/") && strings.HasSuffix(path, "/evaluate") {
+			// Check if this is an evaluation endpoint: /v2/{corpus}/shloka/{id}/evaluate
+			if r.Method == http.MethodPost {
+				h.EvaluationHandler(w, r)
+			} else {
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			}
 		} else {
 			// Let other v2 routes handle it
 			http.Error(w, "Not found", http.StatusNotFound)

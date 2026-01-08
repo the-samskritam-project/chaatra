@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import '../hitopadesa/Hitopadesa.css';
 import NotesModal from '../notes/NotesModal';
 import SignInModal from '../auth/SignInModal';
+import ConversationModal from '../conversation/ConversationModal';
 import NotesService from '../../services/NotesService';
 import FavoritesService from '../../services/FavoritesService';
 
@@ -24,6 +25,7 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
   const [isFavorite, setIsFavorite] = useState(false);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [pendingStarAction, setPendingStarAction] = useState(false);
+  const [showConversationModal, setShowConversationModal] = useState(false);
 
   const splitDevanagariLines = (text) => {
     if (!text) return [];
@@ -516,14 +518,26 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
           </button>
         )}
         {corpusName === 'bhagavad_gita' && verse.type === 'original_verse' && (
-          <button
-            className="hitopadesa-split-button"
-            onClick={handleSplit}
-            disabled={isSplitting || !!verse.split_shloka}
-            type="button"
-          >
-            {isSplitting ? 'Splitting...' : 'Split'}
-          </button>
+          <>
+            <button
+              className="hitopadesa-split-button"
+              onClick={handleSplit}
+              disabled={isSplitting || !!verse.split_shloka}
+              type="button"
+            >
+              {isSplitting ? 'Splitting...' : 'Split'}
+            </button>
+            {user && (
+              <button
+                className="hitopadesa-translate-icon-button"
+                onClick={() => setShowConversationModal(true)}
+                type="button"
+                title="Start translation conversation"
+              >
+                💬
+              </button>
+            )}
+          </>
         )}
         {verse.chapter_sequence_index && (
           <span className="hitopadesa-sequence-number">#{verse.chapter_sequence_index}</span>
@@ -769,6 +783,15 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
             />
           )}
         </>
+      )}
+      {showConversationModal && corpusName === 'bhagavad_gita' && verse.type === 'original_verse' && (
+        <ConversationModal
+          verse={verse}
+          corpusName={corpusName}
+          isOpen={showConversationModal}
+          onClose={() => setShowConversationModal(false)}
+          apiUrl={apiUrl}
+        />
       )}
     </div>
   );

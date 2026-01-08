@@ -748,6 +748,36 @@ func GetBhagavadGitaVerses(chapterNumber int) ([]HitopadesaVerse, error) {
 	return verses, nil
 }
 
+// GetBhagavadGitaVerseByVerseNumber retrieves a Bhagavad Gita verse by verse number (format: "chapter.verse", e.g., "1.1")
+func GetBhagavadGitaVerseByVerseNumber(verseNumber string) (*HitopadesaVerse, error) {
+	if mongoClient == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+
+	// Parse verse number to get chapter number
+	// Format: "chapter.verse" (e.g., "1.1")
+	var chapterNumber int
+	_, err := fmt.Sscanf(verseNumber, "%d.", &chapterNumber)
+	if err != nil {
+		return nil, fmt.Errorf("invalid verse number format: %w", err)
+	}
+
+	// Get all verses from the chapter
+	verses, err := GetBhagavadGitaVerses(chapterNumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get verses for chapter %d: %w", chapterNumber, err)
+	}
+
+	// Find the verse with matching verse_number
+	for i := range verses {
+		if verses[i].VerseNumber == verseNumber && verses[i].Type == "original_verse" {
+			return &verses[i], nil
+		}
+	}
+
+	return nil, fmt.Errorf("bhagavad gita verse %s not found", verseNumber)
+}
+
 // UpdateBhagavadGitaVerseTranslation appends a new edited translation to a verse or commentary
 func UpdateBhagavadGitaVerseTranslation(verseNumber string, editedTranslation string) error {
 	if mongoClient == nil {

@@ -47,6 +47,41 @@ func (p *SubhashitaDataProvider) GetCanonicalData(shlokaID string) (*CanonicalDa
 	return data, nil
 }
 
+// BhagavadGitaDataProvider implements CorpusDataProvider for Bhagavad Gita corpus
+type BhagavadGitaDataProvider struct{}
+
+// GetCorpusName returns the corpus name
+func (p *BhagavadGitaDataProvider) GetCorpusName() string {
+	return "bhagavad_gita"
+}
+
+// GetCanonicalData retrieves canonical data for a Bhagavad Gita verse
+func (p *BhagavadGitaDataProvider) GetCanonicalData(shlokaID string) (*CanonicalData, error) {
+	verse, err := persistence.GetBhagavadGitaVerseByVerseNumber(shlokaID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get bhagavad gita verse: %w", err)
+	}
+
+	// Convert HitopadesaVerse to CanonicalData
+	data := &CanonicalData{
+		ShlokaID:               verse.VerseNumber,
+		Devanagari:             verse.TransliteratedDevanagari,
+		Transliteration:        verse.OriginalIast,
+		UncompoundedText:       verse.SplitShloka,
+		WordToWordTranslation:  verse.SplitWordByWordTranslation,
+		FullEnglishTranslation: verse.FullTranslation,
+	}
+
+	// If uncompounded text is not available, we need to generate it
+	// For now, we'll return what we have - the frontend can call /split endpoint first
+	if data.UncompoundedText == "" {
+		// This is acceptable - the agent will work with what's available
+		// The frontend should ensure split data exists before starting conversation
+	}
+
+	return data, nil
+}
+
 // corpusRegistry maps corpus names to their providers
 var corpusRegistry = make(map[string]CorpusDataProvider)
 
@@ -67,6 +102,6 @@ func GetCorpusProvider(name string) (CorpusDataProvider, error) {
 // init registers the default corpus providers
 func init() {
 	RegisterCorpusProvider("subhashita", &SubhashitaDataProvider{})
+	RegisterCorpusProvider("bhagavad_gita", &BhagavadGitaDataProvider{})
 	// Future: RegisterCorpusProvider("ramayana", &RamayanaDataProvider{})
-	// Future: RegisterCorpusProvider("bhagavad_gita", &BhagavadGitaDataProvider{})
 }

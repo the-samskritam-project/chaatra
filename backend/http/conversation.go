@@ -179,3 +179,102 @@ func ConversationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// EvaluationRequest represents the request body for translation evaluation
+type EvaluationRequest struct {
+	UserTranslation string            `json:"user_translation"`
+	HintsUsed       service.HintsUsed `json:"hints_used"`
+}
+
+// EvaluationResponse represents the response from translation evaluation
+type EvaluationResponse struct {
+	Score               int      `json:"score"`
+	Feedback            string   `json:"feedback"`
+	Strengths           []string `json:"strengths"`
+	AreasForImprovement []string `json:"areas_for_improvement"`
+}
+
+// EvaluationHandler handles POST /v2/{corpus}/shloka/{id}/evaluate
+// This endpoint evaluates a user's translation based on hints used
+func EvaluationHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Extract corpus and shloka ID from path
+	// Expected format: /v2/{corpus}/shloka/{id}/evaluate
+	path := strings.TrimPrefix(r.URL.Path, "/v2/")
+	path = strings.TrimSuffix(path, "/evaluate")
+
+	parts := strings.Split(path, "/shloka/")
+	if len(parts) != 2 {
+		http.Error(w, "Invalid path format. Expected: /v2/{corpus}/shloka/{id}/evaluate", http.StatusBadRequest)
+		return
+	}
+
+	corpus := parts[0]
+	shlokaID := parts[1]
+
+	if corpus == "" || shlokaID == "" {
+		http.Error(w, "Corpus and shloka ID are required", http.StatusBadRequest)
+		return
+	}
+
+	// Parse request body
+	var req EvaluationRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	if req.UserTranslation == "" {
+		http.Error(w, "user_translation is required", http.StatusBadRequest)
+		return
+	}
+
+	// Get corpus provider
+	provider, err := service.GetCorpusProvider(corpus)
+	if err != nil {
+		log.Printf("Error getting corpus provider for %s: %v", corpus, err)
+		http.Error(w, fmt.Sprintf("Corpus not found: %s", corpus), http.StatusNotFound)
+		return
+	}
+
+	// Get canonical data
+	canonicalData, err := provider.GetCanonicalData(shlokaID)
+	if err != nil {
+		log.Printf("Error getting canonical data for %s/%s: %v", corpus, shlokaID, err)
+		http.Error(w, fmt.Sprintf("Failed to get shloka: %v", err), http.StatusNotFound)
+		return
+	}
+
+	// Invoke evaluation agent
+	ctx := context.Background()
+	evaluation, err := service.EvaluateTranslation(
+		ctx,
+		canonicalData,
+		req.UserTranslation,
+		&req.HintsUsed,
+	)
+	if err != nil {
+		log.Printf("Error evaluating translation: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to evaluate translation: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Build response
+	response := EvaluationResponse{
+		Score:               evaluation.Score,
+		Feedback:            evaluation.Feedback,
+		Strengths:           evaluation.Strengths,
+		AreasForImprovement: evaluation.AreasForImprovement,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Printf("Error encoding response: %v", err)
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
+}
