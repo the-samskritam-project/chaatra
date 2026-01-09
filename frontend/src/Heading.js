@@ -4,8 +4,8 @@ import './App.css';
 function Heading() {
 	return (
 		<div className="heading">
-        <span className="devanagari">छात्रः</span>
-        <span className="english">A pupil, disciple.</span>
+        <span className="devanagari">संस्कृतं जयतु</span>
+        <span className="english">May Sanskrit prosper</span>
       </div>
 	);
 }

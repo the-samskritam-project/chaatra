@@ -455,8 +455,8 @@ function App() {
         <div className="react-tabs">
           <div className={`tabs-section ${sidebarCollapsed ? 'collapsed' : ''}`}>
             <div className="heading">
-              <span className="devanagari">छात्रः</span>
-              <span className="english">A pupil, disciple.</span>
+              <span className="devanagari">संस्कृतं जयतु</span>
+              <span className="english">May Sanskrit prosper</span>
             </div>
             <div className="tabs-wrapper">
               <ul className="react-tabs__tab-list" role="tablist">
