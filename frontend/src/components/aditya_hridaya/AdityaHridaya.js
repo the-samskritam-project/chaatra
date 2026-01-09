@@ -235,11 +235,10 @@ function AdityaHridaya({ user, token, apiUrl }) {
                     )}
                   </div>
                 ))}
-              </div>
-              <div className="aditya-hridaya-translation">
+                
                 {/* Audio Player - show if recording exists (check all verses in group) */}
                 {(group.verses.find(v => v.audio_url)?.audio_url) && (
-                  <div className="aditya-hridaya-audio-section" style={{ marginBottom: '1rem' }}>
+                  <div className="aditya-hridaya-audio-section" style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>
                     <AudioPlayer 
                       audioUrl={group.verses.find(v => v.audio_url)?.audio_url} 
                       duration={group.verses.find(v => v.audio_url)?.audio_duration}
@@ -262,6 +261,8 @@ function AdityaHridaya({ user, token, apiUrl }) {
                     />
                   </div>
                 )}
+              </div>
+              <div className="aditya-hridaya-translation">
 
                 {/* Full translation (explanation) first */}
                 {group.explanation && (
