@@ -24,6 +24,12 @@ function AdityaHridaya({ user, token, apiUrl }) {
   const splitShlokas = (verses) => {
     const splitVerses = [];
     
+    // Create a lookup map: shloka number -> verse _id
+    const shlokaToVerseId = {};
+    verses.forEach((verse) => {
+      shlokaToVerseId[verse.shloka] = verse._id;
+    });
+    
     verses.forEach((verse) => {
       // Split by shloka number pattern: ।।6.107.X।।
       const shlokaPattern = /(।।6\.107\.\d+।।)/g;
@@ -53,13 +59,27 @@ function AdityaHridaya({ user, token, apiUrl }) {
         const shlokaText = text.substring(lastIndex, matchInfo.index + matchInfo.marker.length).trim();
         
         if (shlokaText) {
-          splitVerses.push({
+          // Use the verse's own ID if it exists for this shloka, otherwise use the parent verse's ID
+          const originalId = shlokaToVerseId[matchInfo.shlokaNum] || verse._id;
+          
+          // Only include audio_url if this split verse's shloka matches the original verse's shloka
+          const splitVerse = {
             ...verse,
             _id: `${verse._id}_${matchInfo.shlokaNum}`,
-            originalId: verse._id, // Store original ID for database operations
+            originalId: originalId, // Use the correct verse ID for this shloka
             shloka: matchInfo.shlokaNum,
             shloka_text: shlokaText,
-          });
+          };
+          
+          // Only keep audio_url if this split verse's shloka matches the original verse's shloka
+          if (matchInfo.shlokaNum !== verse.shloka) {
+            delete splitVerse.audio_url;
+            delete splitVerse.audio_duration;
+            delete splitVerse.recording_uploaded_at;
+            delete splitVerse.recording_uploaded_by;
+          }
+          
+          splitVerses.push(splitVerse);
         }
         
         // Move past this marker
@@ -71,26 +91,53 @@ function AdityaHridaya({ user, token, apiUrl }) {
         const remainingText = text.substring(lastIndex).trim();
         if (remainingText) {
           const lastShlokaNum = matches[matches.length - 1].shlokaNum + 1;
-          splitVerses.push({
+          // Use the verse's own ID if it exists for this shloka, otherwise use the parent verse's ID
+          const originalId = shlokaToVerseId[lastShlokaNum] || verse._id;
+          
+          const splitVerse = {
             ...verse,
             _id: `${verse._id}_${lastShlokaNum}`,
-            originalId: verse._id, // Store original ID for database operations
+            originalId: originalId, // Use the correct verse ID for this shloka
             shloka: lastShlokaNum,
             shloka_text: remainingText,
-          });
+          };
+          
+          // Only keep audio_url if this split verse's shloka matches the original verse's shloka
+          if (lastShlokaNum !== verse.shloka) {
+            delete splitVerse.audio_url;
+            delete splitVerse.audio_duration;
+            delete splitVerse.recording_uploaded_at;
+            delete splitVerse.recording_uploaded_by;
+          }
+          
+          splitVerses.push(splitVerse);
         }
       }
     });
     
-    // Deduplicate by shloka number (keep first occurrence)
-    const seen = new Set();
-    const uniqueVerses = [];
+    // Deduplicate by shloka number (keep first occurrence, but merge audio_url if later verse has it)
+    const seen = new Map(); // Map shloka -> verse
     splitVerses.forEach((verse) => {
       if (!seen.has(verse.shloka)) {
-        seen.add(verse.shloka);
-        uniqueVerses.push(verse);
+        seen.set(verse.shloka, verse);
+      } else {
+        // If we already have this shloka, merge audio_url if the new verse has it
+        const existing = seen.get(verse.shloka);
+        if (verse.audio_url && !existing.audio_url) {
+          // New verse has audio_url but existing doesn't - merge it
+          existing.audio_url = verse.audio_url;
+          existing.audio_duration = verse.audio_duration;
+          existing.recording_uploaded_at = verse.recording_uploaded_at;
+          existing.recording_uploaded_by = verse.recording_uploaded_by;
+          // Also update originalId if the new verse has the correct one
+          if (verse.originalId && verse.originalId !== existing.originalId) {
+            existing.originalId = verse.originalId;
+          }
+        }
       }
     });
+    
+    const uniqueVerses = Array.from(seen.values());
     
     // Sort by shloka number
     return uniqueVerses.sort((a, b) => a.shloka - b.shloka);
@@ -233,34 +280,34 @@ function AdityaHridaya({ user, token, apiUrl }) {
                         {verse.transliteration}
                       </div>
                     )}
+                    
+                    {/* Audio Player - show this verse's own recording */}
+                    {verse.audio_url && (
+                      <div className="aditya-hridaya-audio-section" style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>
+                        <AudioPlayer 
+                          audioUrl={verse.audio_url} 
+                          duration={verse.audio_duration}
+                        />
+                      </div>
+                    )}
+
+                    {/* Upload Recording - show only for admins, upload to this specific verse */}
+                    {user && user.role === 'admin' && (
+                      <div className="aditya-hridaya-upload-section" style={{ marginBottom: '1rem' }}>
+                        <UploadRecording
+                          corpusName="aditya_hridaya_stotra"
+                          verseId={verse.originalId || verse._id || String(verse.shloka)}
+                          apiUrl={apiBaseUrl}
+                          token={token}
+                          onUploadSuccess={() => {
+                            // Refresh verses after upload
+                            fetchVerses();
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
-                
-                {/* Audio Player - show if recording exists (check all verses in group) */}
-                {(group.verses.find(v => v.audio_url)?.audio_url) && (
-                  <div className="aditya-hridaya-audio-section" style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>
-                    <AudioPlayer 
-                      audioUrl={group.verses.find(v => v.audio_url)?.audio_url} 
-                      duration={group.verses.find(v => v.audio_url)?.audio_duration}
-                    />
-                  </div>
-                )}
-
-                {/* Upload Recording - show only for admins (use first verse in group) */}
-                {user && user.role === 'admin' && group.verses.length > 0 && (
-                  <div className="aditya-hridaya-upload-section" style={{ marginBottom: '1rem' }}>
-                    <UploadRecording
-                      corpusName="aditya_hridaya_stotra"
-                      verseId={group.verses[0].originalId || group.verses[0]._id || String(group.verses[0].shloka)}
-                      apiUrl={apiBaseUrl}
-                      token={token}
-                      onUploadSuccess={() => {
-                        // Refresh verses after upload
-                        fetchVerses();
-                      }}
-                    />
-                  </div>
-                )}
               </div>
               <div className="aditya-hridaya-translation">
 
