@@ -440,6 +440,16 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl, user, t
       );
 
       setEvaluation(response);
+      
+      // Auto-save the practice session after evaluation
+      if (user && token) {
+        // Save in the background without blocking UI, passing the evaluation response directly
+        // showSuccess=false to avoid showing success message for auto-save
+        handleSavePractice(response, false).catch(err => {
+          console.error('Error auto-saving practice session:', err);
+          // Don't show error to user, just log it
+        });
+      }
     } catch (err) {
       setError(err.message || 'Failed to evaluate translation. Please try again.');
       console.error('Error evaluating translation:', err);
@@ -459,7 +469,7 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl, user, t
     setShowSignInModal(false);
   };
 
-  const handleSavePractice = async () => {
+  const handleSavePractice = async (evaluationToSave = null, showSuccess = true) => {
     if (!user || !token) {
       requireSignIn();
       return;
@@ -477,7 +487,9 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl, user, t
 
     setIsSaving(true);
     setError('');
-    setSaveSuccess(false);
+    if (showSuccess) {
+      setSaveSuccess(false);
+    }
 
     try {
       // Build hints used object
@@ -487,29 +499,40 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl, user, t
         full_translation_shown: state.revealed.full_translation,
       };
 
+      // Use provided evaluation or fall back to state
+      const evaluationData = evaluationToSave || evaluation;
+
       await conversationService.savePracticeSession(
         corpusName,
         verse.verse_number,
         userTranslation.trim(),
         hintsUsedObj,
-        evaluation,
+        evaluationData,
         token
       );
 
-      setSaveSuccess(true);
-      setError(null);
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setSaveSuccess(false);
-      }, 3000);
+      if (showSuccess) {
+        setSaveSuccess(true);
+        setError(null);
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          setSaveSuccess(false);
+        }, 3000);
+      }
     } catch (err) {
       console.error('Error saving practice session:', err);
-      if (err.message && err.message.includes('401')) {
-        setError('Please sign in to save practice sessions.');
-        requireSignIn();
-      } else {
-        setError(err.message || 'Unable to save practice session. Please try again.');
+      if (showSuccess) {
+        if (err.message && err.message.includes('401')) {
+          setError('Please sign in to save practice sessions.');
+          requireSignIn();
+        } else {
+          setError(err.message || 'Unable to save practice session. Please try again.');
+        }
+      }
+      // Re-throw error if called from auto-save so it can be handled there
+      if (!showSuccess) {
+        throw err;
       }
     } finally {
       setIsSaving(false);
@@ -517,7 +540,11 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl, user, t
   };
 
   // Handle try again
-  const handleTryAgain = () => {
+  const handleTryAgain = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setState({
       revealed: {
         revealed_uncompounded_indices: [],
@@ -757,7 +784,7 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl, user, t
                 </button>
                 <button
                   type="button"
-                  onClick={handleTryAgain}
+                  onClick={(e) => handleTryAgain(e)}
                   className="conversation-try-again-button"
                 >
                   Try Again
