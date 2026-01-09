@@ -1,9 +1,11 @@
 package http
 
 import (
+	"chaatra/persistence"
 	"chaatra/service"
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -65,6 +67,12 @@ func APIKeyMiddleware(next http.HandlerFunc) http.HandlerFunc {
 // JWTAuthMiddleware validates JWT token and attaches user info to context
 func JWTAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Handle OPTIONS preflight requests (CORS)
+		if r.Method == http.MethodOptions {
+			next(w, r)
+			return
+		}
+
 		// Get token from Authorization header
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
@@ -84,6 +92,7 @@ func JWTAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		// Validate token
 		claims, err := service.ValidateToken(tokenString)
 		if err != nil {
+			log.Printf("JWT validation failed for %s: %v", r.URL.Path, err)
 			http.Error(w, fmt.Sprintf("Invalid token: %v", err), http.StatusUnauthorized)
 			return
 		}
@@ -126,4 +135,39 @@ func GetUserIDFromContext(r *http.Request) (interface{}, bool) {
 		return nil, false
 	}
 	return userIDVal, true
+}
+
+// AdminMiddleware checks if the authenticated user has admin role
+// Must be used after JWTAuthMiddleware
+func AdminMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Get user ID from context (set by JWTAuthMiddleware)
+		userID, ok := GetUserIDFromContext(r)
+		if !ok {
+			http.Error(w, "User not authenticated", http.StatusUnauthorized)
+			return
+		}
+
+		// Get user from database
+		user, err := persistence.GetUserByID(userID)
+		if err != nil {
+			log.Printf("Error getting user from database: %v", err)
+			http.Error(w, fmt.Sprintf("Failed to get user: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		if user == nil {
+			http.Error(w, "User not found", http.StatusUnauthorized)
+			return
+		}
+
+		// Check if user is admin
+		if !persistence.IsAdmin(user) {
+			http.Error(w, "Admin access required", http.StatusForbidden)
+			return
+		}
+
+		// User is admin, proceed
+		next(w, r)
+	}
 }

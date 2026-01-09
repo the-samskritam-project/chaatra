@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -17,6 +18,7 @@ type User struct {
 	ID        interface{} `json:"id,omitempty" bson:"_id,omitempty"`
 	Email     string      `json:"email" bson:"email"`
 	Name      string      `json:"name" bson:"name"`
+	Role      string      `json:"role" bson:"role"` // "admin" or "user" (default: "user")
 	CreatedAt time.Time   `json:"created_at" bson:"created_at"`
 }
 
@@ -109,6 +111,7 @@ func CreateUser(email string, name string) (*User, error) {
 	user := User{
 		Email:     email,
 		Name:      name,
+		Role:      "user", // Default role
 		CreatedAt: time.Now(),
 	}
 
@@ -138,4 +141,113 @@ func CreateUser(email string, name string) (*User, error) {
 	log.Printf("Created user with ID: %v", result.InsertedID)
 
 	return &user, nil
+}
+
+// GetUserByID retrieves a user by ID
+func GetUserByID(userID interface{}) (*User, error) {
+	if mongoClient == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	collection, err := getUsersCollection()
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert userID to ObjectID if it's a string
+	var filter bson.M
+	if str, ok := userID.(string); ok {
+		// Try to convert string to ObjectID
+		if objID, err := primitive.ObjectIDFromHex(str); err == nil {
+			filter = bson.M{"_id": objID}
+		} else {
+			// If conversion fails, try as string
+			filter = bson.M{"_id": str}
+		}
+	} else if objID, ok := userID.(primitive.ObjectID); ok {
+		// Already an ObjectID
+		filter = bson.M{"_id": objID}
+	} else {
+		// Use as-is
+		filter = bson.M{"_id": userID}
+	}
+
+	var user User
+	err = collection.FindOne(ctx, filter).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil // User not found, return nil without error
+		}
+		return nil, fmt.Errorf("failed to query user: %w", err)
+	}
+
+	return &user, nil
+}
+
+// IsAdmin checks if a user has admin role
+func IsAdmin(user *User) bool {
+	if user == nil {
+		return false
+	}
+	return user.Role == "admin"
+}
+
+// UpdateUserRole updates a user's role
+func UpdateUserRole(email string, role string) (*User, error) {
+	if mongoClient == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+
+	// Validate role
+	if role != "admin" && role != "user" {
+		return nil, fmt.Errorf("invalid role: %s (must be 'admin' or 'user')", role)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	collection, err := getUsersCollection()
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if user exists
+	existingUser, err := GetUserByEmail(email)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check existing user: %w", err)
+	}
+	if existingUser == nil {
+		return nil, fmt.Errorf("user with email %s not found", email)
+	}
+
+	// Update user role
+	update := bson.M{
+		"$set": bson.M{
+			"role": role,
+		},
+	}
+
+	result := collection.FindOneAndUpdate(
+		ctx,
+		bson.M{"email": email},
+		update,
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	)
+
+	if result.Err() != nil {
+		if result.Err() == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("user with email %s not found", email)
+		}
+		return nil, fmt.Errorf("failed to update user role: %w", result.Err())
+	}
+
+	var updatedUser User
+	if err := result.Decode(&updatedUser); err != nil {
+		return nil, fmt.Errorf("failed to decode updated user: %w", err)
+	}
+
+	return &updatedUser, nil
 }

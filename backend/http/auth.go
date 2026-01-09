@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 )
 
 // SignInRequest represents the sign-in request body
@@ -24,6 +25,7 @@ type SignInResponse struct {
 type UserInfo struct {
 	Email string `json:"email"`
 	Name  string `json:"name"`
+	Role  string `json:"role"`
 }
 
 // CreateUserRequest represents the create user request body
@@ -82,6 +84,7 @@ func SignInHandler(w http.ResponseWriter, r *http.Request) {
 		User: &UserInfo{
 			Email: user.Email,
 			Name:  user.Name,
+			Role:  user.Role,
 		},
 	}
 
@@ -132,10 +135,80 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		User: &UserInfo{
 			Email: user.Email,
 			Name:  user.Name,
+			Role:  user.Role,
 		},
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(response)
+}
+
+// UpdateUserRoleRequest represents the update user role request body
+type UpdateUserRoleRequest struct {
+	Role string `json:"role"` // "admin" or "user"
+}
+
+// UpdateUserRoleResponse represents the update user role response
+type UpdateUserRoleResponse struct {
+	User *UserInfo `json:"user"`
+}
+
+// UpdateUserRoleHandler handles user role update requests (protected by API key)
+func UpdateUserRoleHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Extract email from URL path
+	// Path format: /v2/auth/users/{email}/role
+	path := strings.TrimPrefix(r.URL.Path, "/v2/auth/users/")
+	if path == "" || path == r.URL.Path {
+		http.Error(w, "Email is required in URL path", http.StatusBadRequest)
+		return
+	}
+
+	// Remove /role suffix
+	email := strings.TrimSuffix(path, "/role")
+	if email == "" {
+		http.Error(w, "Email is required in URL path", http.StatusBadRequest)
+		return
+	}
+
+	var req UpdateUserRoleRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	// Validate role
+	if req.Role != "admin" && req.Role != "user" {
+		http.Error(w, "role must be 'admin' or 'user'", http.StatusBadRequest)
+		return
+	}
+
+	// Update user role
+	user, err := persistence.UpdateUserRole(email, req.Role)
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		log.Printf("Error updating user role: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to update user role: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Return updated user info
+	response := UpdateUserRoleResponse{
+		User: &UserInfo{
+			Email: user.Email,
+			Name:  user.Name,
+			Role:  user.Role,
+		},
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }

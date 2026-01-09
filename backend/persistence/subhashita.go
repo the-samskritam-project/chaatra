@@ -20,6 +20,10 @@ type SubhashitaVerse struct {
 	FullTranslation            string            `json:"full_translation" bson:"full_translation"`
 	SplitShloka                string            `json:"split_shloka,omitempty" bson:"split_shloka,omitempty"`
 	SplitWordByWordTranslation []WordTranslation `json:"split_word_by_word_translation,omitempty" bson:"split_word_by_word_translation,omitempty"`
+	AudioURL                   *string           `json:"audio_url,omitempty" bson:"audio_url,omitempty"`
+	AudioDuration              *float64          `json:"audio_duration,omitempty" bson:"audio_duration,omitempty"`
+	RecordingUploadedAt        *time.Time        `json:"recording_uploaded_at,omitempty" bson:"recording_uploaded_at,omitempty"`
+	RecordingUploadedBy        interface{}       `json:"recording_uploaded_by,omitempty" bson:"recording_uploaded_by,omitempty"`
 }
 
 // GetRandomSubhashita returns a random verse from the mahasubhasitasamgraha collection

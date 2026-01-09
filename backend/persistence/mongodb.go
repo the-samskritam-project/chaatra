@@ -25,6 +25,11 @@ func getDatabase(corpusName string) *mongo.Database {
 	return mongoClient.Database(corpusName)
 }
 
+// GetDatabase returns the database for a given corpus name (exported version)
+func GetDatabase(corpusName string) *mongo.Database {
+	return getDatabase(corpusName)
+}
+
 // HitopadesaChapterMetadata represents chapter metadata
 type HitopadesaChapterMetadata struct {
 	ChapterNumber int       `json:"chapter_number" bson:"chapter_number"`
@@ -69,6 +74,10 @@ type HitopadesaVerse struct {
 	PrimaryTheme               string              `json:"primary_theme,omitempty" bson:"primary_theme,omitempty"`                                   // Primary theme classification
 	SecondaryThemes            []string            `json:"secondary_themes,omitempty" bson:"secondary_themes,omitempty"`                             // Secondary theme classifications
 	Rationale                  string              `json:"rationale,omitempty" bson:"rationale,omitempty"`                                           // Rationale for theme classification
+	AudioURL                   *string             `json:"audio_url,omitempty" bson:"audio_url,omitempty"`
+	AudioDuration              *float64            `json:"audio_duration,omitempty" bson:"audio_duration,omitempty"`
+	RecordingUploadedAt        *time.Time          `json:"recording_uploaded_at,omitempty" bson:"recording_uploaded_at,omitempty"`
+	RecordingUploadedBy        interface{}         `json:"recording_uploaded_by,omitempty" bson:"recording_uploaded_by,omitempty"`
 }
 
 // InitMongoDB initializes MongoDB connection

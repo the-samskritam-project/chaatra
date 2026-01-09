@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DictionaryLookup from '../dictionary/DictionaryLookup';
+import AudioPlayer from '../audio/AudioPlayer';
+import UploadRecording from '../audio/UploadRecording';
 import './AdityaHridaya.css';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || 'http://localhost:8081';
 
-function AdityaHridaya() {
+function AdityaHridaya({ user, token, apiUrl }) {
+  const apiBaseUrl = apiUrl || API_BASE_URL;
   const [verses, setVerses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,6 +56,7 @@ function AdityaHridaya() {
           splitVerses.push({
             ...verse,
             _id: `${verse._id}_${matchInfo.shlokaNum}`,
+            originalId: verse._id, // Store original ID for database operations
             shloka: matchInfo.shlokaNum,
             shloka_text: shlokaText,
           });
@@ -70,6 +74,7 @@ function AdityaHridaya() {
           splitVerses.push({
             ...verse,
             _id: `${verse._id}_${lastShlokaNum}`,
+            originalId: verse._id, // Store original ID for database operations
             shloka: lastShlokaNum,
             shloka_text: remainingText,
           });
@@ -114,7 +119,7 @@ function AdityaHridaya() {
   const fetchVerses = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/v2/aditya_hridaya_stotra/verses`);
+      const response = await fetch(`${apiBaseUrl}/v2/aditya_hridaya_stotra/verses`);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch verses: ${response.statusText}`);
@@ -232,6 +237,32 @@ function AdityaHridaya() {
                 ))}
               </div>
               <div className="aditya-hridaya-translation">
+                {/* Audio Player - show if recording exists (check all verses in group) */}
+                {(group.verses.find(v => v.audio_url)?.audio_url) && (
+                  <div className="aditya-hridaya-audio-section" style={{ marginBottom: '1rem' }}>
+                    <AudioPlayer 
+                      audioUrl={group.verses.find(v => v.audio_url)?.audio_url} 
+                      duration={group.verses.find(v => v.audio_url)?.audio_duration}
+                    />
+                  </div>
+                )}
+
+                {/* Upload Recording - show only for admins (use first verse in group) */}
+                {user && user.role === 'admin' && group.verses.length > 0 && (
+                  <div className="aditya-hridaya-upload-section" style={{ marginBottom: '1rem' }}>
+                    <UploadRecording
+                      corpusName="aditya_hridaya_stotra"
+                      verseId={group.verses[0].originalId || group.verses[0]._id || String(group.verses[0].shloka)}
+                      apiUrl={apiBaseUrl}
+                      token={token}
+                      onUploadSuccess={() => {
+                        // Refresh verses after upload
+                        fetchVerses();
+                      }}
+                    />
+                  </div>
+                )}
+
                 {/* Full translation (explanation) first */}
                 {group.explanation && (
                   <div className="aditya-hridaya-explanation">
@@ -299,7 +330,7 @@ function AdityaHridaya() {
           </div>
         ))}
       </div>
-      <DictionaryLookup apiUrl={API_BASE_URL} />
+      <DictionaryLookup apiUrl={apiBaseUrl} />
     </div>
   );
 }

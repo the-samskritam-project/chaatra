@@ -127,6 +127,17 @@ func main() {
 			} else {
 				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			}
+		} else if strings.Contains(path, "/verses/") && strings.HasSuffix(path, "/recording") {
+			// Recording endpoints: /v2/{corpus}/verses/{id}/recording
+			if r.Method == http.MethodPost {
+				// Upload recording - requires admin
+				h.JWTAuthMiddleware(h.AdminMiddleware(h.UploadRecordingHandler))(w, r)
+			} else if r.Method == http.MethodGet {
+				// Get recording - public
+				h.GetRecordingHandler(w, r)
+			} else {
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			}
 		} else {
 			// Let other v2 routes handle it
 			http.Error(w, "Not found", http.StatusNotFound)
@@ -136,6 +147,14 @@ func main() {
 	// Auth endpoints
 	mux.HandleFunc("/v2/auth/signin", h.SignInHandler)
 	mux.HandleFunc("/v2/auth/users", h.APIKeyMiddleware(h.CreateUserHandler))
+	mux.HandleFunc("/v2/auth/users/", func(w http.ResponseWriter, r *http.Request) {
+		// Handle user role update: /v2/auth/users/{email}/role
+		if strings.HasSuffix(r.URL.Path, "/role") && r.Method == http.MethodPut {
+			h.APIKeyMiddleware(h.UpdateUserRoleHandler)(w, r)
+		} else {
+			http.Error(w, "Not found", http.StatusNotFound)
+		}
+	})
 
 	// Notes endpoints (protected by JWT)
 	mux.HandleFunc("/v2/notes", func(w http.ResponseWriter, r *http.Request) {

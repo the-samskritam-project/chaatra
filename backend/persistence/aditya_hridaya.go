@@ -12,16 +12,20 @@ import (
 
 // AdityaHridayaVerse represents a verse from the Aditya Hridaya Stotra
 type AdityaHridayaVerse struct {
-	ID              string    `json:"_id" bson:"_id"`
-	Kanda           string    `json:"kanda" bson:"kanda"`
-	Sarga           int       `json:"sarga" bson:"sarga"`
-	Shloka          int       `json:"shloka" bson:"shloka"`
-	ShlokaText      string    `json:"shloka_text" bson:"shloka_text"`
-	Transliteration *string   `json:"transliteration,omitempty" bson:"transliteration,omitempty"`
-	Translation     string    `json:"translation" bson:"translation"`
-	Explanation     string    `json:"explanation" bson:"explanation"`
-	Comments        *string   `json:"comments,omitempty" bson:"comments,omitempty"`
-	CreatedAt       time.Time `json:"created_at" bson:"created_at"`
+	ID                  string      `json:"_id" bson:"_id"`
+	Kanda               string      `json:"kanda" bson:"kanda"`
+	Sarga               int         `json:"sarga" bson:"sarga"`
+	Shloka              int         `json:"shloka" bson:"shloka"`
+	ShlokaText          string      `json:"shloka_text" bson:"shloka_text"`
+	Transliteration     *string     `json:"transliteration,omitempty" bson:"transliteration,omitempty"`
+	Translation         string      `json:"translation" bson:"translation"`
+	Explanation         string      `json:"explanation" bson:"explanation"`
+	Comments            *string     `json:"comments,omitempty" bson:"comments,omitempty"`
+	CreatedAt           time.Time   `json:"created_at" bson:"created_at"`
+	AudioURL            *string     `json:"audio_url,omitempty" bson:"audio_url,omitempty"`
+	AudioDuration       *float64    `json:"audio_duration,omitempty" bson:"audio_duration,omitempty"`
+	RecordingUploadedAt *time.Time  `json:"recording_uploaded_at,omitempty" bson:"recording_uploaded_at,omitempty"`
+	RecordingUploadedBy interface{} `json:"recording_uploaded_by,omitempty" bson:"recording_uploaded_by,omitempty"`
 }
 
 // GetAdityaHridayaVerses returns all verses from the Aditya Hridaya Stotra

@@ -523,7 +523,7 @@ function App() {
               {/* Redirect old route for backward compatibility */}
               <Route path="/bhagavad-gita" element={<Navigate to="/sruti/bhagavad-gita" replace />} />
               <Route path="/stotras" element={<StotraViewer apiUrl={apiUrl} />} />
-              <Route path="/stotras/aditya-hridaya" element={<AdityaHridaya />} />
+              <Route path="/stotras/aditya-hridaya" element={<AdityaHridaya user={user} token={token} apiUrl={apiUrl} />} />
               <Route path="/subhashita" element={<SubhashitaViewer apiUrl={apiUrl} />} />
               <Route path="/subhashita/mahasubhasitasamgraha" element={<Subhashita user={user} token={token} onSignInSuccess={handleSignInSuccess} />} />
               <Route path="/user/dashboard" element={<UserDashboard user={user} token={token} onSignInSuccess={handleSignInSuccess} apiUrl={apiUrl} />} />
