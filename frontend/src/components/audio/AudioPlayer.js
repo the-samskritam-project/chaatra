@@ -139,6 +139,16 @@ const AudioPlayer = ({ audioUrl, duration, className = '' }) => {
           height: 12px;
           background-color: #2563eb;
           margin-left: -6px;
+          top: 50%;
+          transform: translateY(-50%);
+          position: absolute;
+        }
+        .custom-audio-player .rhap_progress-container {
+          flex: 1 1 auto;
+          min-width: 0;
+          height: 6px;
+          margin: 0;
+          position: relative;
         }
         .custom-audio-player .rhap_time {
           font-size: 0.75rem;
