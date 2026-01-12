@@ -3,6 +3,7 @@ import '../hitopadesa/Hitopadesa.css';
 import NotesModal from '../notes/NotesModal';
 import SignInModal from '../auth/SignInModal';
 import ConversationModal from '../conversation/ConversationModal';
+import VoiceRecorder from '../audio/VoiceRecorder';
 import NotesService from '../../services/NotesService';
 import FavoritesService from '../../services/FavoritesService';
 
@@ -613,7 +614,7 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
             </div>
           )}
 
-          {/* Translation section with AI translate button, Add Note button, and Star button */}
+          {/* Translation section with AI translate button, Add Note button, Voice Recorder, and Star button */}
           <div className="hitopadesa-translation-section">
             {corpusName === 'bhagavad_gita' && verse.type === 'original_verse' && (
               <>
@@ -640,6 +641,16 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
                     ? `${notesCount} Note${notesCount !== 1 ? 's' : ''}` 
                     : 'Add Note'}
                 </button>
+                <VoiceRecorder
+                  corpusName={corpusName}
+                  verseId={verse.verse_number || verse._id}
+                  apiUrl={apiUrl}
+                  token={token}
+                  onUploadSuccess={(result) => {
+                    console.log('Voice recording uploaded successfully:', result);
+                    // You can add a success notification here if needed
+                  }}
+                />
               </>
             )}
             {translationError && (
