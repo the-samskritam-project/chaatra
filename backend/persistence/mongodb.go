@@ -53,31 +53,32 @@ type EditedTranslation struct {
 
 // HitopadesaVerse represents a verse or prose document
 type HitopadesaVerse struct {
-	ID                         interface{}         `json:"_id,omitempty" bson:"_id,omitempty"` // MongoDB _id field
-	Type                       string              `json:"type" bson:"type"`                   // "verse" or "prose"
-	VerseNumber                string              `json:"verse_number,omitempty" bson:"verse_number,omitempty"`
-	ProseNumber                string              `json:"prose_number,omitempty" bson:"prose_number,omitempty"`
-	ChapterNumber              int                 `json:"chapter_number" bson:"chapter_number"`
-	VerseIndex                 int                 `json:"verse_index,omitempty" bson:"verse_index,omitempty"`                       // For verses
-	ProseIndex                 int                 `json:"prose_index,omitempty" bson:"prose_index,omitempty"`                       // For prose
-	SequenceIndex              *int                `json:"sequence_index,omitempty" bson:"sequence_index,omitempty"`                 // Global sequence index
-	ChapterSequenceIndex       int                 `json:"chapter_sequence_index,omitempty" bson:"chapter_sequence_index,omitempty"` // Sequence within chapter
-	OriginalIast               string              `json:"original_iast" bson:"original_iast"`
-	TransliteratedDevanagari   string              `json:"transliterated_devanagari" bson:"transliterated_devanagari"`
-	WordByWordTranslation      []WordTranslation   `json:"word_by_word_translation" bson:"word_by_word_translation"`
-	FullTranslation            string              `json:"full_translation" bson:"full_translation"`
-	EditedTranslations         []EditedTranslation `json:"edited_translations" bson:"edited_translations"`
-	SplitShloka                string              `json:"split_shloka,omitempty" bson:"split_shloka,omitempty"`                                     // Uncompounded version
-	SplitWordByWordTranslation []WordTranslation   `json:"split_word_by_word_translation,omitempty" bson:"split_word_by_word_translation,omitempty"` // Word-by-word from split
-	SplitAt                    *time.Time          `json:"split_at,omitempty" bson:"split_at,omitempty"`                                             // Timestamp when split was performed
-	AITranslatedAt             *time.Time          `json:"ai_translated_at,omitempty" bson:"ai_translated_at,omitempty"`                             // Timestamp when AI translation was generated
-	PrimaryTheme               string              `json:"primary_theme,omitempty" bson:"primary_theme,omitempty"`                                   // Primary theme classification
-	SecondaryThemes            []string            `json:"secondary_themes,omitempty" bson:"secondary_themes,omitempty"`                             // Secondary theme classifications
-	Rationale                  string              `json:"rationale,omitempty" bson:"rationale,omitempty"`                                           // Rationale for theme classification
-	AudioURL                   *string             `json:"audio_url,omitempty" bson:"audio_url,omitempty"`
-	AudioDuration              *float64            `json:"audio_duration,omitempty" bson:"audio_duration,omitempty"`
-	RecordingUploadedAt        *time.Time          `json:"recording_uploaded_at,omitempty" bson:"recording_uploaded_at,omitempty"`
-	RecordingUploadedBy        interface{}         `json:"recording_uploaded_by,omitempty" bson:"recording_uploaded_by,omitempty"`
+	ID                         interface{}            `json:"_id,omitempty" bson:"_id,omitempty"` // MongoDB _id field
+	Type                       string                 `json:"type" bson:"type"`                   // "verse" or "prose"
+	VerseNumber                string                 `json:"verse_number,omitempty" bson:"verse_number,omitempty"`
+	ProseNumber                string                 `json:"prose_number,omitempty" bson:"prose_number,omitempty"`
+	ChapterNumber              int                    `json:"chapter_number" bson:"chapter_number"`
+	VerseIndex                 int                    `json:"verse_index,omitempty" bson:"verse_index,omitempty"`                       // For verses
+	ProseIndex                 int                    `json:"prose_index,omitempty" bson:"prose_index,omitempty"`                       // For prose
+	SequenceIndex              *int                   `json:"sequence_index,omitempty" bson:"sequence_index,omitempty"`                 // Global sequence index
+	ChapterSequenceIndex       int                    `json:"chapter_sequence_index,omitempty" bson:"chapter_sequence_index,omitempty"` // Sequence within chapter
+	OriginalIast               string                 `json:"original_iast" bson:"original_iast"`
+	TransliteratedDevanagari   string                 `json:"transliterated_devanagari" bson:"transliterated_devanagari"`
+	WordByWordTranslation      []WordTranslation      `json:"word_by_word_translation" bson:"word_by_word_translation"`
+	FullTranslation            string                 `json:"full_translation" bson:"full_translation"`
+	EditedTranslations         []EditedTranslation    `json:"edited_translations" bson:"edited_translations"`
+	SplitShloka                string                 `json:"split_shloka,omitempty" bson:"split_shloka,omitempty"`                                     // Uncompounded version
+	SplitWordByWordTranslation []WordTranslation      `json:"split_word_by_word_translation,omitempty" bson:"split_word_by_word_translation,omitempty"` // Word-by-word from split
+	WordToSplitMapping         map[string]interface{} `json:"word_to_split_mapping,omitempty" bson:"word_to_split_mapping,omitempty"`                   // Explicit mapping: original_word -> [split_word1, split_word2, ...] (interface{} to handle both string and int arrays)
+	SplitAt                    *time.Time             `json:"split_at,omitempty" bson:"split_at,omitempty"`                                             // Timestamp when split was performed
+	AITranslatedAt             *time.Time             `json:"ai_translated_at,omitempty" bson:"ai_translated_at,omitempty"`                             // Timestamp when AI translation was generated
+	PrimaryTheme               string                 `json:"primary_theme,omitempty" bson:"primary_theme,omitempty"`                                   // Primary theme classification
+	SecondaryThemes            []string               `json:"secondary_themes,omitempty" bson:"secondary_themes,omitempty"`                             // Secondary theme classifications
+	Rationale                  string                 `json:"rationale,omitempty" bson:"rationale,omitempty"`                                           // Rationale for theme classification
+	AudioURL                   *string                `json:"audio_url,omitempty" bson:"audio_url,omitempty"`
+	AudioDuration              *float64               `json:"audio_duration,omitempty" bson:"audio_duration,omitempty"`
+	RecordingUploadedAt        *time.Time             `json:"recording_uploaded_at,omitempty" bson:"recording_uploaded_at,omitempty"`
+	RecordingUploadedBy        interface{}            `json:"recording_uploaded_by,omitempty" bson:"recording_uploaded_by,omitempty"`
 }
 
 // InitMongoDB initializes MongoDB connection

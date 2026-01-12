@@ -192,7 +192,58 @@ const ConversationModal = ({ verse, corpusName, isOpen, onClose, apiUrl, user, t
     // Get split words (filtered, no dandas)
     const splitWords = splitShloka.split(/\s+/).filter(w => w.trim() && !w.match(/^[।॥]+$/));
     
-    // Build mapping: for each original word, find which split words it maps to
+    // Check if explicit mapping exists
+    const explicitMapping = verseData.word_to_split_mapping;
+    
+    if (explicitMapping && typeof explicitMapping === 'object') {
+      // Use explicit mapping from database
+      const originalToSplit = [];
+      let allWordsMapped = true;
+      
+      for (let origIdx = 0; origIdx < originalWords.length; origIdx++) {
+        const originalWord = originalWords[origIdx];
+        const splitWordList = explicitMapping[originalWord];
+        
+        if (splitWordList && Array.isArray(splitWordList)) {
+          // Find indices of split words in the split words array
+          // Handle both string and number arrays (for backward compatibility)
+          const splitIndices = [];
+          for (const splitWord of splitWordList) {
+            // Convert to string for comparison (handles both string and number formats)
+            const splitWordStr = String(splitWord).trim();
+            const splitIdx = splitWords.findIndex(w => w === splitWordStr);
+            if (splitIdx !== -1) {
+              splitIndices.push(splitIdx);
+            } else {
+              // Split word not found - log warning but continue
+              console.warn(`Split word "${splitWordStr}" from mapping not found in split words array for original word "${originalWord}"`);
+            }
+          }
+          
+          if (splitIndices.length > 0) {
+            originalToSplit[origIdx] = splitIndices;
+          } else {
+            // No valid split words found - fall back to inference for this word
+            allWordsMapped = false;
+            break;
+          }
+        } else {
+          // No mapping for this word - fall back to inference
+          allWordsMapped = false;
+          break;
+        }
+      }
+      
+      // If all words were successfully mapped, return the explicit mapping
+      if (allWordsMapped && originalToSplit.length === originalWords.length) {
+        return { originalToSplit, splitWords };
+      } else {
+        // Fall through to inference logic if mapping is incomplete
+        console.warn('Explicit mapping incomplete, falling back to inference');
+      }
+    }
+    
+    // Fallback: Build mapping by inference (original logic)
     // Strategy: match by reconstructing the original word from split words (removing spaces/joining)
     const originalToSplit = [];
     let splitIndex = 0;
