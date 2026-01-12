@@ -130,11 +130,11 @@ func main() {
 		} else if strings.Contains(path, "/verses/") && strings.HasSuffix(path, "/recording") {
 			// Recording endpoints: /v2/{corpus}/verses/{id}/recording
 			if r.Method == http.MethodPost {
-				// Upload recording - requires admin
-				h.JWTAuthMiddleware(h.AdminMiddleware(h.UploadRecordingHandler))(w, r)
+				// Upload recording - requires JWT auth (not admin for voice notes)
+				h.JWTAuthMiddleware(h.UploadRecordingHandler)(w, r)
 			} else if r.Method == http.MethodGet {
-				// Get recording - public
-				h.GetRecordingHandler(w, r)
+				// Get recording - requires JWT auth
+				h.JWTAuthMiddleware(h.GetRecordingHandler)(w, r)
 			} else {
 				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			}

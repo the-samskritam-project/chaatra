@@ -60,11 +60,25 @@ func BhagavadGitaVersesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // BhagavadGitaUpdateVerseHandler handles updating a verse's or commentary's translation
-// Also handles split requests (POST to /verses/{id}/split) and translate requests (POST to /verses/{id}/translate)
+// Also handles split requests (POST to /verses/{id}/split), translate requests (POST to /verses/{id}/translate), and recording requests (POST/GET to /verses/{id}/recording)
 func BhagavadGitaUpdateVerseHandler(w http.ResponseWriter, r *http.Request) {
 	// Handle OPTIONS for CORS preflight
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	// Check if this is a recording request (POST/GET to path ending with /recording)
+	if strings.HasSuffix(r.URL.Path, "/recording") {
+		if r.Method == http.MethodPost {
+			// Upload recording - requires JWT auth (not admin for voice notes)
+			JWTAuthMiddleware(UploadRecordingHandler)(w, r)
+		} else if r.Method == http.MethodGet {
+			// Get recording
+			GetRecordingHandler(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
 		return
 	}
 

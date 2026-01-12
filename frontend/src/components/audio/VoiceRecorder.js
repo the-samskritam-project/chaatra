@@ -187,7 +187,7 @@ const VoiceRecorder = ({ corpusName, verseId, apiUrl, token, onUploadSuccess }) 
     };
   }, [audioUrl]);
 
-  // Upload recording (mocked for now)
+  // Upload recording
   const handleUpload = async () => {
     if (!audioBlob) {
       setError('No recording to upload');
@@ -199,31 +199,51 @@ const VoiceRecorder = ({ corpusName, verseId, apiUrl, token, onUploadSuccess }) 
       return;
     }
 
+    if (!apiUrl) {
+      setError('API URL not configured');
+      return;
+    }
+
     setIsUploading(true);
     setError('');
 
     try {
-      // Mock upload - simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
 
-      // Mock successful response
-      const mockResponse = {
-        id: `recording_${Date.now()}`,
-        verse_id: verseId,
-        corpus_name: corpusName,
-        uploaded_at: new Date().toISOString(),
-        duration: recordingTime,
-      };
+      const url = `${apiUrl}/v2/${corpusName}/verses/${verseId}/recording`;
 
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        
+        if (response.status === 401) {
+          throw new Error('Authentication failed. Please sign out and sign back in to refresh your token.');
+        } else if (response.status === 403) {
+          throw new Error('Access denied. Please ensure your account has the required permissions.');
+        }
+        
+        throw new Error(errorText || `Upload failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      
       // Call success callback if provided
       if (onUploadSuccess) {
-        onUploadSuccess(mockResponse);
+        onUploadSuccess(result);
       }
 
       // Reset state after successful upload
       resetRecording();
     } catch (err) {
-      setError('Failed to upload recording. Please try again.');
+      setError(err.message || 'Failed to upload recording. Please try again.');
       console.error('Upload error:', err);
     } finally {
       setIsUploading(false);

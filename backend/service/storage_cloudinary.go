@@ -290,7 +290,7 @@ func extractPublicIDFromURL(url string) (string, error) {
 
 // ValidateAudioFile checks if a file is a valid audio file
 func ValidateAudioFile(filename string, contentType string) error {
-	allowedExts := []string{".mp3", ".wav", ".m4a", ".ogg", ".aac", ".flac"}
+	allowedExts := []string{".mp3", ".wav", ".m4a", ".ogg", ".aac", ".flac", ".webm"}
 	ext := strings.ToLower(filepath.Ext(filename))
 
 	extValid := false
