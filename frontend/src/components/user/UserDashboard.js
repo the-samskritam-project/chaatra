@@ -30,6 +30,7 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
   // Collapsible state - track which categories and corpus sections are expanded
   const [expandedCategories, setExpandedCategories] = useState(new Set());
   const [expandedCorpus, setExpandedCorpus] = useState(new Set());
+  const [expandedChapters, setExpandedChapters] = useState(new Set());
   
   // Verse details cache - store fetched verse data
   const [verseDetailsCache, setVerseDetailsCache] = useState({});
@@ -194,6 +195,97 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
     return categoryMap[corpusName] || { category: 'Other', label: formatCorpusName(corpusName) };
   };
 
+  // Helper function to extract chapter number from verse_number
+  const extractChapterNumber = (verseNumber, corpusName) => {
+    if (!verseNumber) return '0';
+    
+    // Subhashita doesn't have chapter structure - all verses go to chapter "0"
+    if (corpusName === 'subhashita') {
+      return '0';
+    }
+    
+    // For other corpora, verse_number format is typically "chapter.verse" (e.g., "1.1", "2.5")
+    const match = verseNumber.match(/^(\d+)/);
+    if (match) {
+      return match[1];
+    }
+    
+    // Fallback: if no chapter found, use "0"
+    return '0';
+  };
+
+  // Helper function to sort verses numerically by verse number
+  const sortVersesByNumber = (verses) => {
+    return [...verses].sort((a, b) => {
+      const verseA = a.verse_number || '';
+      const verseB = b.verse_number || '';
+      
+      // Parse verse numbers (e.g., "1.1" -> [1, 1], "2.5" -> [2, 5])
+      const parseVerseNumber = (vn) => {
+        if (!vn) return [0, 0];
+        const parts = vn.split('.').map(part => {
+          const num = parseInt(part, 10);
+          return isNaN(num) ? 0 : num;
+        });
+        // Ensure at least 2 parts for proper comparison
+        while (parts.length < 2) {
+          parts.push(0);
+        }
+        return parts;
+      };
+      
+      const partsA = parseVerseNumber(verseA);
+      const partsB = parseVerseNumber(verseB);
+      
+      // Compare chapter first, then verse
+      if (partsA[0] !== partsB[0]) {
+        return partsA[0] - partsB[0];
+      }
+      return partsA[1] - partsB[1];
+    });
+  };
+
+  // Group translations by corpus, then by chapter, with proper sorting
+  const groupTranslationsByCorpusAndChapter = (translations) => {
+    const grouped = {};
+    
+    translations.forEach(translation => {
+      // Fallback: if corpus_name is missing, infer from context
+      let corpusName = translation.corpus_name;
+      if (!corpusName) {
+        const verseNumber = translation.verse_number || '';
+        corpusName = verseNumber && !verseNumber.includes('.') ? 'subhashita' : 'unknown';
+      }
+      
+      const categoryInfo = getCorpusCategory(corpusName);
+      const chapterNumber = extractChapterNumber(translation.verse_number, corpusName);
+      
+      if (!grouped[corpusName]) {
+        grouped[corpusName] = {
+          label: categoryInfo.label,
+          chapters: {}
+        };
+      }
+      
+      if (!grouped[corpusName].chapters[chapterNumber]) {
+        grouped[corpusName].chapters[chapterNumber] = [];
+      }
+      
+      grouped[corpusName].chapters[chapterNumber].push(translation);
+    });
+    
+    // Sort verses within each chapter
+    Object.keys(grouped).forEach(corpusName => {
+      Object.keys(grouped[corpusName].chapters).forEach(chapterNumber => {
+        grouped[corpusName].chapters[chapterNumber] = sortVersesByNumber(
+          grouped[corpusName].chapters[chapterNumber]
+        );
+      });
+    });
+    
+    return grouped;
+  };
+
   const groupByCorpus = (items) => {
     const grouped = {};
     items.forEach(item => {
@@ -247,24 +339,49 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
     });
   };
 
+  const toggleChapter = (chapterKey) => {
+    setExpandedChapters(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(chapterKey)) {
+        newSet.delete(chapterKey);
+      } else {
+        newSet.add(chapterKey);
+      }
+      return newSet;
+    });
+  };
+
   // Initialize all sections as expanded when data loads
   useEffect(() => {
     const items = activeTab === 'notes' ? notes : activeTab === 'favorites' ? favorites : translations;
     if (items.length > 0) {
       const allCategories = new Set();
       const allCorpus = new Set();
+      const allChapters = new Set();
       
-      const grouped = groupByCorpus(items);
-      
-      Object.keys(grouped).forEach(categoryKey => {
-        allCategories.add(categoryKey);
-        Object.keys(grouped[categoryKey]).forEach(corpusName => {
-          allCorpus.add(`${categoryKey}-${corpusName}`);
+      if (activeTab === 'translations') {
+        // For translations, use the new grouping function
+        const grouped = groupTranslationsByCorpusAndChapter(items);
+        Object.keys(grouped).forEach(corpusName => {
+          allCorpus.add(corpusName);
+          Object.keys(grouped[corpusName].chapters).forEach(chapterNumber => {
+            allChapters.add(`${corpusName}-${chapterNumber}`);
+          });
         });
-      });
+      } else {
+        // For notes and favorites, use the old grouping function
+        const grouped = groupByCorpus(items);
+        Object.keys(grouped).forEach(categoryKey => {
+          allCategories.add(categoryKey);
+          Object.keys(grouped[categoryKey]).forEach(corpusName => {
+            allCorpus.add(`${categoryKey}-${corpusName}`);
+          });
+        });
+      }
       
       setExpandedCategories(allCategories);
       setExpandedCorpus(allCorpus);
+      setExpandedChapters(allChapters);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [notes, favorites, translations, activeTab]);
@@ -607,36 +724,55 @@ const UserDashboard = ({ user, token, onSignInSuccess, apiUrl }) => {
               <div className="user-dashboard-empty">No translations yet. Practice translating verses to see them here!</div>
             ) : (
               (() => {
-                const grouped = groupByCorpus(translations);
-                return Object.keys(grouped).map(category => {
-                  const isCategoryExpanded = expandedCategories.has(category);
+                const grouped = groupTranslationsByCorpusAndChapter(translations);
+                // Sort corpus names for consistent display
+                const sortedCorpusNames = Object.keys(grouped).sort();
+                
+                return sortedCorpusNames.map(corpusName => {
+                  const isCorpusExpanded = expandedCorpus.has(corpusName);
+                  const corpusData = grouped[corpusName];
+                  // Sort chapter numbers numerically
+                  const sortedChapterNumbers = Object.keys(corpusData.chapters).sort((a, b) => {
+                    const numA = parseInt(a, 10) || 0;
+                    const numB = parseInt(b, 10) || 0;
+                    return numA - numB;
+                  });
+                  
+                  // Calculate total translations count
+                  const totalCount = Object.values(corpusData.chapters).reduce((sum, verses) => sum + verses.length, 0);
+                  
                   return (
-                    <div key={category} className="user-dashboard-category">
+                    <div key={corpusName} className="user-dashboard-corpus-section">
                       <h3 
-                        className="user-dashboard-category-title user-dashboard-collapsible"
-                        onClick={() => toggleCategory(category)}
+                        className="user-dashboard-corpus-title user-dashboard-collapsible"
+                        onClick={() => toggleCorpus(corpusName)}
                       >
-                        <span className="user-dashboard-collapse-icon">{isCategoryExpanded ? '▼' : '▶'}</span>
-                        {category}
+                        <span className="user-dashboard-collapse-icon">{isCorpusExpanded ? '▼' : '▶'}</span>
+                        {corpusData.label}
+                        <span className="user-dashboard-item-count"> ({totalCount})</span>
                       </h3>
-                      {isCategoryExpanded && Object.keys(grouped[category]).map(corpusName => {
-                        const corpusKey = `${category}-${corpusName}`;
-                        const isCorpusExpanded = expandedCorpus.has(corpusKey);
+                      {isCorpusExpanded && sortedChapterNumbers.map(chapterNumber => {
+                        const chapterKey = `${corpusName}-${chapterNumber}`;
+                        const isChapterExpanded = expandedChapters.has(chapterKey);
+                        const verses = corpusData.chapters[chapterNumber];
+                        const chapterLabel = chapterNumber === '0' && corpusName === 'subhashita' 
+                          ? 'All Verses' 
+                          : `Chapter ${chapterNumber}`;
+                        
                         return (
-                          <div key={corpusName} className="user-dashboard-corpus-section">
+                          <div key={chapterNumber} className="user-dashboard-corpus-section" style={{ marginLeft: '1rem' }}>
                             <h4 
                               className="user-dashboard-corpus-title user-dashboard-collapsible"
-                              onClick={() => toggleCorpus(corpusKey)}
+                              onClick={() => toggleChapter(chapterKey)}
                             >
-                              <span className="user-dashboard-collapse-icon">{isCorpusExpanded ? '▼' : '▶'}</span>
-                              {grouped[category][corpusName].label}
-                              <span className="user-dashboard-item-count"> ({grouped[category][corpusName].items.length})</span>
+                              <span className="user-dashboard-collapse-icon">{isChapterExpanded ? '▼' : '▶'}</span>
+                              {chapterLabel}
+                              <span className="user-dashboard-item-count"> ({verses.length})</span>
                             </h4>
-                            {isCorpusExpanded && (
+                            {isChapterExpanded && (
                               <div className="user-dashboard-items">
-                                {grouped[category][corpusName].items.map((translation) => {
-                                  // Fallback: if corpus_name is missing, infer from context (likely subhashita for old translations)
-                                  const inferredCorpusName = translation.corpus_name || (translation.verse_number && !translation.verse_number.includes('.') ? 'subhashita' : translation.corpus_name) || 'unknown';
+                                {verses.map((translation) => {
+                                  const inferredCorpusName = translation.corpus_name || corpusName;
                                   const verseKey = `${inferredCorpusName}-${translation.verse_number}`;
                                   const verseData = verseDetailsCache[verseKey];
                                   return (
