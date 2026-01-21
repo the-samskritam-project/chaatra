@@ -15,11 +15,12 @@ import (
 
 // User represents a user in the system
 type User struct {
-	ID        interface{} `json:"id,omitempty" bson:"_id,omitempty"`
-	Email     string      `json:"email" bson:"email"`
-	Name      string      `json:"name" bson:"name"`
-	Role      string      `json:"role" bson:"role"` // "admin" or "user" (default: "user")
-	CreatedAt time.Time   `json:"created_at" bson:"created_at"`
+	ID           interface{} `json:"id,omitempty" bson:"_id,omitempty"`
+	Email        string      `json:"email" bson:"email"`
+	Name         string      `json:"name" bson:"name"`
+	Role         string      `json:"role" bson:"role"` // "admin" or "user" (default: "user")
+	PasswordHash string      `json:"-" bson:"password_hash"` // Password hash (not returned in JSON)
+	CreatedAt    time.Time   `json:"created_at" bson:"created_at"`
 }
 
 // getUsersDatabase returns the users database
@@ -84,8 +85,8 @@ func GetUserByEmail(email string) (*User, error) {
 	return &user, nil
 }
 
-// CreateUser creates a new user in the database
-func CreateUser(email string, name string) (*User, error) {
+// CreateUserWithPassword creates a new user in the database with a password hash
+func CreateUserWithPassword(email string, name string, passwordHash string) (*User, error) {
 	if mongoClient == nil {
 		return nil, fmt.Errorf("MongoDB not initialized")
 	}
@@ -109,10 +110,11 @@ func CreateUser(email string, name string) (*User, error) {
 
 	// Create new user
 	user := User{
-		Email:     email,
-		Name:      name,
-		Role:      "user", // Default role
-		CreatedAt: time.Now(),
+		Email:        email,
+		Name:         name,
+		Role:         "user", // Default role
+		PasswordHash: passwordHash,
+		CreatedAt:    time.Now(),
 	}
 
 	// Create unique index on email if it doesn't exist

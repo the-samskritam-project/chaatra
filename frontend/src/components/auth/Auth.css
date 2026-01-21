@@ -117,7 +117,7 @@
 /* Sign In Form */
 .signin-form {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 10px;
   align-items: flex-start;
   width: 100%;

@@ -7,12 +7,27 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
 // SignInRequest represents the sign-in request body
 type SignInRequest struct {
-	Email string `json:"email"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+// SignUpRequest represents the sign-up request body
+type SignUpRequest struct {
+	Email    string `json:"email"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+
+// SignUpResponse represents the sign-up response
+type SignUpResponse struct {
+	Token string    `json:"token"`
+	User  *UserInfo `json:"user"`
 }
 
 // SignInResponse represents the sign-in response
@@ -28,16 +43,6 @@ type UserInfo struct {
 	Role  string `json:"role"`
 }
 
-// CreateUserRequest represents the create user request body
-type CreateUserRequest struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
-}
-
-// CreateUserResponse represents the create user response
-type CreateUserResponse struct {
-	User *UserInfo `json:"user"`
-}
 
 // SignInHandler handles user sign-in requests
 func SignInHandler(w http.ResponseWriter, r *http.Request) {
@@ -57,16 +62,36 @@ func SignInHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Password == "" {
+		http.Error(w, "password is required", http.StatusBadRequest)
+		return
+	}
+
 	// Look up user by email
 	user, err := persistence.GetUserByEmail(req.Email)
 	if err != nil {
 		log.Printf("Error looking up user: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 		return
 	}
 
 	if user == nil {
-		http.Error(w, "Invalid email or user not found", http.StatusUnauthorized)
+		// Return generic error to prevent user enumeration
+		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		return
+	}
+
+	// Verify password
+	if user.PasswordHash == "" {
+		// User exists but has no password hash (legacy user)
+		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		return
+	}
+
+	err = service.VerifyPassword(user.PasswordHash, req.Password)
+	if err != nil {
+		// Password doesn't match
+		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
 		return
 	}
 
@@ -92,14 +117,20 @@ func SignInHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// CreateUserHandler handles user creation requests (protected by API key)
-func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
+// isValidEmail performs basic email format validation
+func isValidEmail(email string) bool {
+	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
+	return emailRegex.MatchString(email)
+}
+
+// SignUpHandler handles user sign-up requests
+func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var req CreateUserRequest
+	var req SignUpRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
 		return
@@ -116,22 +147,69 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create user
-	user, err := persistence.CreateUser(req.Email, req.Name)
+	if req.Password == "" {
+		http.Error(w, "password is required", http.StatusBadRequest)
+		return
+	}
+
+	// Validate email format
+	if !isValidEmail(req.Email) {
+		http.Error(w, "invalid email format", http.StatusBadRequest)
+		return
+	}
+
+	// Validate password length (minimum 8 characters)
+	if len(req.Password) < 8 {
+		http.Error(w, "password must be at least 8 characters long", http.StatusBadRequest)
+		return
+	}
+
+	// Check if user already exists
+	existingUser, err := persistence.GetUserByEmail(req.Email)
+	if err != nil {
+		log.Printf("Error checking existing user: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if existingUser != nil {
+		http.Error(w, "user with this email already exists", http.StatusConflict)
+		return
+	}
+
+	// Hash password
+	passwordHash, err := service.HashPassword(req.Password)
+	if err != nil {
+		log.Printf("Error hashing password: %v", err)
+		http.Error(w, "Failed to process password", http.StatusInternalServerError)
+		return
+	}
+
+	// Create user with hashed password
+	user, err := persistence.CreateUserWithPassword(req.Email, req.Name, passwordHash)
 	if err != nil {
 		// Check if it's a duplicate email error
-		if err.Error() == fmt.Sprintf("user with email %s already exists", req.Email) {
-			http.Error(w, err.Error(), http.StatusConflict)
+		if strings.Contains(err.Error(), "already exists") {
+			http.Error(w, "user with this email already exists", http.StatusConflict)
 			return
 		}
 
 		log.Printf("Error creating user: %v", err)
-		http.Error(w, fmt.Sprintf("Failed to create user: %v", err), http.StatusInternalServerError)
+		http.Error(w, "Failed to create user", http.StatusInternalServerError)
 		return
 	}
 
-	// Return created user info
-	response := CreateUserResponse{
+	// Generate JWT token
+	token, err := service.GenerateToken(user)
+	if err != nil {
+		log.Printf("Error generating token: %v", err)
+		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+		return
+	}
+
+	// Return token and user info
+	response := SignUpResponse{
+		Token: token,
 		User: &UserInfo{
 			Email: user.Email,
 			Name:  user.Name,
@@ -144,71 +222,3 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// UpdateUserRoleRequest represents the update user role request body
-type UpdateUserRoleRequest struct {
-	Role string `json:"role"` // "admin" or "user"
-}
-
-// UpdateUserRoleResponse represents the update user role response
-type UpdateUserRoleResponse struct {
-	User *UserInfo `json:"user"`
-}
-
-// UpdateUserRoleHandler handles user role update requests (protected by API key)
-func UpdateUserRoleHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPut {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Extract email from URL path
-	// Path format: /v2/auth/users/{email}/role
-	path := strings.TrimPrefix(r.URL.Path, "/v2/auth/users/")
-	if path == "" || path == r.URL.Path {
-		http.Error(w, "Email is required in URL path", http.StatusBadRequest)
-		return
-	}
-
-	// Remove /role suffix
-	email := strings.TrimSuffix(path, "/role")
-	if email == "" {
-		http.Error(w, "Email is required in URL path", http.StatusBadRequest)
-		return
-	}
-
-	var req UpdateUserRoleRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
-		return
-	}
-
-	// Validate role
-	if req.Role != "admin" && req.Role != "user" {
-		http.Error(w, "role must be 'admin' or 'user'", http.StatusBadRequest)
-		return
-	}
-
-	// Update user role
-	user, err := persistence.UpdateUserRole(email, req.Role)
-	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		log.Printf("Error updating user role: %v", err)
-		http.Error(w, fmt.Sprintf("Failed to update user role: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	// Return updated user info
-	response := UpdateUserRoleResponse{
-		User: &UserInfo{
-			Email: user.Email,
-			Name:  user.Name,
-			Role:  user.Role,
-		},
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}

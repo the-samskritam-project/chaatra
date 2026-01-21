@@ -146,15 +146,7 @@ func main() {
 
 	// Auth endpoints
 	mux.HandleFunc("/v2/auth/signin", h.SignInHandler)
-	mux.HandleFunc("/v2/auth/users", h.APIKeyMiddleware(h.CreateUserHandler))
-	mux.HandleFunc("/v2/auth/users/", func(w http.ResponseWriter, r *http.Request) {
-		// Handle user role update: /v2/auth/users/{email}/role
-		if strings.HasSuffix(r.URL.Path, "/role") && r.Method == http.MethodPut {
-			h.APIKeyMiddleware(h.UpdateUserRoleHandler)(w, r)
-		} else {
-			http.Error(w, "Not found", http.StatusNotFound)
-		}
-	})
+	mux.HandleFunc("/v2/auth/signup", h.SignUpHandler)
 
 	// Notes endpoints (protected by JWT)
 	mux.HandleFunc("/v2/notes", func(w http.ResponseWriter, r *http.Request) {
