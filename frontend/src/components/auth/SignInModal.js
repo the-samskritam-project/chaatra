@@ -103,7 +103,7 @@ const SignInModal = ({ onClose, onSignInSuccess, apiUrl }) => {
                 autoFocus
                 required
                 className="signin-input"
-                style={{ width: isSignUp ? '100%' : '70%', marginBottom: '10px' }}
+                style={{ width: '100%', marginBottom: '10px' }}
               />
               <input
                 type="password"
@@ -113,13 +113,13 @@ const SignInModal = ({ onClose, onSignInSuccess, apiUrl }) => {
                 disabled={loading}
                 required
                 className="signin-input"
-                style={{ width: isSignUp ? '100%' : '70%', marginBottom: '10px' }}
+                style={{ width: '100%', marginBottom: '10px' }}
               />
               <button
                 type="submit"
                 disabled={loading || !email.trim() || !password || (isSignUp && !name.trim())}
                 className="signin-submit-btn"
-                style={{ width: isSignUp ? '100%' : '30%' }}
+                style={{ width: '100%' }}
               >
                 {loading ? (isSignUp ? 'Signing up...' : 'Signing in...') : (isSignUp ? 'Sign Up' : 'Sign In')}
               </button>
