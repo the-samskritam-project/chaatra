@@ -1,17 +1,49 @@
-version: "3.8"
-
 services:
+  mongodb:
+    image: mongo:7.0
+    container_name: chaatra-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./corpus/mongodb_data:/data/db
+    command: mongod --bind_ip_all
+    restart: unless-stopped
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     ports:
       - "8081:8081"
-    volumes:
-      - ./backend:/go/src/app
     environment:
       - GO_ENV=development
-      - PORT=8081
+      - PORT=${PORT:-8081}
+      # Auth
+      - JWT_SECRET=${JWT_SECRET:-}
+      - API_KEY=${API_KEY:-}
+      # OpenAI
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_TRANSLATION_MODEL=${OPENAI_TRANSLATION_MODEL:-}
+      # MongoDB — defaults to the `mongodb` service below
+      - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017}
+      - MONGODB_DATABASE=${MONGODB_DATABASE:-chaatra}
+      - MONGODB_USERS_DATABASE=${MONGODB_USERS_DATABASE:-users}
+      - MONGODB_NOTES_DATABASE=${MONGODB_NOTES_DATABASE:-notes}
+      - MONGODB_FAVORITES_DATABASE=${MONGODB_FAVORITES_DATABASE:-favorites}
+      - MONGODB_USER_TRANSLATIONS_DATABASE=${MONGODB_USER_TRANSLATIONS_DATABASE:-user_translations}
+      - MONGODB_VECTOR_DATABASE=${MONGODB_VECTOR_DATABASE:-vector_search}
+      # ChromaDB (optional — run docker-compose-chromadb.yml separately)
+      - CHROMA_URL=${CHROMA_URL:-}
+      - CHROMA_BRIDGE_URL=${CHROMA_BRIDGE_URL:-}
+      # Cloudinary (voice recording uploads)
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME:-}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY:-}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET:-}
+      # Optional path overrides
+      - RAMAYANA_DATA_PATH=${RAMAYANA_DATA_PATH:-}
+      - RAMAYANA_RARITY_PATH=${RAMAYANA_RARITY_PATH:-}
+    depends_on:
+      - mongodb
 
   frontend:
     build:
@@ -24,6 +56,8 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - REACT_APP_API_BASE_URL=http://localhost/api
+      - REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL:-http://localhost:8081}
+      - REACT_APP_SHOW_HITOPADESA=${REACT_APP_SHOW_HITOPADESA:-false}
+      - REACT_APP_SHOW_PANCATANTRA=${REACT_APP_SHOW_PANCATANTRA:-true}
     depends_on:
       - backend
