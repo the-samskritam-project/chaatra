@@ -252,3 +252,94 @@
     text-align: center;
     margin-bottom: 20px;
   }
+
+  /* Backdrop behind the mobile drawer — hidden on desktop. */
+  .sidebar-backdrop {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .tabs-container {
+      flex-direction: column;
+    }
+
+    .react-tabs {
+      flex-direction: column;
+    }
+
+    /* Sidebar becomes a slide-in drawer overlay. */
+    .tabs-section {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      height: 100vh;
+      width: 80%;
+      max-width: 320px;
+      z-index: 9000;
+      overflow-y: auto;
+      border-radius: 0;
+      margin: 0;
+      padding: 64px 16px 24px;
+      box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+      transform: translateX(0);
+      transition: transform 0.3s ease;
+    }
+
+    /* Collapsed state on mobile: slide off-screen but keep size so the
+       transition stays smooth. Overrides the desktop width:0/opacity:0 rules. */
+    .tabs-container.sidebar-collapsed .tabs-section,
+    .tabs-section.collapsed {
+      width: 80%;
+      max-width: 320px;
+      opacity: 1;
+      margin: 0;
+      padding: 64px 16px 24px;
+      transform: translateX(-100%);
+      pointer-events: none;
+    }
+
+    /* Toggle button: visible hamburger-style square at top-left. */
+    .sidebar-toggle {
+      top: 14px;
+      left: 12px;
+      transform: none;
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+      border-radius: 6px;
+      opacity: 1;
+    }
+
+    .sidebar-toggle:active {
+      transform: scale(0.95);
+    }
+
+    /* When drawer is open, move the toggle to the drawer's inner edge so it
+       sits as a close button rather than overlapping the drawer content. */
+    .tabs-container:not(.sidebar-collapsed) .sidebar-toggle {
+      left: calc(min(80vw, 320px) - 52px);
+    }
+
+    /* Content panel always takes full width on mobile. */
+    .tab-panel-container,
+    .tabs-container.sidebar-collapsed .tab-panel-container {
+      width: 100%;
+      padding: 16px;
+    }
+
+    /* Backdrop overlay shown while the drawer is open. */
+    .sidebar-backdrop {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 8999;
+      animation: sidebar-backdrop-fade 0.2s ease;
+    }
+  }
+
+  @keyframes sidebar-backdrop-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }

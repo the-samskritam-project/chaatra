@@ -314,10 +314,24 @@ function App() {
   const [apiUrl, setApiUrl] = useState('');
   
   // Track sidebar collapse state (false = expanded, true = collapsed)
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  
+  // Default to collapsed on mobile viewports.
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(max-width: 768px)').matches;
+    }
+    return false;
+  });
+
   // Get current location for active tab styling
   const location = useLocation();
+
+  // On mobile, auto-collapse the sidebar after the user navigates.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      setIsSidebarCollapsed(true);
+    }
+  }, [location.pathname]);
 
   // Load auth data from localStorage on mount
   useEffect(() => {
@@ -444,7 +458,14 @@ function App() {
         )}
       </div>
       <div className={`tabs-container ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-        <button 
+        {!sidebarCollapsed && (
+          <div
+            className="sidebar-backdrop"
+            onClick={toggleSidebar}
+            aria-hidden="true"
+          />
+        )}
+        <button
           className="sidebar-toggle"
           onClick={toggleSidebar}
           aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
