@@ -328,6 +328,13 @@
       padding: 16px;
     }
 
+    /* Hide the main sidebar hamburger while the dictionary pull-out is open
+       so it doesn't overlay the dictionary panel's header. The dictionary
+       panel has its own close (×) button as the dismiss path. */
+    body:has(.dictionary-lookup-sidebar.open) .sidebar-toggle {
+      display: none;
+    }
+
     /* Backdrop overlay shown while the drawer is open. */
     .sidebar-backdrop {
       display: block;

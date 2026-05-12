@@ -3,14 +3,10 @@
   padding: 20px;
 }
 
-/* Search Bar Container */
+/* Search bar slot — no wrapper box; the input carries its own border. */
 .hitopadesa-search-container {
   margin-top: 60px; /* Add space above to prevent overlap with sign in/out button */
   margin-bottom: 24px;
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
 }
 
 .hitopadesa-search-form {
@@ -354,12 +350,12 @@
   color: #2c2c2c;
 }
 
-/* Bhagavad Gita main verse — larger but still regular weight for a
-   calmer, less-bold read. */
+/* Bhagavad Gita main verse — a touch larger than body Devanagari but
+   intentionally not display-sized. Regular weight for a calm read. */
 .hitopadesa-devanagari.gita-main-verse {
-  font-size: 1.65rem;
+  font-size: 1.4rem;
   font-weight: 400;
-  line-height: 2;
+  line-height: 1.9;
   letter-spacing: 0.005em;
 }
 
@@ -820,12 +816,6 @@
   line-height: 1.5;
 }
 
-.pada-translation-hint {
-  color: #94a3b8;
-  font-size: 0.88rem;
-  font-style: italic;
-}
-
 .hitopadesa-translation-error {
   color: #d32f2f;
   font-size: 0.85rem;
@@ -969,7 +959,6 @@
   .hitopadesa-search-container {
     margin-top: 44px;
     margin-bottom: 12px;
-    padding: 10px 12px;
   }
 
   .hitopadesa-controls {
@@ -1020,10 +1009,10 @@
     padding-top: 16px;
   }
 
-  /* Tighter Gita verse type on small screens — was 1.6rem */
+  /* Tighter Gita verse type on small screens */
   .hitopadesa-devanagari.gita-main-verse {
-    font-size: 1.35rem;
-    line-height: 1.85;
+    font-size: 1.2rem;
+    line-height: 1.8;
   }
 
   .hitopadesa-pagination {

@@ -111,13 +111,6 @@
   overflow: hidden;
 }
 
-.dictionary-lookup-search {
-  padding: 16px 20px;
-  border-bottom: 1px solid #e0e0e0;
-  background-color: #ffffff;
-  flex-shrink: 0;
-}
-
 .dictionary-lookup-results {
   flex: 1;
   overflow-y: auto;
@@ -125,21 +118,22 @@
   background-color: #ffffff;
 }
 
-/* Adjust SearchBar styles within sidebar */
-.dictionary-lookup-search .search-bar {
-  margin: 0;
+/* Search bar rendered directly in the dictionary content slot (no wrapper). */
+.dictionary-lookup-sidebar .search-bar {
+  margin: 12px 16px;
   box-shadow: none;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 4px;
+  flex-shrink: 0;
 }
 
-.dictionary-lookup-search .search-input {
+.dictionary-lookup-sidebar .search-input {
   font-size: 14px;
   padding: 10px 14px;
 }
 
-.dictionary-lookup-search .search-button {
+.dictionary-lookup-sidebar .search-button {
   padding: 10px 20px;
   font-size: 14px;
   min-width: 80px;
