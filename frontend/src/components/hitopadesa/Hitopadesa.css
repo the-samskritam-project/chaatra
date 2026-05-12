@@ -742,6 +742,90 @@
   font-size: 0.9rem;
 }
 
+/* Pada-chheda: compact word tiles with a single sticky "selected word"
+   meaning panel below — replaces the stacked split-shloka + vertical
+   word-by-word list. */
+.pada-chheda {
+  margin-top: 16px;
+  padding: 14px 16px 12px;
+  background: #f8fafc;
+  border: 1px solid #e3e8ee;
+  border-radius: 10px;
+}
+
+.pada-chheda-header {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #1976d2;
+  margin-bottom: 10px;
+}
+
+.pada-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.pada-tile {
+  font-family: 'Tiro Devanagari Sanskrit', 'Noto Serif Devanagari', serif;
+  padding: 5px 11px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  color: #1e293b;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.pada-tile:hover {
+  background: #f0f7ff;
+  border-color: #007bff;
+}
+
+.pada-tile.selected {
+  background: #007bff;
+  border-color: #007bff;
+  color: #ffffff;
+}
+
+.pada-translation {
+  padding: 10px 14px;
+  background: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pada-translation-word {
+  font-family: 'Tiro Devanagari Sanskrit', 'Noto Serif Devanagari', serif;
+  font-weight: 500;
+  color: #1976d2;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.pada-translation-meaning {
+  color: #334155;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.pada-translation-hint {
+  color: #94a3b8;
+  font-size: 0.88rem;
+  font-style: italic;
+}
+
 .hitopadesa-translation-error {
   color: #d32f2f;
   font-size: 0.85rem;

@@ -27,6 +27,7 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [pendingStarAction, setPendingStarAction] = useState(false);
   const [showConversationModal, setShowConversationModal] = useState(false);
+  const [selectedPadaIdx, setSelectedPadaIdx] = useState(null);
 
   const splitDevanagariLines = (text) => {
     if (!text) return [];
@@ -565,33 +566,48 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
             <div className="hitopadesa-iast">{verse.original_iast}</div>
           )}
 
-          {/* Split results display */}
+          {/* Pada-chheda: tap a word tile to reveal its meaning */}
           {(splitResult || verse.split_shloka) && (() => {
-            const splitText = splitResult?.uncompounded_shloka || verse.split_shloka || '';
-            const splitLines = splitDevanagariLines(splitText);
+            const padaItems =
+              splitResult?.word_by_word_translation ||
+              verse.split_word_by_word_translation ||
+              [];
+            if (padaItems.length === 0 && !splitError) return null;
+            const selected =
+              selectedPadaIdx !== null ? padaItems[selectedPadaIdx] : null;
             return (
-              <div className="hitopadesa-split-results">
-                <div className="hitopadesa-split-header">Split Shloka (Uncompounded):</div>
-                <div className="hitopadesa-split-shloka">
-                  {splitLines.map((line, idx) => (
-                    <div key={`split-line-${getItemNumber()}-${idx}`} className="hitopadesa-line">
-                      {line}
-                    </div>
-                  ))}
-                </div>
-                {(splitResult?.word_by_word_translation?.length > 0 || verse.split_word_by_word_translation?.length > 0) && (
-                  <div className="hitopadesa-split-word-by-word">
-                    <div className="hitopadesa-split-header">Word-by-Word Translation:</div>
-                    <div className="hitopadesa-word-list">
-                      {(splitResult?.word_by_word_translation || verse.split_word_by_word_translation || []).map((item, idx) => (
-                        <span key={`split-word-${getItemNumber()}-${idx}`} className="hitopadesa-word-item">
-                          <span className="hitopadesa-word">{item.word}</span>
-                          <span className="hitopadesa-word-translation">({item.translation})</span>
-                        </span>
-                      ))}
-                    </div>
+              <div className="pada-chheda">
+                <div className="pada-chheda-header">Pada-chheda</div>
+                {padaItems.length > 0 && (
+                  <div className="pada-tiles">
+                    {padaItems.map((item, idx) => (
+                      <button
+                        key={`pada-${getItemNumber()}-${idx}`}
+                        type="button"
+                        className={`pada-tile ${selectedPadaIdx === idx ? 'selected' : ''}`}
+                        onClick={() =>
+                          setSelectedPadaIdx(selectedPadaIdx === idx ? null : idx)
+                        }
+                      >
+                        {item.word}
+                      </button>
+                    ))}
                   </div>
                 )}
+                <div className="pada-translation">
+                  {selected ? (
+                    <>
+                      <span className="pada-translation-word">{selected.word}</span>
+                      <span className="pada-translation-meaning">
+                        {selected.translation}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="pada-translation-hint">
+                      Tap a word for its meaning
+                    </span>
+                  )}
+                </div>
                 {splitError && (
                   <div className="hitopadesa-split-error">{splitError}</div>
                 )}
