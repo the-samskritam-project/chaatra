@@ -120,4 +120,61 @@
 .suggestion-item:hover {
   background-color: #0056b3;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-} 
+}
+
+/* Mobile: compact full-width keyboard strip pinned to the bottom of the
+   viewport instead of the 60%-wide desktop float. Suggestions become a
+   single horizontally-scrolling row, the close button is sticky so it
+   stays visible while the user scrolls the key grid. */
+@media (max-width: 768px) {
+  .keyboard.undocked {
+    left: 0;
+    right: 0;
+    width: 100%;
+    transform: none;
+    margin: 0;
+    padding: 36px 8px 12px;
+    max-height: 42vh;
+    overflow-y: auto;
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.16);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .keyboard-dismiss {
+    position: sticky;
+    top: 0;
+    background: rgba(230, 247, 255, 0.95);
+    width: 40px;
+    height: 40px;
+    z-index: 11;
+  }
+
+  .keys-container {
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .key {
+    margin: 2px;
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  }
+
+  .suggestions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    min-height: 40px;
+    padding: 6px 8px;
+    gap: 6px;
+  }
+
+  .suggestion-item {
+    flex-shrink: 0;
+    margin: 0;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+}
