@@ -403,7 +403,7 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
     : null;
 
   return (
-    <div className="hitopadesa-wrapper">
+    <div className={`hitopadesa-wrapper${corpusName === 'bhagavad_gita' ? ' hitopadesa-wrapper--gita' : ''}`}>
       {corpusName === 'bhagavad_gita' && (
         <div className="hitopadesa-search-container">
           <form onSubmit={handleSearch} className="hitopadesa-search-form">
