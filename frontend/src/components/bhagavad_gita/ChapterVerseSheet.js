@@ -78,28 +78,36 @@ function ChapterVerseSheet({
     if (onAfterSelect) onAfterSelect();
   };
 
+  const activeChipName = BHAGAVAD_GITA_CHAPTER_NAMES[activeChip] || '';
+
   return (
     <div className="chapter-verse-sheet">
-      <div className="chapter-chip-strip" role="tablist" ref={stripRef}>
-        {chapters.map((ch) => {
-          const num = ch.chapter_number;
-          const name = BHAGAVAD_GITA_CHAPTER_NAMES[num] || '';
-          const active = num === activeChip;
-          return (
-            <button
-              key={num}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              ref={active ? activeChipRef : null}
-              className={`chapter-chip ${active ? 'active' : ''}`}
-              onClick={() => setActiveChip(num)}
-            >
-              <span className="chapter-chip-num">{num}</span>
-              {name && <span className="chapter-chip-name">{name}</span>}
-            </button>
-          );
-        })}
+      <div className="chapter-chip-strip-wrap">
+        <div className="chapter-chip-strip" role="tablist" ref={stripRef}>
+          {chapters.map((ch) => {
+            const num = ch.chapter_number;
+            const name = BHAGAVAD_GITA_CHAPTER_NAMES[num] || '';
+            const active = num === activeChip;
+            return (
+              <button
+                key={num}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                ref={active ? activeChipRef : null}
+                className={`chapter-chip ${active ? 'active' : ''}`}
+                onClick={() => setActiveChip(num)}
+              >
+                <span className="chapter-chip-num">{num}</span>
+                {name && <span className="chapter-chip-name">{name}</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="chapter-sheet-active-header">
+        Chapter {activeChip}
+        {activeChipName && <span className="chapter-sheet-active-name"> · {activeChipName}</span>}
       </div>
       <div className="chapter-verse-sheet-list">
         {isLoadingVerses ? (
