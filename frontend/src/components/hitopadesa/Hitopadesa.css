@@ -354,12 +354,12 @@
   color: #2c2c2c;
 }
 
-/* Bhagavad Gita main verse — larger but still regular weight for a
-   calmer, less-bold read. */
+/* Bhagavad Gita main verse — a touch larger than body Devanagari but
+   intentionally not display-sized. Regular weight for a calm read. */
 .hitopadesa-devanagari.gita-main-verse {
-  font-size: 1.65rem;
+  font-size: 1.4rem;
   font-weight: 400;
-  line-height: 2;
+  line-height: 1.9;
   letter-spacing: 0.005em;
 }
 
@@ -1020,10 +1020,10 @@
     padding-top: 16px;
   }
 
-  /* Tighter Gita verse type on small screens — was 1.6rem */
+  /* Tighter Gita verse type on small screens */
   .hitopadesa-devanagari.gita-main-verse {
-    font-size: 1.35rem;
-    line-height: 1.85;
+    font-size: 1.2rem;
+    line-height: 1.8;
   }
 
   .hitopadesa-pagination {
