@@ -26,6 +26,7 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedVerseNumber, setSelectedVerseNumber] = useState(null);
   const [navStatus, setNavStatus] = useState({ prev: null, next: null });
+  const [isChapterDrawerOpen, setIsChapterDrawerOpen] = useState(false);
 
   // Filter logic
   const filteredVerses = useMemo(() => {
@@ -205,6 +206,15 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
       setIsLoadingVerses(false);
     }
   };
+
+  useEffect(() => {
+    if (!isChapterDrawerOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isChapterDrawerOpen]);
 
   const handleChapterChange = (event) => {
     const chapterNum = parseInt(event.target.value, 10);
@@ -551,13 +561,47 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
           {error && <div className="hitopadesa-error">{error}</div>}
 
           <div className="bhagavad-gita-layout">
-            <div className="bhagavad-gita-chapter-sidebar">
+            <button
+              type="button"
+              className="bhagavad-gita-chapter-picker"
+              onClick={() => setIsChapterDrawerOpen(true)}
+              aria-haspopup="dialog"
+              aria-expanded={isChapterDrawerOpen}
+            >
+              <span className="chapter-picker-label">
+                <span className="chapter-picker-prefix">Chapter</span>
+                <span className="chapter-picker-value">
+                  {selectedChapter ?? '—'}
+                  {selectedVerseNumber ? ` · ${selectedVerseNumber}` : ''}
+                </span>
+              </span>
+              <span className="chapter-picker-icon" aria-hidden="true">▾</span>
+            </button>
+            {isChapterDrawerOpen && (
+              <div
+                className="bhagavad-gita-chapter-backdrop"
+                onClick={() => setIsChapterDrawerOpen(false)}
+                aria-hidden="true"
+              />
+            )}
+            <div className={`bhagavad-gita-chapter-sidebar ${isChapterDrawerOpen ? 'drawer-open' : ''}`}>
+              <button
+                type="button"
+                className="bhagavad-gita-chapter-close"
+                onClick={() => setIsChapterDrawerOpen(false)}
+                aria-label="Close chapter selector"
+              >
+                ×
+              </button>
               <ChapterList
                 chapters={chapters}
                 selectedChapter={selectedChapter}
                 selectedVerseNumber={selectedVerseNumber}
                 onChapterSelect={handleChapterSelect}
-                onVerseSelect={handleVerseSelect}
+                onVerseSelect={(verseNumber) => {
+                  handleVerseSelect(verseNumber);
+                  setIsChapterDrawerOpen(false);
+                }}
                 apiUrl={apiUrl}
                 isLoadingChapters={isLoadingChapters}
               />
