@@ -3,14 +3,10 @@
   padding: 20px;
 }
 
-/* Search Bar Container */
+/* Search bar slot — no wrapper box; the input carries its own border. */
 .hitopadesa-search-container {
   margin-top: 60px; /* Add space above to prevent overlap with sign in/out button */
   margin-bottom: 24px;
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
 }
 
 .hitopadesa-search-form {
@@ -963,7 +959,6 @@
   .hitopadesa-search-container {
     margin-top: 44px;
     margin-bottom: 12px;
-    padding: 10px 12px;
   }
 
   .hitopadesa-controls {
