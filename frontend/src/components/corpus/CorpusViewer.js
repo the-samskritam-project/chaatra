@@ -523,54 +523,6 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
       )}
       {corpusName === 'bhagavad_gita' ? (
         <>
-          <div className="hitopadesa-controls">
-            <div className="hitopadesa-filter-controls">
-              <label>Filter:</label>
-              <div className="hitopadesa-filter-buttons">
-                <button
-                  type="button"
-                  className={`hitopadesa-filter-button ${filter === 'all' ? 'active' : ''}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setFilter('all');
-                  }}
-                >
-                  All
-                </button>
-                <button
-                  type="button"
-                  className={`hitopadesa-filter-button ${filter === 'verses' ? 'active' : ''}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setFilter('verses');
-                  }}
-                >
-                  Verses
-                </button>
-                <button
-                  type="button"
-                  className={`hitopadesa-filter-button ${filter === 'commentary' ? 'active' : ''}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setFilter('commentary');
-                  }}
-                >
-                  Commentary
-                </button>
-              </div>
-            </div>
-            {showSearchIcon && onSearchClick && (
-              <button
-                className="pancatantra-search-icon-button"
-                onClick={onSearchClick}
-                aria-label="Search"
-                title="Search by theme"
-              >
-                🔍
-              </button>
-            )}
-          </div>
-
           {error && <div className="hitopadesa-error">{error}</div>}
 
           <div className="bhagavad-gita-layout">
