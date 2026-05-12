@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import CorpusVerse from './CorpusVerse';
 import '../hitopadesa/Hitopadesa.css';
 import ChapterList from '../bhagavad_gita/ChapterList';
+import ChapterVerseSheet from '../bhagavad_gita/ChapterVerseSheet';
 
 const VERSES_PER_PAGE = 10;
 
@@ -27,6 +28,18 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
   const [selectedVerseNumber, setSelectedVerseNumber] = useState(null);
   const [navStatus, setNavStatus] = useState({ prev: null, next: null });
   const [isChapterDrawerOpen, setIsChapterDrawerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return false;
+    return window.matchMedia('(max-width: 768px)').matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mql = window.matchMedia('(max-width: 768px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
 
   // Filter logic
   const filteredVerses = useMemo(() => {
@@ -585,26 +598,55 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
               />
             )}
             <div className={`bhagavad-gita-chapter-sidebar ${isChapterDrawerOpen ? 'drawer-open' : ''}`}>
-              <button
-                type="button"
-                className="bhagavad-gita-chapter-close"
-                onClick={() => setIsChapterDrawerOpen(false)}
-                aria-label="Close chapter selector"
-              >
-                ×
-              </button>
-              <ChapterList
-                chapters={chapters}
-                selectedChapter={selectedChapter}
-                selectedVerseNumber={selectedVerseNumber}
-                onChapterSelect={handleChapterSelect}
-                onVerseSelect={(verseNumber) => {
-                  handleVerseSelect(verseNumber);
-                  setIsChapterDrawerOpen(false);
-                }}
-                apiUrl={apiUrl}
-                isLoadingChapters={isLoadingChapters}
-              />
+              {isMobile && (
+                <div className="chapter-sheet-header">
+                  <span className="chapter-sheet-grip" aria-hidden="true" />
+                  <span className="chapter-sheet-title">Jump to verse</span>
+                  <button
+                    type="button"
+                    className="bhagavad-gita-chapter-close"
+                    onClick={() => setIsChapterDrawerOpen(false)}
+                    aria-label="Close chapter selector"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              {!isMobile && (
+                <button
+                  type="button"
+                  className="bhagavad-gita-chapter-close"
+                  onClick={() => setIsChapterDrawerOpen(false)}
+                  aria-label="Close chapter selector"
+                >
+                  ×
+                </button>
+              )}
+              {isMobile ? (
+                <ChapterVerseSheet
+                  chapters={chapters}
+                  selectedChapter={selectedChapter}
+                  selectedVerseNumber={selectedVerseNumber}
+                  onChapterSelect={handleChapterSelect}
+                  onVerseSelect={handleVerseSelect}
+                  apiUrl={apiUrl}
+                  isLoadingChapters={isLoadingChapters}
+                  onAfterSelect={() => setIsChapterDrawerOpen(false)}
+                />
+              ) : (
+                <ChapterList
+                  chapters={chapters}
+                  selectedChapter={selectedChapter}
+                  selectedVerseNumber={selectedVerseNumber}
+                  onChapterSelect={handleChapterSelect}
+                  onVerseSelect={(verseNumber) => {
+                    handleVerseSelect(verseNumber);
+                    setIsChapterDrawerOpen(false);
+                  }}
+                  apiUrl={apiUrl}
+                  isLoadingChapters={isLoadingChapters}
+                />
+              )}
             </div>
             <div className="bhagavad-gita-content">
               {isLoadingVerses && (
