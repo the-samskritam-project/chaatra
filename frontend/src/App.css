@@ -2,6 +2,11 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Hind:wght@700&family=Roboto:wght@400&display=swap');  /* Updated to include normal weight for Roboto */
 
+/* Pleasant serif Devanagari for verse rendering — John Hudson's design
+   commissioned specifically for Sanskrit display. Noto Serif Devanagari
+   is a fallback with similar feel but multiple weights. */
+@import url('https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Sanskrit&family=Noto+Serif+Devanagari:wght@400;500&display=swap');
+
 .devanagari {
     font-family: 'Hind', sans-serif; /* Sets the font family for Devanagari */
     font-weight: 700; /* Ensures the Devanagari part is bold */
