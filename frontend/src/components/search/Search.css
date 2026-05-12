@@ -225,4 +225,43 @@
   text-align: center;
   color: #999;
   font-size: 14px;
-} 
+}
+
+/* Mobile: tighten button widths/paddings so the input + clear + देव/ABC
+   toggle + Search button all fit inside the narrow dictionary panel
+   without the Search button overflowing past the right edge. */
+@media (max-width: 768px) {
+  .search-bar {
+    padding: 2px;
+  }
+
+  .input-container {
+    padding: 2px;
+    gap: 2px;
+  }
+
+  .search-input {
+    padding: 10px 10px;
+    font-size: 15px;
+  }
+
+  .keyboard-toggle {
+    padding: 0 4px;
+    margin-left: 4px;
+    gap: 2px;
+  }
+
+  .keyboard-type-btn {
+    min-width: 40px;
+    padding: 6px 8px;
+    margin: 0;
+    font-size: 13px;
+  }
+
+  .search-button {
+    padding: 10px 14px;
+    min-width: 72px;
+    font-size: 14px;
+    margin: 0 2px;
+  }
+}

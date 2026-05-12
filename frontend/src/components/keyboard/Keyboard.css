@@ -124,8 +124,8 @@
 
 /* Mobile: compact full-width keyboard strip pinned to the bottom of the
    viewport instead of the 60%-wide desktop float. Suggestions become a
-   single horizontally-scrolling row, the close button is sticky so it
-   stays visible while the user scrolls the key grid. */
+   single horizontally-scrolling row. Keyboard sizes to its content — no
+   vertical scrollbar on the strip itself. */
 @media (max-width: 768px) {
   .keyboard.undocked {
     left: 0;
@@ -133,21 +133,16 @@
     width: 100%;
     transform: none;
     margin: 0;
-    padding: 36px 8px 12px;
-    max-height: 42vh;
-    overflow-y: auto;
+    padding: 8px 8px 12px;
     border-radius: 14px 14px 0 0;
     box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.16);
-    -webkit-overflow-scrolling: touch;
   }
 
   .keyboard-dismiss {
-    position: sticky;
-    top: 0;
-    background: rgba(230, 247, 255, 0.95);
+    top: 6px;
+    right: 6px;
     width: 40px;
     height: 40px;
-    z-index: 11;
   }
 
   .keys-container {

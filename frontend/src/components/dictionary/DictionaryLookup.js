@@ -12,18 +12,7 @@ function DictionaryLookup({ apiUrl, isOpen: externalIsOpen, onToggle, onClose })
     const [devSearchStr, setDevSearchStr] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const [entries, setEntries] = useState([]);
-    // Mobile users default to QWERTY so the device keyboard handles input
-    // instead of stacking our custom on-screen Devanagari keyboard on top of
-    // the native one. The देव/ABC toggle in SearchBar still lets users opt
-    // into the Devanagari helper.
-    const [keyboardType, setKeyboardType] = useState(() => {
-        if (typeof window !== 'undefined' && window.matchMedia) {
-            return window.matchMedia('(max-width: 768px)').matches
-                ? 'qwerty'
-                : 'devanagari';
-        }
-        return 'devanagari';
-    });
+    const [keyboardType, setKeyboardType] = useState('devanagari');
     const [highlightedEntryWord, setHighlightedEntryWord] = useState(null);
     const keyboardRef = useRef(null);
 
