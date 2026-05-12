@@ -893,13 +893,29 @@
     width: 100%;
   }
 
+  .hitopadesa-filter-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  /* Push the Back-to-Scriptures button clear of the mobile sidebar
+     hamburger that sits fixed at top:14/left:12. */
+  .gita-back-button {
+    margin-left: 56px;
+    margin-top: 4px;
+  }
+
   .hitopadesa-filter-buttons {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    width: 100%;
   }
 
   .hitopadesa-filter-button {
-    flex: 1 1 auto;
+    flex: 1 1 0;
+    min-width: 0;
     min-height: 40px;
+    padding: 8px 10px;
   }
 
   .hitopadesa-verse {

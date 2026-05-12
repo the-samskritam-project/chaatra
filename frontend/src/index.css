@@ -1,3 +1,13 @@
+*, *::before, *::after {
+  /* Several legacy rules combine width: 100% with padding (e.g.
+     .app-footer, .tab-panel-container) and rely on content-box, so on
+     narrow viewports they overflow the body by exactly the padding
+     amount and create a horizontal scrollbar. Standardise on
+     border-box; the components that already opt in explicitly are
+     unaffected. */
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -5,6 +15,11 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Belt-and-suspenders: clip horizontal overflow from the three
+     translateX(±100%) drawers (main sidebar / Gita chapter /
+     dictionary). `clip` (vs `hidden`) keeps body from becoming a
+     scroll container so position: sticky descendants still work. */
+  overflow-x: clip;
 }
 
 code {

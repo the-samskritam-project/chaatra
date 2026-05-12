@@ -18,6 +18,7 @@ function BhagavadGita({ user, token, onSignInSuccess }) {
     <div>
       {showBackButton && (
         <button
+          className="gita-back-button"
           onClick={() => navigate('/sruti')}
           style={{
             marginBottom: '1rem',
