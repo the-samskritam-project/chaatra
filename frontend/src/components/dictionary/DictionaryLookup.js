@@ -165,22 +165,20 @@ function DictionaryLookup({ apiUrl, isOpen: externalIsOpen, onToggle, onClose })
                 </div>
                 
                 <div className="dictionary-lookup-content">
-                    <div className="dictionary-lookup-search">
-                        <SearchBar
-                            devanagariString={devSearchStr}
-                            slp1LatinStr={slp1SearchStr}
-                            onInputChange={keyboardType === 'qwerty' ? handleDirectInput : () => {}}
-                            onFocus={handleFocus}
-                            onBlur={handleBlur}
-                            handleSearch={handleSearch}
-                            keyboardType={keyboardType}
-                            onKeyboardTypeChange={setKeyboardType}
-                            onDropdownItemClick={handleDropdownItemClick}
-                            apiUrl={effectiveApiUrl}
-                            onClear={handleClearInput}
-                            onDropdownItemSelected={handleDropdownItemSelected}
-                        />
-                    </div>
+                    <SearchBar
+                        devanagariString={devSearchStr}
+                        slp1LatinStr={slp1SearchStr}
+                        onInputChange={keyboardType === 'qwerty' ? handleDirectInput : () => {}}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        handleSearch={handleSearch}
+                        keyboardType={keyboardType}
+                        onKeyboardTypeChange={setKeyboardType}
+                        onDropdownItemClick={handleDropdownItemClick}
+                        apiUrl={effectiveApiUrl}
+                        onClear={handleClearInput}
+                        onDropdownItemSelected={handleDropdownItemSelected}
+                    />
 
                     {keyboardType === 'devanagari' && (
                         <KeyboardBridge

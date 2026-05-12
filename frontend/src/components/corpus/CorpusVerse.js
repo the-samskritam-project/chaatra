@@ -594,20 +594,14 @@ function CorpusVerse({ verse, apiUrl, corpusName, onUpdate, user, token, onSignI
                     ))}
                   </div>
                 )}
-                <div className="pada-translation">
-                  {selected ? (
-                    <>
-                      <span className="pada-translation-word">{selected.word}</span>
-                      <span className="pada-translation-meaning">
-                        {selected.translation}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="pada-translation-hint">
-                      Tap a word for its meaning
+                {selected && (
+                  <div className="pada-translation">
+                    <span className="pada-translation-word">{selected.word}</span>
+                    <span className="pada-translation-meaning">
+                      {selected.translation}
                     </span>
-                  )}
-                </div>
+                  </div>
+                )}
                 {splitError && (
                   <div className="hitopadesa-split-error">{splitError}</div>
                 )}
