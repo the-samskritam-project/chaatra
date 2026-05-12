@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import CorpusVerse from './CorpusVerse';
 import '../hitopadesa/Hitopadesa.css';
 import ChapterList from '../bhagavad_gita/ChapterList';
+import ChapterVerseSheet from '../bhagavad_gita/ChapterVerseSheet';
 
 const VERSES_PER_PAGE = 10;
 
@@ -26,6 +27,19 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedVerseNumber, setSelectedVerseNumber] = useState(null);
   const [navStatus, setNavStatus] = useState({ prev: null, next: null });
+  const [isChapterDrawerOpen, setIsChapterDrawerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return false;
+    return window.matchMedia('(max-width: 768px)').matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mql = window.matchMedia('(max-width: 768px)');
+    const handler = (e) => setIsMobile(e.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
 
   // Filter logic
   const filteredVerses = useMemo(() => {
@@ -205,6 +219,15 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
       setIsLoadingVerses(false);
     }
   };
+
+  useEffect(() => {
+    if (!isChapterDrawerOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isChapterDrawerOpen]);
 
   const handleChapterChange = (event) => {
     const chapterNum = parseInt(event.target.value, 10);
@@ -393,7 +416,7 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
     : null;
 
   return (
-    <div className="hitopadesa-wrapper">
+    <div className={`hitopadesa-wrapper${corpusName === 'bhagavad_gita' ? ' hitopadesa-wrapper--gita' : ''}`}>
       {corpusName === 'bhagavad_gita' && (
         <div className="hitopadesa-search-container">
           <form onSubmit={handleSearch} className="hitopadesa-search-form">
@@ -500,67 +523,82 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
       )}
       {corpusName === 'bhagavad_gita' ? (
         <>
-          <div className="hitopadesa-controls">
-            <div className="hitopadesa-filter-controls">
-              <label>Filter:</label>
-              <div className="hitopadesa-filter-buttons">
-                <button
-                  type="button"
-                  className={`hitopadesa-filter-button ${filter === 'all' ? 'active' : ''}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setFilter('all');
-                  }}
-                >
-                  All
-                </button>
-                <button
-                  type="button"
-                  className={`hitopadesa-filter-button ${filter === 'verses' ? 'active' : ''}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setFilter('verses');
-                  }}
-                >
-                  Verses
-                </button>
-                <button
-                  type="button"
-                  className={`hitopadesa-filter-button ${filter === 'commentary' ? 'active' : ''}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setFilter('commentary');
-                  }}
-                >
-                  Commentary
-                </button>
-              </div>
-            </div>
-            {showSearchIcon && onSearchClick && (
-              <button
-                className="pancatantra-search-icon-button"
-                onClick={onSearchClick}
-                aria-label="Search"
-                title="Search by theme"
-              >
-                🔍
-              </button>
-            )}
-          </div>
-
           {error && <div className="hitopadesa-error">{error}</div>}
 
           <div className="bhagavad-gita-layout">
-            <div className="bhagavad-gita-chapter-sidebar">
-              <ChapterList
-                chapters={chapters}
-                selectedChapter={selectedChapter}
-                selectedVerseNumber={selectedVerseNumber}
-                onChapterSelect={handleChapterSelect}
-                onVerseSelect={handleVerseSelect}
-                apiUrl={apiUrl}
-                isLoadingChapters={isLoadingChapters}
+            <button
+              type="button"
+              className="bhagavad-gita-chapter-picker"
+              onClick={() => setIsChapterDrawerOpen(true)}
+              aria-haspopup="dialog"
+              aria-expanded={isChapterDrawerOpen}
+            >
+              <span className="chapter-picker-label">
+                <span className="chapter-picker-prefix">Chapter</span>
+                <span className="chapter-picker-value">
+                  {selectedChapter ?? '—'}
+                  {selectedVerseNumber ? ` · ${selectedVerseNumber}` : ''}
+                </span>
+              </span>
+              <span className="chapter-picker-icon" aria-hidden="true">▾</span>
+            </button>
+            {isChapterDrawerOpen && (
+              <div
+                className="bhagavad-gita-chapter-backdrop"
+                onClick={() => setIsChapterDrawerOpen(false)}
+                aria-hidden="true"
               />
+            )}
+            <div className={`bhagavad-gita-chapter-sidebar ${isChapterDrawerOpen ? 'drawer-open' : ''}`}>
+              {isMobile && (
+                <div className="chapter-sheet-header">
+                  <span className="chapter-sheet-grip" aria-hidden="true" />
+                  <span className="chapter-sheet-title">Jump to verse</span>
+                  <button
+                    type="button"
+                    className="bhagavad-gita-chapter-close"
+                    onClick={() => setIsChapterDrawerOpen(false)}
+                    aria-label="Close chapter selector"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              {!isMobile && (
+                <button
+                  type="button"
+                  className="bhagavad-gita-chapter-close"
+                  onClick={() => setIsChapterDrawerOpen(false)}
+                  aria-label="Close chapter selector"
+                >
+                  ×
+                </button>
+              )}
+              {isMobile ? (
+                <ChapterVerseSheet
+                  chapters={chapters}
+                  selectedChapter={selectedChapter}
+                  selectedVerseNumber={selectedVerseNumber}
+                  onChapterSelect={handleChapterSelect}
+                  onVerseSelect={handleVerseSelect}
+                  apiUrl={apiUrl}
+                  isLoadingChapters={isLoadingChapters}
+                  onAfterSelect={() => setIsChapterDrawerOpen(false)}
+                />
+              ) : (
+                <ChapterList
+                  chapters={chapters}
+                  selectedChapter={selectedChapter}
+                  selectedVerseNumber={selectedVerseNumber}
+                  onChapterSelect={handleChapterSelect}
+                  onVerseSelect={(verseNumber) => {
+                    handleVerseSelect(verseNumber);
+                    setIsChapterDrawerOpen(false);
+                  }}
+                  apiUrl={apiUrl}
+                  isLoadingChapters={isLoadingChapters}
+                />
+              )}
             </div>
             <div className="bhagavad-gita-content">
               {isLoadingVerses && (
