@@ -27,6 +27,10 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedVerseNumber, setSelectedVerseNumber] = useState(null);
   const [navStatus, setNavStatus] = useState({ prev: null, next: null });
+  // When non-null, the reader shows every verse in [start..end] instead of a
+  // single selectedVerseNumber. Set by tapping a key_section row in the
+  // chapter sheet; cleared as soon as the user picks an individual verse.
+  const [selectedSection, setSelectedSection] = useState(null);
   const [isChapterDrawerOpen, setIsChapterDrawerOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return false;
@@ -238,11 +242,27 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
   const handleChapterSelect = (chapterNum) => {
     setSelectedChapter(chapterNum);
     setSelectedVerseNumber(null);
+    setSelectedSection(null);
+  };
+
+  const handleSectionSelect = (chapterNum, startVerse, endVerse) => {
+    if (selectedChapter !== chapterNum) {
+      setSelectedChapter(chapterNum);
+    }
+    // Clear single-verse focus so the section range becomes the active view.
+    setSelectedVerseNumber(null);
+    setSelectedSection({
+      start: normalizeVerseNumber(startVerse),
+      end: normalizeVerseNumber(endVerse || startVerse),
+    });
   };
 
   const handleVerseSelect = (verseNumber) => {
     const targetNum = normalizeVerseNumber(verseNumber);
     const chapterNum = parseInt(verseNumber.split('.')[0], 10);
+
+    // Picking an individual verse leaves any active section view.
+    setSelectedSection(null);
 
     // Same chapter and verses already loaded: just select and render
     if (selectedChapter === chapterNum && verses.length > 0) {
@@ -351,7 +371,10 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
     if (corpusName !== 'bhagavad_gita') return;
     if (isLoadingVerses) return;
     if (filteredVerses.length === 0) return;
-    
+    // Section view is its own mode — skip the auto-pick-first-verse fallback,
+    // otherwise selectedVerseNumber clobbers selectedSection on every render.
+    if (selectedSection) return;
+
     // Recompute prev/next
     const idx = selectedVerseNumber
       ? filteredVerses.findIndex(v => normalizeVerseNumber(v.verse_number) === normalizeVerseNumber(selectedVerseNumber))
@@ -380,7 +403,7 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
       prev: idx > 0 ? filteredVerses[idx - 1].verse_number || null : null,
       next: idx < filteredVerses.length - 1 ? filteredVerses[idx + 1].verse_number || null : null,
     });
-  }, [corpusName, filteredVerses, isLoadingVerses, selectedVerseNumber]);
+  }, [corpusName, filteredVerses, isLoadingVerses, selectedVerseNumber, selectedSection]);
 
   // Pagination logic
   let totalPages = Math.ceil(filteredVerses.length / versesPerPage);
@@ -388,12 +411,29 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
   let endIndex = startIndex + versesPerPage;
   let currentVerses = filteredVerses.slice(startIndex, endIndex);
 
-  // For Bhagavad Gita, ignore pagination and show only selected verse
+  // For Bhagavad Gita, ignore pagination. Two display modes:
+  //   - Section: render every verse from selectedSection.start to .end (set
+  //     when the user taps a key_section row in the chapter sheet).
+  //   - Single verse: render only selectedVerseNumber (default).
   if (corpusName === 'bhagavad_gita') {
     totalPages = 1;
     startIndex = 0;
     endIndex = filteredVerses.length;
-    if (selectedVerseNumber && filteredVerses.length > 0) {
+    if (selectedSection && filteredVerses.length > 0) {
+      const startIdx = filteredVerses.findIndex(
+        (v) => normalizeVerseNumber(v.verse_number) === selectedSection.start
+      );
+      const endIdx = filteredVerses.findIndex(
+        (v) => normalizeVerseNumber(v.verse_number) === selectedSection.end
+      );
+      if (startIdx !== -1 && endIdx !== -1 && endIdx >= startIdx) {
+        currentVerses = filteredVerses.slice(startIdx, endIdx + 1);
+      } else if (startIdx !== -1) {
+        currentVerses = filteredVerses.slice(startIdx, startIdx + 1);
+      } else {
+        currentVerses = filteredVerses.slice(0, 1);
+      }
+    } else if (selectedVerseNumber && filteredVerses.length > 0) {
       const idx = filteredVerses.findIndex(v => v.verse_number === selectedVerseNumber);
       if (idx !== -1) {
         currentVerses = filteredVerses.slice(idx, idx + 1); // only current
@@ -581,6 +621,7 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
                   selectedVerseNumber={selectedVerseNumber}
                   onChapterSelect={handleChapterSelect}
                   onVerseSelect={handleVerseSelect}
+                  onSectionSelect={handleSectionSelect}
                   apiUrl={apiUrl}
                   isLoadingChapters={isLoadingChapters}
                   onAfterSelect={() => setIsChapterDrawerOpen(false)}
@@ -639,7 +680,7 @@ function CorpusViewer({ corpusName, showSearchIcon = false, onSearchClick, verse
                     })}
                   </div>
 
-                  {corpusName === 'bhagavad_gita' && (
+                  {corpusName === 'bhagavad_gita' && !selectedSection && (
                     <div className="bhagavad-gita-nav-buttons">
                       <button
                         type="button"

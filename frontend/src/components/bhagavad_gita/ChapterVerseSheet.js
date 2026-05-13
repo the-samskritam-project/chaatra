@@ -12,6 +12,7 @@ function ChapterVerseSheet({
   selectedVerseNumber,
   onChapterSelect,
   onVerseSelect,
+  onSectionSelect,
   apiUrl,
   isLoadingChapters,
   onAfterSelect,
@@ -124,7 +125,17 @@ function ChapterVerseSheet({
                   <button
                     type="button"
                     className="chapter-sheet-intro-section"
-                    onClick={() => handleVerseTap(activeChip, sec.start_verse)}
+                    onClick={() => {
+                      if (onSectionSelect) {
+                        if (activeChip !== selectedChapter) {
+                          onChapterSelect(activeChip);
+                        }
+                        onSectionSelect(activeChip, sec.start_verse, sec.end_verse);
+                        if (onAfterSelect) onAfterSelect();
+                      } else {
+                        handleVerseTap(activeChip, sec.start_verse);
+                      }
+                    }}
                   >
                     <span className="section-range">
                       {sec.start_verse}
