@@ -12,6 +12,7 @@ function ChapterVerseSheet({
   selectedVerseNumber,
   onChapterSelect,
   onVerseSelect,
+  onSectionSelect,
   apiUrl,
   isLoadingChapters,
   onAfterSelect,
@@ -20,6 +21,10 @@ function ChapterVerseSheet({
   const [activeChip, setActiveChip] = useState(initialChip);
   const [verses, setVerses] = useState([]);
   const [isLoadingVerses, setIsLoadingVerses] = useState(false);
+  const [expandedRationale, setExpandedRationale] = useState(null);
+  // Accordion: only one section expanded at a time. Resets to null on
+  // chapter switch so the user starts fresh in each chapter.
+  const [expandedSection, setExpandedSection] = useState(null);
   const stripRef = useRef(null);
   const activeChipRef = useRef(null);
 
@@ -35,6 +40,11 @@ function ChapterVerseSheet({
         block: 'nearest',
       });
     }
+  }, [activeChip]);
+
+  useEffect(() => {
+    setExpandedSection(null);
+    setExpandedRationale(null);
   }, [activeChip]);
 
   useEffect(() => {
@@ -79,6 +89,8 @@ function ChapterVerseSheet({
   };
 
   const activeChipName = BHAGAVAD_GITA_CHAPTER_NAMES[activeChip] || '';
+  const activeChapterMeta =
+    (chapters || []).find((c) => c.chapter_number === activeChip) || null;
 
   return (
     <div className="chapter-verse-sheet">
@@ -105,39 +117,183 @@ function ChapterVerseSheet({
           })}
         </div>
       </div>
-      <div className="chapter-sheet-active-header">
-        Chapter {activeChip}
-        {activeChipName && <span className="chapter-sheet-active-name"> · {activeChipName}</span>}
-      </div>
-      <div className="chapter-verse-sheet-list">
-        {isLoadingVerses ? (
-          <div className="sheet-status">Loading verses…</div>
-        ) : verses.length === 0 ? (
-          <div className="sheet-status">No verses</div>
-        ) : (
-          <ul className="sheet-verse-list">
-            {verses.map((verse) => {
-              const isSel =
-                activeChip === selectedChapter &&
-                selectedVerseNumber === verse.verse_number;
-              return (
-                <li
-                  key={verse._id || verse.verse_number}
-                  className={`sheet-verse-item ${isSel ? 'selected' : ''}`}
-                  onClick={() => handleVerseTap(activeChip, verse.verse_number)}
-                >
-                  <span className="sheet-verse-number">{verse.verse_number}</span>
-                  {verse.primary_theme && (
-                    <span className="sheet-verse-theme">
-                      {verse.primary_theme.split('–')[0].trim()}
-                    </span>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+      <div className="chapter-sheet-intro">
+        <div className="chapter-sheet-intro-eyebrow">Chapter {activeChip}</div>
+        <h3 className="chapter-sheet-intro-title">
+          {activeChapterMeta?.title || activeChipName || `Chapter ${activeChip}`}
+        </h3>
+        {activeChapterMeta?.summary && (
+          <p className="chapter-sheet-intro-summary">{activeChapterMeta.summary}</p>
         )}
       </div>
+      {Array.isArray(activeChapterMeta?.key_sections) &&
+      activeChapterMeta.key_sections.length > 0 ? (
+        <ul className="chapter-sheet-sections">
+          {activeChapterMeta.key_sections.map((sec, i) => {
+            const isExpanded = expandedSection === i;
+            const startIdx = verses.findIndex(
+              (v) => v.verse_number === sec.start_verse
+            );
+            const endIdx = verses.findIndex(
+              (v) => v.verse_number === sec.end_verse
+            );
+            const sectionVerses =
+              startIdx !== -1 && endIdx !== -1 && endIdx >= startIdx
+                ? verses.slice(startIdx, endIdx + 1)
+                : [];
+            return (
+              <li key={`${sec.start_verse}-${sec.end_verse}-${i}`}>
+                <button
+                  type="button"
+                  className={`chapter-sheet-section-header ${
+                    isExpanded ? 'expanded' : ''
+                  }`}
+                  aria-expanded={isExpanded}
+                  onClick={() => setExpandedSection(isExpanded ? null : i)}
+                >
+                  <span className="section-range">
+                    {sec.start_verse}
+                    {sec.end_verse && sec.end_verse !== sec.start_verse
+                      ? `–${sec.end_verse}`
+                      : ''}
+                  </span>
+                  <span className="section-body">
+                    <span className="section-title">{sec.title}</span>
+                    {sec.summary && (
+                      <span className="section-summary">{sec.summary}</span>
+                    )}
+                  </span>
+                  <span className="section-chevron" aria-hidden="true">
+                    {isExpanded ? '▾' : '▸'}
+                  </span>
+                </button>
+                {isExpanded && (
+                  <ul className="section-verse-list">
+                    {sectionVerses.length === 0 ? (
+                      <li className="sheet-status">No verses</li>
+                    ) : (
+                      sectionVerses.map((verse) => {
+                        const isSel =
+                          activeChip === selectedChapter &&
+                          selectedVerseNumber === verse.verse_number;
+                        return (
+                          <li
+                            key={verse._id || verse.verse_number}
+                            className={`sheet-verse-item ${
+                              isSel ? 'selected' : ''
+                            }`}
+                            onClick={() =>
+                              handleVerseTap(activeChip, verse.verse_number)
+                            }
+                          >
+                            <div className="sheet-verse-meta">
+                              <span className="sheet-verse-number">
+                                {verse.verse_number}
+                              </span>
+                              {verse.primary_theme && (
+                                <span className="sheet-verse-theme">
+                                  {verse.primary_theme.split('–')[0].trim()}
+                                </span>
+                              )}
+                            </div>
+                            {verse.rationale && (
+                              <>
+                                <p
+                                  className={`sheet-verse-rationale ${
+                                    expandedRationale === verse.verse_number
+                                      ? 'expanded'
+                                      : ''
+                                  }`}
+                                >
+                                  {verse.rationale}
+                                </p>
+                                <button
+                                  type="button"
+                                  className="sheet-verse-more"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setExpandedRationale(
+                                      expandedRationale === verse.verse_number
+                                        ? null
+                                        : verse.verse_number
+                                    );
+                                  }}
+                                >
+                                  {expandedRationale === verse.verse_number
+                                    ? 'Less'
+                                    : 'More'}
+                                </button>
+                              </>
+                            )}
+                          </li>
+                        );
+                      })
+                    )}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        /* No LLM sections yet — fall back to the flat verse list. */
+        <div className="chapter-verse-sheet-list">
+          {isLoadingVerses ? (
+            <div className="sheet-status">Loading verses…</div>
+          ) : verses.length === 0 ? (
+            <div className="sheet-status">No verses</div>
+          ) : (
+            <ul className="sheet-verse-list">
+              {verses.map((verse) => {
+                const isSel =
+                  activeChip === selectedChapter &&
+                  selectedVerseNumber === verse.verse_number;
+                return (
+                  <li
+                    key={verse._id || verse.verse_number}
+                    className={`sheet-verse-item ${isSel ? 'selected' : ''}`}
+                    onClick={() => handleVerseTap(activeChip, verse.verse_number)}
+                  >
+                    <div className="sheet-verse-meta">
+                      <span className="sheet-verse-number">{verse.verse_number}</span>
+                      {verse.primary_theme && (
+                        <span className="sheet-verse-theme">
+                          {verse.primary_theme.split('–')[0].trim()}
+                        </span>
+                      )}
+                    </div>
+                    {verse.rationale && (
+                      <>
+                        <p
+                          className={`sheet-verse-rationale ${
+                            expandedRationale === verse.verse_number ? 'expanded' : ''
+                          }`}
+                        >
+                          {verse.rationale}
+                        </p>
+                        <button
+                          type="button"
+                          className="sheet-verse-more"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedRationale(
+                              expandedRationale === verse.verse_number
+                                ? null
+                                : verse.verse_number
+                            );
+                          }}
+                        >
+                          {expandedRationale === verse.verse_number ? 'Less' : 'More'}
+                        </button>
+                      </>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
 }

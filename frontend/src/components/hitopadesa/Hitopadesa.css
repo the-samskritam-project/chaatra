@@ -1190,12 +1190,18 @@
     flex-direction: column;
     flex: 1;
     min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
-  /* Wrap establishes a positioning context for the right-edge fade,
-     which signals the strip is horizontally scrollable. */
+  /* Wrap establishes a positioning context for the right-edge fade and
+     stays sticky at the top of the scrolling sheet so the chip strip is
+     always reachable while reading the intro + verse list below it. */
   .chapter-chip-strip-wrap {
-    position: relative;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #ffffff;
     border-bottom: 1px solid #eee;
     flex-shrink: 0;
   }
@@ -1226,24 +1232,132 @@
     display: none;
   }
 
-  .chapter-sheet-active-header {
-    padding: 10px 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #1976d2;
+  /* Intro panel above the verse list — chapter title, LLM summary, and a
+     tappable list of key sections. Replaces the old single-line header. */
+  .chapter-sheet-intro {
+    padding: 14px 20px 12px;
     background: #f7fbff;
     border-bottom: 1px solid #e3f2fd;
     flex-shrink: 0;
     font-family: 'Roboto', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
   }
 
-  .chapter-sheet-active-name {
-    text-transform: none;
-    letter-spacing: 0;
-    color: #555;
-    font-weight: 500;
+  .chapter-sheet-intro-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #1976d2;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .chapter-sheet-intro-title {
+    margin: 0 0 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #1f2937;
+    line-height: 1.3;
+  }
+
+  .chapter-sheet-intro-summary {
+    margin: 0 0 10px;
+    font-size: 0.85rem;
+    color: #475569;
+    line-height: 1.5;
+  }
+
+  /* Accordion list of LLM-identified sections. Tap a header to fold open
+     that section's verses; tap again or tap another header to collapse. */
+  .chapter-sheet-sections {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0 16px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chapter-sheet-sections > li {
+    border-bottom: 1px solid #eef2f7;
+  }
+
+  .chapter-sheet-sections > li:last-child {
+    border-bottom: none;
+  }
+
+  .chapter-sheet-section-header {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: background 0.15s ease;
+  }
+
+  .chapter-sheet-section-header:hover,
+  .chapter-sheet-section-header:active,
+  .chapter-sheet-section-header.expanded {
+    background: #f0f7ff;
+  }
+
+  .chapter-sheet-section-header .section-range {
+    flex-shrink: 0;
+    min-width: 56px;
+    padding: 2px 8px;
+    background: #1976d2;
+    color: #ffffff;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .chapter-sheet-section-header .section-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .chapter-sheet-section-header .section-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1f2937;
+    line-height: 1.35;
+  }
+
+  .chapter-sheet-section-header .section-summary {
+    font-size: 0.78rem;
+    color: #64748b;
+    line-height: 1.4;
+  }
+
+  .chapter-sheet-section-header .section-chevron {
+    flex-shrink: 0;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    padding-top: 2px;
+  }
+
+  .chapter-sheet-section-header.expanded .section-chevron {
+    color: #1976d2;
+  }
+
+  /* Verses nested under an expanded section. Slight inset background
+     so they read as belonging to the section, not as siblings. */
+  .section-verse-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0 8px;
+    background: #fafbfd;
+    border-top: 1px solid #eef2f7;
   }
 
   .chapter-chip {
@@ -1284,10 +1398,7 @@
   }
 
   .chapter-verse-sheet-list {
-    flex: 1;
-    overflow-y: auto;
     padding: 8px 0 24px;
-    -webkit-overflow-scrolling: touch;
   }
 
   .sheet-verse-list {
@@ -1298,8 +1409,9 @@
 
   .sheet-verse-item {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
     padding: 12px 20px;
     cursor: pointer;
     border-left: 3px solid transparent;
@@ -1314,6 +1426,12 @@
   .sheet-verse-item.selected {
     background: #e3f2fd;
     border-left-color: #2196f3;
+  }
+
+  .sheet-verse-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
   .sheet-verse-number {
@@ -1331,6 +1449,46 @@
     font-size: 0.75rem;
     color: #666;
     font-weight: 500;
+  }
+
+  .sheet-verse-rationale {
+    margin: 0;
+    padding-left: 60px;          /* align under the theme pill, past the verse number */
+    font-size: 0.82rem;
+    color: #64748b;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .sheet-verse-rationale.expanded {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+
+  .sheet-verse-item.selected .sheet-verse-rationale {
+    color: #475569;
+  }
+
+  .sheet-verse-more {
+    align-self: flex-start;
+    margin-left: 60px;           /* align with the rationale text */
+    background: none;
+    border: none;
+    color: #1976d2;
+    font-size: 0.78rem;
+    padding: 0;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: 'Roboto', sans-serif;
+  }
+
+  .sheet-verse-more:hover,
+  .sheet-verse-more:active {
+    text-decoration: underline;
   }
 
   .sheet-status {
