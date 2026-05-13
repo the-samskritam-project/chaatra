@@ -16,12 +16,6 @@ except ImportError:
     raise
 
 try:
-    import hdbscan
-except ImportError:
-    print("Error: hdbscan not installed. Install with: pip install hdbscan")
-    raise
-
-try:
     from pymongo.errors import ConnectionFailure
     from bson import ObjectId
 except ImportError:
@@ -98,6 +92,13 @@ def cluster_interval_themes(
     print(f"Embedding shape: {embeddings_array.shape}")
     
     # Run HDBSCAN clustering
+    # Imported lazily so the rest of the command registry isn't blocked
+    # when hdbscan (a heavy optional dep) isn't installed.
+    try:
+        import hdbscan
+    except ImportError:
+        print("Error: hdbscan not installed. Install with: pip install hdbscan")
+        raise
     print(f"\nRunning HDBSCAN clustering (min_cluster_size={min_cluster_size}, min_samples={min_samples})...")
     clusterer = hdbscan.HDBSCAN(
         min_cluster_size=min_cluster_size,
