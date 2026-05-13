@@ -1352,8 +1352,32 @@
     overflow: hidden;
   }
 
+  .sheet-verse-rationale.expanded {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+
   .sheet-verse-item.selected .sheet-verse-rationale {
     color: #475569;
+  }
+
+  .sheet-verse-more {
+    align-self: flex-start;
+    margin-left: 60px;           /* align with the rationale text */
+    background: none;
+    border: none;
+    color: #1976d2;
+    font-size: 0.78rem;
+    padding: 0;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: 'Roboto', sans-serif;
+  }
+
+  .sheet-verse-more:hover,
+  .sheet-verse-more:active {
+    text-decoration: underline;
   }
 
   .sheet-status {

@@ -20,6 +20,7 @@ function ChapterVerseSheet({
   const [activeChip, setActiveChip] = useState(initialChip);
   const [verses, setVerses] = useState([]);
   const [isLoadingVerses, setIsLoadingVerses] = useState(false);
+  const [expandedRationale, setExpandedRationale] = useState(null);
   const stripRef = useRef(null);
   const activeChipRef = useRef(null);
 
@@ -135,7 +136,29 @@ function ChapterVerseSheet({
                     )}
                   </div>
                   {verse.rationale && (
-                    <p className="sheet-verse-rationale">{verse.rationale}</p>
+                    <>
+                      <p
+                        className={`sheet-verse-rationale ${
+                          expandedRationale === verse.verse_number ? 'expanded' : ''
+                        }`}
+                      >
+                        {verse.rationale}
+                      </p>
+                      <button
+                        type="button"
+                        className="sheet-verse-more"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpandedRationale(
+                            expandedRationale === verse.verse_number
+                              ? null
+                              : verse.verse_number
+                          );
+                        }}
+                      >
+                        {expandedRationale === verse.verse_number ? 'Less' : 'More'}
+                      </button>
+                    </>
                   )}
                 </li>
               );
