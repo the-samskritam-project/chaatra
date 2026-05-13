@@ -30,13 +30,26 @@ func GetDatabase(corpusName string) *mongo.Database {
 	return getDatabase(corpusName)
 }
 
+// ChapterKeySection represents one LLM-identified section of a chapter
+// covering a contiguous range of verses.
+type ChapterKeySection struct {
+	Title      string `json:"title" bson:"title"`
+	StartVerse string `json:"start_verse" bson:"start_verse"`
+	EndVerse   string `json:"end_verse" bson:"end_verse"`
+	Summary    string `json:"summary" bson:"summary"`
+}
+
 // HitopadesaChapterMetadata represents chapter metadata
 type HitopadesaChapterMetadata struct {
-	ChapterNumber int       `json:"chapter_number" bson:"chapter_number"`
-	VerseCount    int       `json:"verse_count" bson:"verse_count"`
-	FirstVerse    string    `json:"first_verse" bson:"first_verse"`
-	LastVerse     string    `json:"last_verse" bson:"last_verse"`
-	CreatedAt     time.Time `json:"created_at" bson:"created_at"`
+	ChapterNumber int                 `json:"chapter_number" bson:"chapter_number"`
+	VerseCount    int                 `json:"verse_count" bson:"verse_count"`
+	FirstVerse    string              `json:"first_verse" bson:"first_verse"`
+	LastVerse     string              `json:"last_verse" bson:"last_verse"`
+	CreatedAt     time.Time           `json:"created_at" bson:"created_at"`
+	Title         string              `json:"title,omitempty" bson:"title,omitempty"`
+	Summary       string              `json:"summary,omitempty" bson:"summary,omitempty"`
+	KeySections   []ChapterKeySection `json:"key_sections,omitempty" bson:"key_sections,omitempty"`
+	SummarizedAt  time.Time           `json:"summarized_at,omitempty" bson:"summarized_at,omitempty"`
 }
 
 // WordTranslation represents a single word and its translation

@@ -80,6 +80,8 @@ function ChapterVerseSheet({
   };
 
   const activeChipName = BHAGAVAD_GITA_CHAPTER_NAMES[activeChip] || '';
+  const activeChapterMeta =
+    (chapters || []).find((c) => c.chapter_number === activeChip) || null;
 
   return (
     <div className="chapter-verse-sheet">
@@ -106,9 +108,41 @@ function ChapterVerseSheet({
           })}
         </div>
       </div>
-      <div className="chapter-sheet-active-header">
-        Chapter {activeChip}
-        {activeChipName && <span className="chapter-sheet-active-name"> · {activeChipName}</span>}
+      <div className="chapter-sheet-intro">
+        <div className="chapter-sheet-intro-eyebrow">Chapter {activeChip}</div>
+        <h3 className="chapter-sheet-intro-title">
+          {activeChapterMeta?.title || activeChipName || `Chapter ${activeChip}`}
+        </h3>
+        {activeChapterMeta?.summary && (
+          <p className="chapter-sheet-intro-summary">{activeChapterMeta.summary}</p>
+        )}
+        {Array.isArray(activeChapterMeta?.key_sections) &&
+          activeChapterMeta.key_sections.length > 0 && (
+            <ul className="chapter-sheet-intro-sections">
+              {activeChapterMeta.key_sections.map((sec, i) => (
+                <li key={`${sec.start_verse}-${sec.end_verse}-${i}`}>
+                  <button
+                    type="button"
+                    className="chapter-sheet-intro-section"
+                    onClick={() => handleVerseTap(activeChip, sec.start_verse)}
+                  >
+                    <span className="section-range">
+                      {sec.start_verse}
+                      {sec.end_verse && sec.end_verse !== sec.start_verse
+                        ? `–${sec.end_verse}`
+                        : ''}
+                    </span>
+                    <span className="section-body">
+                      <span className="section-title">{sec.title}</span>
+                      {sec.summary && (
+                        <span className="section-summary">{sec.summary}</span>
+                      )}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
       </div>
       <div className="chapter-verse-sheet-list">
         {isLoadingVerses ? (
