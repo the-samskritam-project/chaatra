@@ -126,11 +126,16 @@ function ChapterVerseSheet({
                   className={`sheet-verse-item ${isSel ? 'selected' : ''}`}
                   onClick={() => handleVerseTap(activeChip, verse.verse_number)}
                 >
-                  <span className="sheet-verse-number">{verse.verse_number}</span>
-                  {verse.primary_theme && (
-                    <span className="sheet-verse-theme">
-                      {verse.primary_theme.split('–')[0].trim()}
-                    </span>
+                  <div className="sheet-verse-meta">
+                    <span className="sheet-verse-number">{verse.verse_number}</span>
+                    {verse.primary_theme && (
+                      <span className="sheet-verse-theme">
+                        {verse.primary_theme.split('–')[0].trim()}
+                      </span>
+                    )}
+                  </div>
+                  {verse.rationale && (
+                    <p className="sheet-verse-rationale">{verse.rationale}</p>
                   )}
                 </li>
               );

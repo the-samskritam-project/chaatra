@@ -1298,8 +1298,9 @@
 
   .sheet-verse-item {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
     padding: 12px 20px;
     cursor: pointer;
     border-left: 3px solid transparent;
@@ -1314,6 +1315,12 @@
   .sheet-verse-item.selected {
     background: #e3f2fd;
     border-left-color: #2196f3;
+  }
+
+  .sheet-verse-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
   .sheet-verse-number {
@@ -1331,6 +1338,22 @@
     font-size: 0.75rem;
     color: #666;
     font-weight: 500;
+  }
+
+  .sheet-verse-rationale {
+    margin: 0;
+    padding-left: 60px;          /* align under the theme pill, past the verse number */
+    font-size: 0.82rem;
+    color: #64748b;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .sheet-verse-item.selected .sheet-verse-rationale {
+    color: #475569;
   }
 
   .sheet-status {
