@@ -1,11 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BHAGAVAD_GITA_CHAPTER_NAMES } from './chapterNames';
 
-// Mobile chapter+verse picker rendered inside the bottom sheet.
-// Top: horizontal-scroll chip strip of all 18 chapters.
-// Below: vertical list of verses for whichever chip is "active".
-// Tapping a chip browses without committing; tapping a verse commits
-// both the chapter and verse, then calls onAfterSelect to close the sheet.
+// Chapter+verse picker shared by the desktop sidebar and the mobile
+// bottom sheet. Top: a dropdown of all 18 chapters showing the
+// LLM-generated title. Below: intro panel + section accordion.
 function ChapterVerseSheet({
   chapters,
   selectedChapter,
@@ -22,24 +20,18 @@ function ChapterVerseSheet({
   const [verses, setVerses] = useState([]);
   const [isLoadingVerses, setIsLoadingVerses] = useState(false);
   const [expandedRationale, setExpandedRationale] = useState(null);
-  // Accordion: only one section expanded at a time. Resets to null on
-  // chapter switch so the user starts fresh in each chapter.
+  // Accordion: only one section expanded at a time. Resets on chapter switch.
   const [expandedSection, setExpandedSection] = useState(null);
-  const stripRef = useRef(null);
-  const activeChipRef = useRef(null);
+  // Chapter dropdown open state.
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     if (selectedChapter) setActiveChip(selectedChapter);
   }, [selectedChapter]);
 
+  // Close the dropdown whenever the active chapter changes.
   useEffect(() => {
-    if (activeChipRef.current && stripRef.current) {
-      activeChipRef.current.scrollIntoView({
-        behavior: 'smooth',
-        inline: 'center',
-        block: 'nearest',
-      });
-    }
+    setIsMenuOpen(false);
   }, [activeChip]);
 
   // Reset transient state, then auto-expand the section that contains the
@@ -112,40 +104,81 @@ function ChapterVerseSheet({
     if (onAfterSelect) onAfterSelect();
   };
 
-  const activeChipName = BHAGAVAD_GITA_CHAPTER_NAMES[activeChip] || '';
+  // Prefer the LLM-generated chapter title from the chapters metadata;
+  // fall back to the hardcoded short English name if a chapter hasn't
+  // been summarised yet.
+  const chapterTitleFor = (num) => {
+    const meta = (chapters || []).find((c) => c.chapter_number === num);
+    return (
+      meta?.title ||
+      BHAGAVAD_GITA_CHAPTER_NAMES[num] ||
+      `Chapter ${num}`
+    );
+  };
+
   const activeChapterMeta =
     (chapters || []).find((c) => c.chapter_number === activeChip) || null;
 
   return (
     <div className="chapter-verse-sheet">
-      <div className="chapter-chip-strip-wrap">
-        <div className="chapter-chip-strip" role="tablist" ref={stripRef}>
-          {chapters.map((ch) => {
-            const num = ch.chapter_number;
-            const name = BHAGAVAD_GITA_CHAPTER_NAMES[num] || '';
-            const active = num === activeChip;
-            return (
-              <button
-                key={num}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                ref={active ? activeChipRef : null}
-                className={`chapter-chip ${active ? 'active' : ''}`}
-                onClick={() => setActiveChip(num)}
-              >
-                <span className="chapter-chip-num">{num}</span>
-                {name && <span className="chapter-chip-name">{name}</span>}
-              </button>
-            );
-          })}
-        </div>
+      <div className="chapter-dropdown-wrap">
+        <button
+          type="button"
+          className={`chapter-dropdown-trigger ${isMenuOpen ? 'open' : ''}`}
+          onClick={() => setIsMenuOpen((v) => !v)}
+          aria-haspopup="listbox"
+          aria-expanded={isMenuOpen}
+        >
+          <span className="chapter-dropdown-current">
+            <span className="chapter-dropdown-num">{activeChip}</span>
+            <span className="chapter-dropdown-title">
+              {chapterTitleFor(activeChip)}
+            </span>
+          </span>
+          <span className="chapter-dropdown-chevron" aria-hidden="true">
+            ▾
+          </span>
+        </button>
+        {isMenuOpen && (
+          <>
+            <div
+              className="chapter-dropdown-backdrop"
+              onClick={() => setIsMenuOpen(false)}
+              aria-hidden="true"
+            />
+            <ul className="chapter-dropdown-menu" role="listbox">
+              {chapters.map((ch) => {
+                const num = ch.chapter_number;
+                const isActive = num === activeChip;
+                return (
+                  <li key={num}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={isActive}
+                      className={`chapter-dropdown-item ${
+                        isActive ? 'active' : ''
+                      }`}
+                      onClick={() => {
+                        setActiveChip(num);
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <span className="chapter-dropdown-num">{num}</span>
+                      <span className="chapter-dropdown-title">
+                        {chapterTitleFor(num)}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
       </div>
       <div className="chapter-sheet-intro">
         <div className="chapter-sheet-intro-eyebrow">Chapter {activeChip}</div>
-        <h3 className="chapter-sheet-intro-title">
-          {activeChapterMeta?.title || activeChipName || `Chapter ${activeChip}`}
-        </h3>
+        <h3 className="chapter-sheet-intro-title">{chapterTitleFor(activeChip)}</h3>
         {activeChapterMeta?.summary && (
           <p className="chapter-sheet-intro-summary">{activeChapterMeta.summary}</p>
         )}
