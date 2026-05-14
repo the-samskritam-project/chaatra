@@ -176,13 +176,11 @@ function ChapterVerseSheet({
           </>
         )}
       </div>
-      <div className="chapter-sheet-intro">
-        <div className="chapter-sheet-intro-eyebrow">Chapter {activeChip}</div>
-        <h3 className="chapter-sheet-intro-title">{chapterTitleFor(activeChip)}</h3>
-        {activeChapterMeta?.summary && (
+      {activeChapterMeta?.summary && (
+        <div className="chapter-sheet-intro">
           <p className="chapter-sheet-intro-summary">{activeChapterMeta.summary}</p>
-        )}
-      </div>
+        </div>
+      )}
       {Array.isArray(activeChapterMeta?.key_sections) &&
       activeChapterMeta.key_sections.length > 0 ? (
         <ul className="chapter-sheet-sections">
