@@ -42,10 +42,34 @@ function ChapterVerseSheet({
     }
   }, [activeChip]);
 
+  // Reset transient state, then auto-expand the section that contains the
+  // currently-selected verse so the user's reading position is visible in
+  // context. Only triggers when the user is browsing the same chapter
+  // they're reading.
   useEffect(() => {
-    setExpandedSection(null);
     setExpandedRationale(null);
-  }, [activeChip]);
+    const sections =
+      (chapters || []).find((c) => c.chapter_number === activeChip)
+        ?.key_sections;
+    if (!sections || !selectedVerseNumber) {
+      setExpandedSection(null);
+      return;
+    }
+    const [curMajorStr, curMinorStr] = selectedVerseNumber.split('.');
+    const curMajor = parseInt(curMajorStr, 10);
+    const curMinor = parseInt(curMinorStr || '0', 10);
+    if (curMajor !== activeChip) {
+      setExpandedSection(null);
+      return;
+    }
+    const idx = sections.findIndex((sec) => {
+      const [sMajor, sMinor] = sec.start_verse.split('.').map(Number);
+      const [eMajor, eMinor] = sec.end_verse.split('.').map(Number);
+      if (sMajor !== activeChip || eMajor !== activeChip) return false;
+      return curMinor >= (sMinor || 0) && curMinor <= (eMinor || 0);
+    });
+    setExpandedSection(idx !== -1 ? idx : null);
+  }, [activeChip, selectedVerseNumber, chapters]);
 
   useEffect(() => {
     if (!apiUrl || !activeChip) return;
