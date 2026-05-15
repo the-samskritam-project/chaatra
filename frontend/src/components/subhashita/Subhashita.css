@@ -1,727 +1,218 @@
-.subhashita-container {
-  padding: 2rem;
-  max-width: 900px;
+/* Subhashita reader — single-verse focused view with a theme picker at
+   the top. Pada-chheda tile styles live in Hitopadesa.css and are
+   imported by Subhashita.js so they're shared with the Gita reader. */
+
+.subhashita-page {
+  max-width: 880px;
   margin: 0 auto;
-}
-
-.subhashita-card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.subhashita-header {
-  margin-bottom: 2rem;
-}
-
-.subhashita-header h2 {
-  margin: 0 0 0.5rem 0;
-  color: #333;
-  font-size: 1.75rem;
-}
-
-.subhashita-description {
-  color: #666;
-  margin: 0;
-  font-size: 1rem;
-}
-
-.subhashita-button {
-  width: 100%;
-  padding: 1rem;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-  margin-bottom: 1.5rem;
-}
-
-.subhashita-button:hover:not(:disabled) {
-  background: #0056b3;
-}
-
-.subhashita-button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.subhashita-error {
-  background: #fee;
-  color: #c33;
-  padding: 1rem;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-}
-
-.subhashita-loading {
-  text-align: center;
-  padding: 2rem;
-  color: #666;
-}
-
-.subhashita-result {
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid #e0e0e0;
-}
-
-.subhashita-meta {
-  color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Favorite Star Button */
-.favorite-star-button {
-  padding: 4px 8px;
-  border: 1px solid rgba(25, 118, 210, 0.5);
-  border-radius: 4px;
-  background-color: rgba(144, 202, 249, 0.2);
-  color: #1565c0;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 1rem;
-  min-width: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  padding: 28px 24px 80px;
   font-family: 'Roboto', sans-serif;
-  vertical-align: middle;
 }
 
-.favorite-star-button:hover:not(:disabled) {
-  background-color: rgba(144, 202, 249, 0.35);
-  border-color: rgba(25, 118, 210, 0.7);
-  color: #0d47a1;
-  transform: scale(1.1);
+/* Theme picker — reuses the .chapter-dropdown-* styles from Hitopadesa.css
+   so it visually matches the Gita chapter dropdown. Only override the
+   sticky positioning (no scrollable parent here) and add page spacing. */
+.subhashita-theme-dropdown {
+  position: relative;
+  top: auto;
+  margin-bottom: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: visible;
 }
 
-.favorite-star-button:disabled {
-  background-color: rgba(227, 242, 253, 0.3);
-  border-color: rgba(25, 118, 210, 0.3);
-  color: rgba(21, 101, 192, 0.5);
-  cursor: not-allowed;
-  opacity: 0.5;
+.subhashita-theme-dropdown .chapter-dropdown-trigger {
+  border-radius: 12px;
 }
 
-/* Filled star styling - when button contains filled star */
-.favorite-star-button.favorited {
-  color: #ffc107;
-  border-color: #ffc107;
-  background-color: rgba(255, 193, 7, 0.1);
+/* Verse card */
+.subhashita-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 32px 32px 26px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
 }
 
-.favorite-star-button.favorited:hover:not(:disabled) {
-  background-color: rgba(255, 193, 7, 0.2);
-  border-color: #ffb300;
-  color: #ff8f00;
+.subhashita-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.subhashita-verse-position {
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.subhashita-verse-number {
+  font-family: 'Courier New', monospace;
+  color: #cbd5e1;
 }
 
 .subhashita-devanagari {
-  font-size: 1.5rem;
-  line-height: 1.8;
-  color: #333;
-  margin-bottom: 1rem;
-  font-family: 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', sans-serif;
-  font-weight: bold;
+  font-family: 'Tiro Devanagari Sanskrit', 'Noto Serif Devanagari', serif;
+  font-size: 1.45rem;
+  line-height: 2.1;
+  color: #1f2937;
+  font-weight: 400;
+  margin-bottom: 24px;
+  text-align: center;
+  letter-spacing: 0.005em;
 }
 
 .subhashita-line {
-  display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 4px;
 }
 
 .subhashita-translation {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #333;
-  padding: 1rem;
-  background: #f9f9f9;
-  border-radius: 4px;
-  border-left: 3px solid #007bff;
+  margin-top: 22px;
+  padding: 18px 22px;
+  background: #f8fafc;
+  border-left: 3px solid #1976d2;
+  border-radius: 8px;
+  font-size: 1.02rem;
+  line-height: 1.65;
+  color: #334155;
 }
 
-/* Learning aids section */
-.subhashita-learning-aids {
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid #e0e0e0;
-}
-
-.subhashita-buttons-row {
+.subhashita-theme-tags {
+  margin-top: 20px;
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
   flex-wrap: wrap;
+  gap: 6px;
 }
 
-.subhashita-action-button {
-  padding: 0.75rem 1.5rem;
-  background: #28a745;
-  color: white;
-  border: none;
-  border-radius: 4px;
+.subhashita-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.subhashita-tag.primary {
+  background: #e3f2fd;
+  color: #1565c0;
+  font-weight: 600;
+}
+
+/* Navigation row */
+.subhashita-nav {
+  display: flex;
+  justify-content: stretch;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.subhashita-nav-button {
+  flex: 1;
+  padding: 12px 16px;
+  background: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
   font-size: 0.95rem;
   font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
+  color: #1f2937;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-.subhashita-action-button:hover:not(:disabled) {
-  background: #218838;
+.subhashita-nav-button:hover:not(:disabled) {
+  background: #f0f7ff;
+  border-color: #1976d2;
+  color: #1565c0;
 }
 
-.subhashita-action-button:disabled {
-  background: #ccc;
+.subhashita-nav-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.subhashita-nav-button:disabled {
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
-.subhashita-save-button {
-  background: #007bff;
+.subhashita-nav-button.shuffle {
+  flex: 0 0 auto;
+  min-width: 56px;
+  background: #1976d2;
+  border-color: #1976d2;
+  color: #ffffff;
+  font-size: 1.2rem;
+  padding: 12px 14px;
 }
 
-.subhashita-save-button:hover:not(:disabled) {
-  background: #0056b3;
+.subhashita-nav-button.shuffle:hover:not(:disabled) {
+  background: #1565c0;
+  border-color: #1565c0;
+  color: #ffffff;
 }
 
-.subhashita-section-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-.subhashita-splits-section {
-  margin-bottom: 1.5rem;
-}
-
-.subhashita-splits {
-  font-size: 1.3rem;
-  line-height: 1.8;
-  color: #333;
-  padding: 1rem;
-  background: #f0f8ff;
-  border-radius: 4px;
-  border-left: 3px solid #28a745;
-  font-family: 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', sans-serif;
-  font-weight: bold;
-}
-
-.subhashita-word-by-word-section {
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.subhashita-word-by-word {
-  padding: 1rem;
-  background: #fff9e6;
-  border-radius: 4px;
-  border-left: 3px solid #ffc107;
-}
-
-.subhashita-word-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.subhashita-word-item:last-child {
-  border-bottom: none;
-}
-
-.subhashita-word {
-  font-family: 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #333;
-  min-width: 120px;
-}
-
-.subhashita-word-separator {
-  color: #666;
-  font-size: 1rem;
-}
-
-.subhashita-word-translation {
-  color: #555;
-  font-size: 0.95rem;
-  flex: 1;
-}
-
-/* User translation section */
-.subhashita-user-translation-section {
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid #e0e0e0;
-}
-
-.subhashita-translation-input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-family: inherit;
-  line-height: 1.5;
-  resize: vertical;
-  margin-bottom: 1rem;
-}
-
-.subhashita-translation-input:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-
-.subhashita-translation-buttons {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.subhashita-verification-result {
-  padding: 1rem;
-  border-radius: 4px;
-  margin-top: 1rem;
-}
-
-.subhashita-verification-result.accurate {
-  background: #d4edda;
-  border-left: 3px solid #28a745;
-}
-
-.subhashita-verification-result.needs-improvement {
-  background: #fff3cd;
-  border-left: 3px solid #ffc107;
-}
-
-.subhashita-verification-header {
-  margin-bottom: 0.75rem;
-}
-
-.subhashita-verification-status {
-  font-weight: 600;
-  font-size: 1rem;
-}
-
-.subhashita-verification-result.accurate .subhashita-verification-status {
-  color: #155724;
-}
-
-.subhashita-verification-result.needs-improvement .subhashita-verification-status {
-  color: #856404;
-}
-
-.subhashita-verification-feedback {
-  color: #333;
-  line-height: 1.6;
-  margin-bottom: 0.75rem;
-}
-
-.subhashita-verification-suggestions {
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.subhashita-verification-suggestions strong {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #333;
-}
-
-.subhashita-verification-suggestions ul {
-  margin: 0;
-  padding-left: 1.5rem;
-}
-
-.subhashita-verification-suggestions li {
-  margin-bottom: 0.25rem;
-  color: #555;
-}
-
-.subhashita-saved-translation-info {
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  background: #d1ecf1;
-  color: #0c5460;
-  border-radius: 4px;
-  border-left: 3px solid #17a2b8;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.subhashita-saved-translation-info strong {
-  color: #0c5460;
-}
-
-.subhashita-saved-time {
-  font-size: 0.85rem;
-  color: #0c5460;
-  opacity: 0.8;
-}
-
-.subhashita-saved-translation {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background: #d4edda;
-  color: #155724;
-  border-radius: 4px;
-  border-left: 3px solid #28a745;
-}
-
-/* Tab Navigation */
-.subhashita-tabs {
-  display: flex;
-  border-bottom: 2px solid #e0e0e0;
-  margin-bottom: 2rem;
-  gap: 0;
-}
-
-.subhashita-tab {
-  padding: 1rem 2rem;
-  background: transparent;
-  border: none;
-  border-bottom: 3px solid transparent;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #666;
-  transition: all 0.2s;
-  margin-bottom: -2px;
-}
-
-.subhashita-tab:hover {
-  color: #007bff;
-  background: #f8f9fa;
-}
-
-.subhashita-tab.active {
-  color: #007bff;
-  border-bottom-color: #007bff;
-  font-weight: 600;
-}
-
-
-/* My Translations Tab */
-.subhashita-auth-prompt {
+/* Status / error states */
+.subhashita-status {
+  padding: 36px 20px;
   text-align: center;
-  padding: 3rem 2rem;
-  color: #666;
+  color: #94a3b8;
+  font-style: italic;
 }
 
-.subhashita-empty-state {
-  text-align: center;
-  padding: 3rem 2rem;
-  color: #666;
-}
-
-.subhashita-empty-state p {
-  margin: 0.5rem 0;
-}
-
-.subhashita-translations-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.subhashita-translation-item {
-  padding: 1.5rem;
-  background: #f9f9f9;
+.subhashita-error {
+  padding: 12px 16px;
+  background: #fee2e2;
+  color: #991b1b;
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  transition: box-shadow 0.2s;
-}
-
-.subhashita-translation-item:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.subhashita-translation-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.subhashita-translation-item-header h3 {
-  margin: 0;
-  color: #333;
-  font-size: 1.2rem;
-}
-
-.subhashita-translation-item-header-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.subhashita-translation-item-date {
-  font-size: 0.85rem;
-  color: #666;
-}
-
-.subhashita-edit-button {
-  padding: 0.5rem 1rem;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
+  margin-bottom: 16px;
   font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
 }
 
-.subhashita-edit-button:hover {
-  background: #0056b3;
-}
+/* Mobile tweaks */
+@media (max-width: 768px) {
+  .subhashita-page {
+    padding: 16px 12px 100px;
+  }
 
-.subhashita-translation-item-devanagari {
-  font-size: 1.3rem;
-  line-height: 1.8;
-  color: #333;
-  margin-bottom: 1rem;
-  font-family: 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', sans-serif;
-  font-weight: bold;
-  padding: 1rem;
-  background: #fff;
-  border-radius: 4px;
-}
+  .subhashita-theme-strip-wrap {
+    margin-bottom: 20px;
+  }
 
-.subhashita-translation-item-translation {
-  margin-bottom: 1rem;
-}
+  .subhashita-card {
+    padding: 22px 18px 20px;
+    border-radius: 12px;
+  }
 
-.subhashita-translation-item-translation strong {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #333;
-  font-size: 0.95rem;
-}
+  .subhashita-devanagari {
+    font-size: 1.18rem;
+    line-height: 1.95;
+    margin-bottom: 20px;
+  }
 
-.subhashita-translation-item-translation p {
-  margin: 0;
-  color: #555;
-  line-height: 1.6;
-  padding: 0.75rem;
-  background: #fff;
-  border-radius: 4px;
-  border-left: 3px solid #007bff;
-}
+  .subhashita-translation {
+    font-size: 0.95rem;
+    padding: 14px 16px;
+  }
 
-.subhashita-translation-item-suggestions {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: #fff9e6;
-  border-radius: 4px;
-  border-left: 3px solid #ffc107;
-}
+  .subhashita-nav {
+    gap: 8px;
+    margin-top: 18px;
+  }
 
-.subhashita-translation-item-suggestions strong {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #856404;
-}
+  .subhashita-nav-button {
+    padding: 11px 10px;
+    font-size: 0.88rem;
+  }
 
-.subhashita-translation-item-suggestions ul {
-  margin: 0;
-  padding-left: 1.5rem;
-  color: #555;
+  .subhashita-nav-button.shuffle {
+    min-width: 48px;
+    padding: 11px 12px;
+    font-size: 1.05rem;
+  }
 }
-
-.subhashita-translation-item-suggestions li {
-  margin-bottom: 0.25rem;
-}
-
-/* Translation Feedback Container (Collapsed) */
-.subhashita-translation-feedback-container {
-  margin-top: 1rem;
-  border-top: 1px solid #e0e0e0;
-  padding-top: 1rem;
-}
-
-.subhashita-feedback-toggle {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #333;
-  transition: all 0.2s;
-  text-align: left;
-}
-
-.subhashita-feedback-toggle:hover {
-  background: #e9ecef;
-  border-color: #007bff;
-}
-
-.subhashita-feedback-toggle span:first-child {
-  font-size: 0.8rem;
-  color: #666;
-  min-width: 1rem;
-}
-
-.subhashita-translation-feedback-content {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: #fff;
-  border-radius: 4px;
-  border: 1px solid #e0e0e0;
-}
-
-.subhashita-translation-item-feedback {
-  margin-bottom: 1rem;
-}
-
-.subhashita-translation-item-feedback strong {
-  display: block;
-  margin-bottom: 0.75rem;
-  color: #333;
-  font-size: 0.95rem;
-}
-
-.subhashita-feedback-text {
-  color: #555;
-  line-height: 1.6;
-  font-size: 0.95rem;
-  white-space: pre-wrap;
-}
-
-/* Favorites Tab */
-.subhashita-favorites-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.subhashita-favorite-item {
-  padding: 1.5rem;
-  background: #f9f9f9;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  transition: box-shadow 0.2s;
-}
-
-.subhashita-favorite-item:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.subhashita-favorite-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.subhashita-favorite-item-header h3 {
-  margin: 0;
-  color: #333;
-  font-size: 1.2rem;
-}
-
-.subhashita-favorite-item-header-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.subhashita-favorite-item-date {
-  font-size: 0.85rem;
-  color: #666;
-}
-
-.subhashita-favorite-item-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.subhashita-view-button {
-  padding: 0.5rem 1rem;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.subhashita-view-button:hover {
-  background: #0056b3;
-}
-
-.subhashita-remove-button {
-  padding: 0.5rem 0.75rem;
-  background: transparent;
-  color: #ffc107;
-  border: 1px solid #ffc107;
-  border-radius: 4px;
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.subhashita-remove-button:hover {
-  background-color: rgba(255, 193, 7, 0.1);
-  border-color: #ffb300;
-  color: #ff8f00;
-  transform: scale(1.1);
-}
-
-.subhashita-favorite-item-devanagari {
-  font-size: 1.3rem;
-  line-height: 1.8;
-  color: #333;
-  margin-bottom: 1rem;
-  font-family: 'Noto Sans Devanagari', 'Mangal', 'Arial Unicode MS', sans-serif;
-  font-weight: bold;
-  padding: 1rem;
-  background: #fff;
-  border-radius: 4px;
-}
-
-.subhashita-favorite-item-translation {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #555;
-  padding: 0.75rem;
-  background: #fff;
-  border-radius: 4px;
-  border-left: 3px solid #007bff;
-}
-

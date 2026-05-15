@@ -11,6 +11,69 @@ import (
 	"strings"
 )
 
+// SubhashitaThemesHandler returns the list of LLM-classified primary
+// themes with the count of enriched subhashitas per theme, sorted by
+// descending count. Optional ?min=<n> filters out long-tail themes
+// with fewer than n verses (default 5).
+func SubhashitaThemesHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	minCount := 5
+	if v := r.URL.Query().Get("min"); v != "" {
+		var parsed int
+		if _, err := fmt.Sscanf(v, "%d", &parsed); err == nil && parsed >= 0 {
+			minCount = parsed
+		}
+	}
+
+	themes, err := persistence.GetSubhashitaThemes(minCount)
+	if err != nil {
+		log.Printf("Error getting subhashita themes: %v", err)
+		http.Error(w, fmt.Sprintf("Failed to get themes: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(themes)
+}
+
+// SubhashitaByThemeHandler returns every enriched subhashita whose
+// primary_theme matches the ?theme=<name> query, sorted by verse_number.
+// Optional ?limit=<n> caps the response size.
+func SubhashitaByThemeHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	theme := strings.TrimSpace(r.URL.Query().Get("theme"))
+	if theme == "" {
+		http.Error(w, "theme query parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	limit := 0
+	if v := r.URL.Query().Get("limit"); v != "" {
+		var parsed int
+		if _, err := fmt.Sscanf(v, "%d", &parsed); err == nil && parsed > 0 {
+			limit = parsed
+		}
+	}
+
+	verses, err := persistence.GetSubhashitasByTheme(theme, limit)
+	if err != nil {
+		log.Printf("Error getting subhashitas by theme %q: %v", theme, err)
+		http.Error(w, fmt.Sprintf("Failed to get subhashitas: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(verses)
+}
+
 // SubhashitaRandomHandler returns a random subhashita verse or a specific verse if verse_number is provided
 func SubhashitaRandomHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
