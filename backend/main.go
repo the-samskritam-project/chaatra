@@ -61,6 +61,7 @@ func main() {
 	mux.HandleFunc("/v2/hitopadesa/verses", h.HitopadesaVersesHandler)
 	mux.HandleFunc("/v2/hitopadesa/verses/", h.HitopadesaUpdateVerseHandler)
 	mux.HandleFunc("/v2/pancatantra/chapters", h.PancatantraChaptersHandler)
+	mux.HandleFunc("/v2/pancatantra/intervals", h.PancatantraIntervalsHandler)
 	mux.HandleFunc("/v2/pancatantra/verses", h.PancatantraVersesHandler)
 	mux.HandleFunc("/v2/pancatantra/verses/", h.PancatantraUpdateVerseHandler)
 	mux.HandleFunc("/v2/pancatantra/wordcloud", h.PancatantraWordCloudHandler)

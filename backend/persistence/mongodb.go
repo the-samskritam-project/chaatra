@@ -581,14 +581,54 @@ func UpdatePancatantraVerseTranslation(verseNumber string, editedTranslation str
 
 // PancatantraInterval represents an interval document
 type PancatantraInterval struct {
-	ID              interface{} `bson:"_id"`
-	CorpusName      string      `bson:"corpus_name"`
-	ChapterNumber   int         `bson:"chapter_number"`
-	IntervalIndex   int         `bson:"interval_index"`
-	VerseNumbers    []string    `bson:"verse_numbers"`
-	ProseNumbers    []string    `bson:"prose_numbers"`
-	IntervalSummary string      `bson:"interval_summary"`
-	IntervalThemes  []string    `bson:"interval_themes"`
+	ID                   interface{} `json:"_id,omitempty" bson:"_id,omitempty"`
+	CorpusName           string      `json:"corpus_name,omitempty" bson:"corpus_name"`
+	ChapterNumber        int         `json:"chapter_number" bson:"chapter_number"`
+	IntervalIndex        int         `json:"interval_index" bson:"interval_index"`
+	StartID              string      `json:"start_id,omitempty" bson:"start_id,omitempty"`
+	EndID                string      `json:"end_id,omitempty" bson:"end_id,omitempty"`
+	VerseNumbers         []string    `json:"verse_numbers,omitempty" bson:"verse_numbers,omitempty"`
+	ProseNumbers         []string    `json:"prose_numbers,omitempty" bson:"prose_numbers,omitempty"`
+	ItemIDs              []string    `json:"item_ids,omitempty" bson:"item_ids,omitempty"`
+	Labels               []string    `json:"labels,omitempty" bson:"labels,omitempty"`
+	Count                int         `json:"count,omitempty" bson:"count,omitempty"`
+	IntervalSummary      string      `json:"interval_summary,omitempty" bson:"interval_summary,omitempty"`
+	IntervalSummaryModel string      `json:"interval_summary_model,omitempty" bson:"interval_summary_model,omitempty"`
+	IntervalThemes       []string    `json:"interval_themes,omitempty" bson:"interval_themes,omitempty"`
+}
+
+// GetPancatantraIntervals returns all intervals for a chapter, sorted by interval_index.
+func GetPancatantraIntervals(chapterNumber int) ([]PancatantraInterval, error) {
+	if mongoClient == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	db := getDatabase("pancatantra")
+	if db == nil {
+		return nil, fmt.Errorf("MongoDB not initialized")
+	}
+	collection := db.Collection("pancatantra_intervals")
+
+	filter := bson.M{
+		"corpus_name":    "pancatantra",
+		"chapter_number": chapterNumber,
+	}
+	findOpts := options.Find().SetSort(bson.D{{Key: "interval_index", Value: 1}})
+
+	cursor, err := collection.Find(ctx, filter, findOpts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query intervals: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var intervals []PancatantraInterval
+	if err := cursor.All(ctx, &intervals); err != nil {
+		return nil, fmt.Errorf("failed to decode intervals: %w", err)
+	}
+	return intervals, nil
 }
 
 // GetPancatantraIntervalByVerse finds the interval containing a given verse or prose number
