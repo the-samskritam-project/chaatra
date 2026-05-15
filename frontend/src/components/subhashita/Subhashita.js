@@ -37,6 +37,7 @@ function Subhashita() {
   const [isLoadingVerses, setIsLoadingVerses] = useState(false);
   const [selectedPadaIdx, setSelectedPadaIdx] = useState(null);
   const [error, setError] = useState('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Load themes once on mount.
   useEffect(() => {
@@ -90,6 +91,11 @@ function Subhashita() {
     setSelectedPadaIdx(null);
   }, [currentIndex]);
 
+  // Close the dropdown whenever the active theme changes.
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [activeTheme]);
+
   const currentVerse = verses[currentIndex];
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < verses.length - 1;
@@ -100,34 +106,75 @@ function Subhashita() {
   const devLines = splitOnDandas(
     currentVerse?.transliterated_devanagari || ''
   );
+  const activeThemeCount =
+    themes.find((t) => t.theme === activeTheme)?.count ?? 0;
 
   return (
     <div className="subhashita-page">
-      <div className="subhashita-theme-strip-wrap">
-        <div className="subhashita-theme-strip">
-          {isLoadingThemes ? (
-            <span className="subhashita-status">Loading themes…</span>
-          ) : themes.length === 0 ? (
-            <span className="subhashita-status">
-              No themes yet — run translate_subhashitas to enrich verses.
+      {isLoadingThemes ? (
+        <div className="subhashita-status">Loading themes…</div>
+      ) : themes.length === 0 ? (
+        <div className="subhashita-status">
+          No themes yet — run translate_subhashitas to enrich verses.
+        </div>
+      ) : (
+        <div className="chapter-dropdown-wrap subhashita-theme-dropdown">
+          <button
+            type="button"
+            className={`chapter-dropdown-trigger ${isMenuOpen ? 'open' : ''}`}
+            onClick={() => setIsMenuOpen((v) => !v)}
+            aria-haspopup="listbox"
+            aria-expanded={isMenuOpen}
+          >
+            <span className="chapter-dropdown-current">
+              <span className="chapter-dropdown-title">
+                {activeTheme || 'Pick a theme'}
+              </span>
+              {activeThemeCount > 0 && (
+                <span className="chapter-dropdown-num">{activeThemeCount}</span>
+              )}
             </span>
-          ) : (
-            themes.map((t) => (
-              <button
-                key={t.theme}
-                type="button"
-                className={`subhashita-theme-chip ${
-                  activeTheme === t.theme ? 'active' : ''
-                }`}
-                onClick={() => setActiveTheme(t.theme)}
-              >
-                <span className="subhashita-theme-chip-name">{t.theme}</span>
-                <span className="subhashita-theme-chip-count">{t.count}</span>
-              </button>
-            ))
+            <span className="chapter-dropdown-chevron" aria-hidden="true">
+              ▾
+            </span>
+          </button>
+          {isMenuOpen && (
+            <>
+              <div
+                className="chapter-dropdown-backdrop"
+                onClick={() => setIsMenuOpen(false)}
+                aria-hidden="true"
+              />
+              <ul className="chapter-dropdown-menu" role="listbox">
+                {themes.map((t) => {
+                  const isActive = t.theme === activeTheme;
+                  return (
+                    <li key={t.theme}>
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={isActive}
+                        className={`chapter-dropdown-item ${
+                          isActive ? 'active' : ''
+                        }`}
+                        onClick={() => {
+                          setActiveTheme(t.theme);
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <span className="chapter-dropdown-title">
+                          {t.theme}
+                        </span>
+                        <span className="chapter-dropdown-num">{t.count}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
           )}
         </div>
-      </div>
+      )}
 
       <div className="subhashita-reader">
         {error && <div className="subhashita-error">{error}</div>}
