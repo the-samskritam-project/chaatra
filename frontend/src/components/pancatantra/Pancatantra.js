@@ -1,491 +1,298 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import CorpusViewer from '../corpus/CorpusViewer';
+import React, { useEffect, useMemo, useState } from 'react';
 import DictionaryLookup from '../dictionary/DictionaryLookup';
+import { PANCATANTRA_BOOKS } from './chapterNames';
+import '../hitopadesa/Hitopadesa.css'; // shared pada-chheda tile styles
 import './Pancatantra.css';
 
-function Pancatantra() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const showBackButton = location.pathname.startsWith('/katha/');
-  const [apiUrl, setApiUrl] = useState('');
-  const [query, setQuery] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
-  const [themes, setThemes] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingThemes, setIsLoadingThemes] = useState(false);
-  const [error, setError] = useState('');
-  const [showSearchModal, setShowSearchModal] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [verseContext, setVerseContext] = useState(null);
-  const [isLoadingContext, setIsLoadingContext] = useState(false);
-  const [contextError, setContextError] = useState('');
-  const modalRef = useRef(null);
-  const inputRef = useRef(null);
-  const debounceTimerRef = useRef(null);
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL ||
+  process.env.REACT_APP_API_URL ||
+  'http://localhost:8081';
 
-  useEffect(() => {
-    const url = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8081';
-    setApiUrl(url);
-  }, []);
+// Map an interval's item id ("verse_0.1" / "prose_0.11") to its document
+// inside the chapter's items array.
+function parseItemId(id) {
+  if (!id) return null;
+  const m = String(id).match(/^(verse|prose)_(.+)$/);
+  if (!m) return null;
+  return { kind: m[1], number: m[2] };
+}
 
-  // Debounced search for dropdown suggestions
-  useEffect(() => {
-    if (!apiUrl || !query.trim()) {
-      setSuggestions([]);
-      return;
+function findItem(itemsByKey, itemId) {
+  const parsed = parseItemId(itemId);
+  if (!parsed) return null;
+  return itemsByKey.get(`${parsed.kind}:${parsed.number}`) || null;
+}
+
+// Split a Devanagari line on danda punctuation; restore the danda
+// onto the right-hand side of each chunk.
+function splitOnDandas(text) {
+  if (!text) return [];
+  const out = [];
+  let buf = '';
+  for (const ch of text) {
+    if (ch === '।' || ch === '॥') {
+      const trimmed = (buf + ' ' + ch).trim();
+      if (trimmed) out.push(trimmed);
+      buf = '';
+    } else {
+      buf += ch;
     }
+  }
+  if (buf.trim()) out.push(buf.trim());
+  return out;
+}
 
-    // Clear previous timer
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
+function PadaChheda({ items, itemKey }) {
+  const [selected, setSelected] = useState(null);
+  // Reset selection when verse changes.
+  useEffect(() => setSelected(null), [itemKey]);
 
-    // Debounce API calls
-    debounceTimerRef.current = setTimeout(async () => {
-      setIsLoading(true);
-      setError('');
-
-      try {
-        const response = await fetch(
-          `${apiUrl}/v2/search/semantic?q=${encodeURIComponent(query)}&limit=10&corpus=pancatantra`
-        );
-
-        if (!response.ok) {
-          throw new Error(`Request failed: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        setSuggestions(data);
-      } catch (err) {
-        console.error('Thematic search error:', err);
-        setError('Unable to fetch suggestions. Please try again.');
-        setSuggestions([]);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 300); // 300ms debounce
-
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, [query, apiUrl]);
-
-  // Handle click outside to close modal
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        modalRef.current &&
-        !modalRef.current.contains(event.target)
-      ) {
-        handleCloseModal();
-      }
-    };
-
-    if (showSearchModal) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
-  }, [showSearchModal]);
-
-  // Handle keyboard navigation and Escape key
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (!showSearchModal) return;
-
-      if (e.key === 'Escape') {
-        handleCloseModal();
-        return;
-      }
-
-      if (suggestions.length === 0) return;
-
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setSelectedIndex((prev) =>
-          prev < suggestions.length - 1 ? prev + 1 : prev
-        );
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
-      } else if (e.key === 'Enter' && selectedIndex >= 0) {
-        e.preventDefault();
-        handleSuggestionClick(suggestions[selectedIndex]);
-      }
-    };
-
-    if (showSearchModal) {
-      document.addEventListener('keydown', handleKeyDown);
-      return () => {
-        document.removeEventListener('keydown', handleKeyDown);
-      };
-    }
-  }, [showSearchModal, suggestions, selectedIndex]);
-
-  // Fetch themes when modal opens
-  useEffect(() => {
-    if (showSearchModal && apiUrl) {
-      fetchThemes();
-    }
-  }, [showSearchModal, apiUrl]);
-
-  // Focus input when modal opens
-  useEffect(() => {
-    if (showSearchModal && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [showSearchModal]);
-
-  const fetchThemes = async () => {
-    if (!apiUrl) return;
-    setIsLoadingThemes(true);
-    try {
-      const response = await fetch(`${apiUrl}/v2/pancatantra/wordcloud`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch themes: ${response.statusText}`);
-      }
-      const data = await response.json();
-      const themesArray = Array.isArray(data) ? data : (data ? [data] : []);
-      setThemes(themesArray);
-    } catch (err) {
-      console.error('Error fetching themes:', err);
-      setThemes([]);
-    } finally {
-      setIsLoadingThemes(false);
-    }
-  };
-
-  const handleOpenModal = () => {
-    setShowSearchModal(true);
-    setQuery('');
-    setSuggestions([]);
-    setSelectedIndex(-1);
-    setError('');
-    setVerseContext(null);
-    setContextError('');
-  };
-
-  const handleThemeClick = (themeText) => {
-    setQuery(themeText);
-    setSelectedIndex(-1);
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  };
-
-  const handleCloseModal = () => {
-    setShowSearchModal(false);
-    setQuery('');
-    setSuggestions([]);
-    setSelectedIndex(-1);
-    setError('');
-    setVerseContext(null);
-    setContextError('');
-  };
-
-  const handleSuggestionClick = async (suggestion) => {
-    const verseNumber = suggestion.verse_number || suggestion.prose_number;
-    if (!verseNumber) {
-      console.error('No verse number found in suggestion');
-      return;
-    }
-
-    // Extract type from suggestion (default to "verse" for backward compatibility)
-    const itemType = suggestion.type || 'verse';
-
-    setIsLoadingContext(true);
-    setContextError('');
-    setVerseContext(null);
-
-    try {
-      const response = await fetch(
-        `${apiUrl}/v2/pancatantra/verse-context?verse_number=${encodeURIComponent(verseNumber)}&type=${encodeURIComponent(itemType)}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Request failed: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      setVerseContext(data);
-    } catch (err) {
-      console.error('Error fetching verse context:', err);
-      setContextError('Unable to fetch verse context. Please try again.');
-    } finally {
-      setIsLoadingContext(false);
-    }
-  };
-
-  const handleBackToResults = () => {
-    setVerseContext(null);
-    setContextError('');
-  };
-
-  const getItemIdentifier = (item) => {
-    return item.verse_number || item.prose_number || '';
-  };
-
-  const getItemType = (item) => {
-    return item.type || (item.verse_number ? 'verse' : 'prose');
-  };
-
-  const getCorpusDisplayName = (corpusName) => {
-    if (!corpusName) return '';
-    return corpusName.charAt(0).toUpperCase() + corpusName.slice(1);
-  };
-
+  if (!Array.isArray(items) || items.length === 0) return null;
+  const picked = selected !== null ? items[selected] : null;
   return (
-    <div>
-      {showBackButton && (
-        <button
-          onClick={() => navigate('/katha')}
-          style={{
-            marginBottom: '1rem',
-            padding: '0.5rem 1rem',
-            background: '#f5f5f5',
-            border: '1px solid #ddd',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            color: '#666'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#e0e0e0';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#f5f5f5';
-          }}
-        >
-          ← Back to Fables
-        </button>
-      )}
-      <CorpusViewer 
-        corpusName="pancatantra" 
-        showSearchIcon={true}
-        onSearchClick={handleOpenModal}
-      />
-      
-      {showSearchModal && (
-        <div className="pancatantra-search-modal-overlay">
-          <div 
-            className={`pancatantra-search-modal ${(suggestions.length > 0 || verseContext) ? 'has-results' : ''}`} 
-            ref={modalRef}
+    <div className="pada-chheda pancatantra-pada">
+      <div className="pada-chheda-header">Pada-chheda</div>
+      <div className="pada-tiles">
+        {items.map((it, i) => (
+          <button
+            key={i}
+            type="button"
+            className={`pada-tile ${selected === i ? 'selected' : ''}`}
+            onClick={() => setSelected(selected === i ? null : i)}
           >
-            <div className="pancatantra-search-modal-header">
-              <div className="pancatantra-search-input-container">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  className="pancatantra-search-input"
-                  placeholder="Search by theme (e.g., friendship, wisdom, courage)..."
-                  value={query}
-                  onChange={(e) => {
-                    setQuery(e.target.value);
-                    setSelectedIndex(-1);
-                  }}
-                />
-                {isLoading && (
-                  <div className="pancatantra-search-loading">Searching...</div>
-                )}
-              </div>
-              <button
-                className="pancatantra-search-close-button"
-                onClick={handleCloseModal}
-                aria-label="Close search"
-              >
-                ×
-              </button>
-            </div>
-
-            {error && (
-              <div className="pancatantra-search-error">{error}</div>
-            )}
-
-            <div className="pancatantra-search-modal-content">
-              {verseContext ? (
-                <div className="pancatantra-verse-context">
-                  {isLoadingContext && (
-                    <div className="pancatantra-context-loading">Loading context...</div>
-                  )}
-                  {contextError && (
-                    <div className="pancatantra-search-error">{contextError}</div>
-                  )}
-                  {!isLoadingContext && verseContext && (
-                    <>
-                      <button
-                        className="pancatantra-back-button"
-                        onClick={handleBackToResults}
-                      >
-                        ← Back to Results
-                      </button>
-                      {verseContext.interval ? (
-                        <>
-                          <div className="pancatantra-interval-summary">
-                            <h3>Interval Summary</h3>
-                            <p>{verseContext.interval.summary}</p>
-                          </div>
-                          {verseContext.interval.themes && verseContext.interval.themes.length > 0 && (
-                            <div className="pancatantra-interval-themes">
-                              <h3>Themes</h3>
-                              <div className="pancatantra-themes-list">
-                                {verseContext.interval.themes.map((theme, index) => (
-                                  <span key={index} className="pancatantra-theme-tag">
-                                    {theme.charAt(0).toUpperCase() + theme.slice(1)}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <div className="pancatantra-no-interval-message">
-                          <p>No interval found for this verse (or interval has more than 25 prose shlokas).</p>
-                        </div>
-                      )}
-                      {verseContext.verses && (
-                        <div className="pancatantra-context-verses">
-                          <h3>Verses</h3>
-                          {verseContext.verses.map((verse, index) => {
-                            if (!verse) return null;
-                            const isTarget = index === 1;
-                            return (
-                              <div
-                                key={index}
-                                className={`pancatantra-context-verse ${isTarget ? 'target' : ''}`}
-                              >
-                                <div className="pancatantra-context-verse-header">
-                                  <span className="pancatantra-context-verse-label">
-                                    {index === 0 ? 'Previous' : index === 1 ? 'Target' : 'Next'}
-                                  </span>
-                                  <span className="pancatantra-context-verse-number">
-                                    {verse.verse_number || verse.prose_number}
-                                  </span>
-                                </div>
-                                {verse.transliterated_devanagari && (
-                                  <div className="pancatantra-context-devanagari">
-                                    {verse.transliterated_devanagari}
-                                  </div>
-                                )}
-                                {verse.original_iast && (
-                                  <div className="pancatantra-context-iast">
-                                    {verse.original_iast}
-                                  </div>
-                                )}
-                                {verse.full_translation && (
-                                  <div className="pancatantra-context-translation">
-                                    {verse.full_translation}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              ) : (
-                <>
-                  {suggestions.length > 0 && (
-                <div className="pancatantra-search-results">
-                  {suggestions.map((suggestion, index) => (
-                    <div
-                      key={`${suggestion.corpus_name}-${getItemIdentifier(suggestion)}-${index}`}
-                      className={`pancatantra-search-result-item ${
-                        index === selectedIndex ? 'selected' : ''
-                      }`}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                    >
-                      <div className="pancatantra-search-item-header">
-                        <span className="pancatantra-search-corpus">
-                          {getCorpusDisplayName(suggestion.corpus_name)}
-                        </span>
-                        <span className="pancatantra-search-item-id">
-                          {getItemType(suggestion).charAt(0).toUpperCase() +
-                            getItemType(suggestion).slice(1)}{' '}
-                          {getItemIdentifier(suggestion)}
-                        </span>
-                        {suggestion.chapter_number !== undefined && (
-                          <span className="pancatantra-search-chapter">
-                            Chapter {suggestion.chapter_number}
-                          </span>
-                        )}
-                        {suggestion.score && (
-                          <span className="pancatantra-search-score">
-                            {(suggestion.score * 100).toFixed(1)}% match
-                          </span>
-                        )}
-                      </div>
-                      {suggestion.transliterated_devanagari && (
-                        <div className="pancatantra-search-devanagari">
-                          {suggestion.transliterated_devanagari}
-                        </div>
-                      )}
-                      {suggestion.original_iast && (
-                        <div className="pancatantra-search-iast">
-                          {suggestion.original_iast}
-                        </div>
-                      )}
-                      {suggestion.full_translation && (
-                        <div className="pancatantra-search-translation">
-                          {suggestion.full_translation}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {!query.trim() && (
-                <div className="pancatantra-search-themes">
-                  <div className="pancatantra-search-themes-header">
-                    <h3>Popular Themes</h3>
-                    <p>Click on a theme to search</p>
-                  </div>
-                  {isLoadingThemes && (
-                    <div className="pancatantra-search-themes-loading">
-                      Loading themes...
-                    </div>
-                  )}
-                  {!isLoadingThemes && themes.length > 0 && (
-                    <div className="pancatantra-search-themes-list">
-                      {themes.map((theme, index) => (
-                        <button
-                          key={index}
-                          className="pancatantra-search-theme-item"
-                          onClick={() => handleThemeClick(theme.text)}
-                        >
-                          <span className="pancatantra-search-theme-name">
-                            {theme.text.charAt(0).toUpperCase() + theme.text.slice(1)}
-                          </span>
-                          <span className="pancatantra-search-theme-count">{theme.value}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {!isLoadingThemes && themes.length === 0 && (
-                    <div className="pancatantra-search-empty">
-                      <p>No themes available.</p>
-                    </div>
-                  )}
-                </div>
-              )}
-                  {query.trim() && !isLoading && suggestions.length === 0 && (
-                    <div className="pancatantra-search-empty">
-                      <p>No results found. Try a different search term.</p>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
+            {it.word}
+          </button>
+        ))}
+      </div>
+      {picked && (
+        <div className="pada-translation">
+          <span className="pada-translation-word">{picked.word}</span>
+          <span className="pada-translation-meaning">{picked.translation}</span>
         </div>
       )}
-      <DictionaryLookup apiUrl={apiUrl} />
+    </div>
+  );
+}
+
+function IntervalItem({ itemId, label, item }) {
+  if (!item) {
+    // Item id referenced by the interval but not present in the items
+    // fetch — shouldn't happen for a well-formed corpus, but render a
+    // small placeholder rather than blowing up.
+    return (
+      <div className={`pancatantra-item label-${label || 'unknown'}`}>
+        <span className="pancatantra-item-label">{label || '—'}</span>
+        <span className="pancatantra-item-missing">missing: {itemId}</span>
+      </div>
+    );
+  }
+
+  const isProse = !!item.prose_number;
+  const devText = item.transliterated_devanagari || '';
+  const devLines = isProse ? [devText] : splitOnDandas(devText);
+  const padaItems =
+    (item.split_word_by_word_translation &&
+      item.split_word_by_word_translation.length > 0 &&
+      item.split_word_by_word_translation) ||
+    item.word_by_word_translation ||
+    [];
+  const number = item.verse_number || item.prose_number || '';
+
+  return (
+    <div className={`pancatantra-item label-${label || 'narrative'}`}>
+      <div className="pancatantra-item-meta">
+        <span className="pancatantra-item-label">{label || 'narrative'}</span>
+        <span className="pancatantra-item-number">
+          {isProse ? 'prose' : 'verse'} {number}
+        </span>
+      </div>
+
+      <div
+        className={`pancatantra-devanagari ${
+          isProse ? 'is-prose' : 'is-verse'
+        }`}
+      >
+        {devLines.map((line, i) => (
+          <div key={i} className="pancatantra-line">
+            {line}
+          </div>
+        ))}
+      </div>
+
+      {!isProse && padaItems.length > 0 && (
+        <PadaChheda items={padaItems} itemKey={itemId} />
+      )}
+
+      {item.full_translation && (
+        <div className="pancatantra-translation">{item.full_translation}</div>
+      )}
+    </div>
+  );
+}
+
+function IntervalCard({ interval, items, isExpanded, onToggle }) {
+  const verseCount = (interval.verse_numbers || []).length;
+  const proseCount = (interval.prose_numbers || []).length;
+
+  return (
+    <div className={`pancatantra-interval ${isExpanded ? 'expanded' : ''}`}>
+      <button
+        type="button"
+        className="pancatantra-interval-header"
+        onClick={onToggle}
+        aria-expanded={isExpanded}
+      >
+        <div className="pancatantra-interval-meta">
+          <span className="pancatantra-interval-index">
+            {interval.interval_index}
+          </span>
+          <span className="pancatantra-interval-count">
+            {interval.count || verseCount + proseCount} items
+            {(verseCount || proseCount) > 0 && (
+              <>
+                {' · '}
+                {verseCount > 0 && `${verseCount} verse${verseCount > 1 ? 's' : ''}`}
+                {verseCount > 0 && proseCount > 0 && ', '}
+                {proseCount > 0 && `${proseCount} prose`}
+              </>
+            )}
+          </span>
+        </div>
+        {interval.interval_summary && (
+          <p className="pancatantra-interval-summary">
+            {interval.interval_summary}
+          </p>
+        )}
+        {Array.isArray(interval.interval_themes) &&
+          interval.interval_themes.length > 0 && (
+            <div className="pancatantra-interval-themes">
+              {interval.interval_themes.map((t, i) => (
+                <span key={i} className="pancatantra-theme-tag">
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+        <span className="pancatantra-interval-chevron" aria-hidden="true">
+          {isExpanded ? '▾' : '▸'}
+        </span>
+      </button>
+
+      {isExpanded && (
+        <div className="pancatantra-interval-body">
+          {(interval.item_ids || []).map((id, i) => (
+            <IntervalItem
+              key={id}
+              itemId={id}
+              label={(interval.labels || [])[i]}
+              item={findItem(items, id)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Pancatantra() {
+  const [activeChapter, setActiveChapter] = useState(0);
+  const [intervals, setIntervals] = useState([]);
+  const [items, setItems] = useState([]);
+  const [expandedIdx, setExpandedIdx] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Fetch both intervals + items whenever the active chapter changes.
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    setError('');
+    setIntervals([]);
+    setItems([]);
+    setExpandedIdx(0);
+
+    Promise.all([
+      fetch(
+        `${API_BASE_URL}/v2/pancatantra/intervals?chapter=${activeChapter}`
+      ).then((r) => (r.ok ? r.json() : [])),
+      fetch(
+        `${API_BASE_URL}/v2/pancatantra/verses?chapter=${activeChapter}`
+      ).then((r) => (r.ok ? r.json() : [])),
+    ])
+      .then(([intArr, itemsArr]) => {
+        if (cancelled) return;
+        setIntervals(Array.isArray(intArr) ? intArr : []);
+        setItems(Array.isArray(itemsArr) ? itemsArr : []);
+      })
+      .catch(() => {
+        if (!cancelled) setError('Failed to load chapter');
+      })
+      .finally(() => !cancelled && setIsLoading(false));
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeChapter]);
+
+  // Index items by (kind, number) so the interval render can look up by
+  // the item_ids array in O(1).
+  const itemsByKey = useMemo(() => {
+    const map = new Map();
+    for (const item of items) {
+      if (item.verse_number) {
+        map.set(`verse:${item.verse_number}`, item);
+      }
+      if (item.prose_number) {
+        map.set(`prose:${item.prose_number}`, item);
+      }
+    }
+    return map;
+  }, [items]);
+
+  return (
+    <div className="pancatantra-page">
+      <div className="pancatantra-book-chips">
+        {PANCATANTRA_BOOKS.map((book) => {
+          const isActive = book.chapter_number === activeChapter;
+          return (
+            <button
+              key={book.chapter_number}
+              type="button"
+              className={`pancatantra-book-chip ${isActive ? 'active' : ''}`}
+              onClick={() => setActiveChapter(book.chapter_number)}
+              aria-pressed={isActive}
+            >
+              <span className="pancatantra-book-devanagari">
+                {book.devanagari}
+              </span>
+              <span className="pancatantra-book-english">{book.english}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {error && <div className="pancatantra-error">{error}</div>}
+
+      {isLoading ? (
+        <div className="pancatantra-status">Loading book…</div>
+      ) : intervals.length === 0 ? (
+        <div className="pancatantra-status">No intervals for this book.</div>
+      ) : (
+        <div className="pancatantra-interval-list">
+          {intervals.map((interval, idx) => (
+            <IntervalCard
+              key={interval._id || idx}
+              interval={interval}
+              items={itemsByKey}
+              isExpanded={expandedIdx === idx}
+              onToggle={() => setExpandedIdx(expandedIdx === idx ? null : idx)}
+            />
+          ))}
+        </div>
+      )}
+
+      <DictionaryLookup apiUrl={API_BASE_URL} />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 package http
 
 import (
+	"chaatra/persistence"
 	"chaatra/service"
 	"encoding/json"
 	"fmt"
@@ -9,6 +10,37 @@ import (
 	"strconv"
 	"strings"
 )
+
+// PancatantraIntervalsHandler returns the intervals for a chapter,
+// sorted by interval_index. Each interval carries its summary, themes,
+// item_ids, labels and item-count metadata.
+func PancatantraIntervalsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	chapterStr := r.URL.Query().Get("chapter")
+	if chapterStr == "" {
+		http.Error(w, "chapter query parameter is required", http.StatusBadRequest)
+		return
+	}
+	chapter, err := strconv.Atoi(chapterStr)
+	if err != nil {
+		http.Error(w, "chapter must be an integer", http.StatusBadRequest)
+		return
+	}
+
+	intervals, err := persistence.GetPancatantraIntervals(chapter)
+	if err != nil {
+		log.Printf("Error getting Pancatantra intervals for chapter %d: %v", chapter, err)
+		http.Error(w, fmt.Sprintf("Failed to get intervals: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(intervals)
+}
 
 // PancatantraChaptersHandler returns all chapter metadata
 func PancatantraChaptersHandler(w http.ResponseWriter, r *http.Request) {

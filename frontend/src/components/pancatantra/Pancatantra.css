@@ -1,531 +1,401 @@
-/* Search icon button in controls */
-.pancatantra-search-icon-button {
-  background: #fff;
-  border: 2px solid #d7ccc8;
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+/* Pancatantra reader — book chip strip, accordion of story intervals,
+   interval body renders items with label-coded visual styles so the
+   narrative flow (invocation → narrative → generalization → transition)
+   is visible at a glance. Pada-chheda tile classes are imported from
+   Hitopadesa.css. */
+
+.pancatantra-page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 28px 24px 80px;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Book chip strip — 6 chips, allow wrap on narrow widths. */
+.pancatantra-book-chips {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.pancatantra-book-chip {
+  flex: 0 1 auto;
+  display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-width: 48px;
-  height: 42px;
-}
-
-.pancatantra-search-icon-button:hover {
-  border-color: #007bff;
-  background-color: #f5f5f5;
-}
-
-.pancatantra-search-icon-button:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-/* Modal overlay */
-.pancatantra-search-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-/* Modal box */
-.pancatantra-search-modal {
-  background: white;
+  gap: 2px;
+  padding: 8px 14px;
+  border: 1px solid #d0d7de;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 900px;
+  background: #ffffff;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+  color: #333;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+    transform 0.1s ease;
+  min-width: 0;
+}
+
+.pancatantra-book-chip:hover {
+  border-color: #b08968;
+  background: #fff8f0;
+}
+
+.pancatantra-book-chip:active {
+  transform: translateY(1px);
+}
+
+.pancatantra-book-chip.active {
+  background: linear-gradient(180deg, #8c5a36 0%, #6b3f1f 100%);
+  border-color: #6b3f1f;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(107, 63, 31, 0.25);
+}
+
+.pancatantra-book-devanagari {
+  font-family: 'Tiro Devanagari Sanskrit', 'Noto Serif Devanagari', serif;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.pancatantra-book-english {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0.78;
+}
+
+/* Interval cards */
+.pancatantra-interval-list {
   display: flex;
   flex-direction: column;
+  gap: 14px;
+}
+
+.pancatantra-interval {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
   overflow: hidden;
-  transition: max-height 0.3s ease;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-/* Modal without results - compact size */
-.pancatantra-search-modal:not(.has-results) {
-  max-height: fit-content;
+.pancatantra-interval.expanded {
+  border-color: #b08968;
+  box-shadow: 0 4px 16px rgba(140, 90, 54, 0.1);
 }
 
-/* Modal with results - expand to show results */
-.pancatantra-search-modal.has-results {
-  max-height: 90vh;
-}
-
-/* Modal header */
-.pancatantra-search-modal-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
-  background: #fff;
-}
-
-.pancatantra-search-input-container {
-  flex: 1;
-  position: relative;
-}
-
-.pancatantra-search-input {
+.pancatantra-interval-header {
   width: 100%;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  outline: none;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
-}
-
-.pancatantra-search-input:focus {
-  border-color: #007bff;
-}
-
-.pancatantra-search-loading {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #007bff;
-  font-size: 0.9rem;
-}
-
-.pancatantra-search-close-button {
-  background: none;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas:
+    'meta meta chevron'
+    'summary summary summary'
+    'themes themes themes';
+  gap: 10px 14px;
+  padding: 16px 20px;
+  background: transparent;
   border: none;
-  font-size: 2rem;
-  color: #666;
   cursor: pointer;
-  padding: 0;
-  width: 40px;
-  height: 40px;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.pancatantra-interval-header:hover {
+  background: #fff8f0;
+}
+
+.pancatantra-interval-meta {
+  grid-area: meta;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  transition: background-color 0.2s, color 0.2s;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.pancatantra-interval-index {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #8c5a36;
+  font-family: 'Tiro Devanagari Sanskrit', 'Noto Serif Devanagari', serif;
+  min-width: 28px;
   line-height: 1;
 }
 
-.pancatantra-search-close-button:hover {
-  background-color: #f5f5f5;
-  color: #333;
-}
-
-.pancatantra-search-close-button:focus {
-  outline: none;
-  background-color: #f5f5f5;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
-}
-
-/* Error message */
-.pancatantra-search-error {
-  color: #c62828;
+.pancatantra-interval-count {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #94a3b8;
   font-weight: 600;
-  padding: 0.75rem 1.5rem;
-  background-color: #ffebee;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-/* Modal content area */
-.pancatantra-search-modal-content {
-  overflow-y: auto;
-  padding: 0;
-  min-height: 0;
-}
-
-/* When modal has results, make content area flexible */
-.pancatantra-search-modal.has-results .pancatantra-search-modal-content {
-  flex: 1;
-}
-
-/* Search results */
-.pancatantra-search-results {
-  display: flex;
-  flex-direction: column;
-}
-
-.pancatantra-search-result-item {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #f0f0f0;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.pancatantra-search-result-item:last-child {
-  border-bottom: none;
-}
-
-.pancatantra-search-result-item:hover,
-.pancatantra-search-result-item.selected {
-  background-color: #f5f5f5;
-}
-
-.pancatantra-search-item-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.pancatantra-search-corpus {
-  font-weight: 600;
-  color: #007bff;
-  text-transform: capitalize;
-  font-size: 0.9rem;
-}
-
-.pancatantra-search-item-id {
-  color: #007bff;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.pancatantra-search-chapter {
-  color: #0056b3;
-  font-size: 0.85rem;
-}
-
-.pancatantra-search-score {
-  margin-left: auto;
-  color: #4caf50;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.pancatantra-search-devanagari {
-  font-size: 1.1rem;
-  color: #212121;
-  margin-bottom: 0.4rem;
-  line-height: 1.6;
-}
-
-.pancatantra-search-iast {
-  font-style: italic;
-  color: #0056b3;
-  margin-bottom: 0.5rem;
-  font-size: 0.95rem;
-}
-
-.pancatantra-search-translation {
-  color: #424242;
-  line-height: 1.5;
-  margin-top: 0.5rem;
-}
-
-/* Empty state */
-.pancatantra-search-empty {
-  text-align: center;
-  padding: 3rem 1.5rem;
-  color: #757575;
-}
-
-.pancatantra-search-empty p {
-  margin: 0;
-}
-
-/* Themes section */
-.pancatantra-search-themes {
-  padding: 1.5rem;
-}
-
-.pancatantra-search-themes-header {
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.pancatantra-search-themes-header h3 {
-  margin: 0 0 0.5rem 0;
-  color: #007bff;
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-.pancatantra-search-themes-header p {
-  margin: 0;
-  color: #757575;
-  font-size: 0.9rem;
-}
-
-.pancatantra-search-themes-loading {
-  text-align: center;
-  padding: 2rem;
-  color: #757575;
-}
-
-.pancatantra-search-themes-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  justify-content: center;
-}
-
-.pancatantra-search-theme-item {
-  background: #fff;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.95rem;
-}
-
-.pancatantra-search-theme-item:hover {
-  border-color: #007bff;
-  background-color: #f0f8ff;
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
-}
-
-.pancatantra-search-theme-item:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-.pancatantra-search-theme-name {
-  color: #007bff;
-  font-weight: 500;
-}
-
-.pancatantra-search-theme-count {
-  color: #007bff;
-  font-size: 0.85rem;
-  background: #f0f8ff;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  .pancatantra-search-modal {
-    max-width: 100%;
-    max-height: 100vh;
-    border-radius: 0;
-  }
-
-  .pancatantra-search-modal-overlay {
-    padding: 0;
-  }
-
-  .pancatantra-search-modal-header {
-    padding: 1rem;
-  }
-
-  .pancatantra-search-item-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .pancatantra-search-score {
-    margin-left: 0;
-  }
-
-  .pancatantra-search-result-item {
-    padding: 1rem;
-  }
-}
-
-/* Verse Context View */
-.pancatantra-verse-context {
-  padding: 1.5rem;
-}
-
-.pancatantra-context-loading {
-  text-align: center;
-  padding: 3rem;
-  color: #757575;
-}
-
-.pancatantra-back-button {
-  background: #fff;
-  border: 2px solid #007bff;
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: 1.5rem;
-  color: #007bff;
-  font-weight: 500;
-}
-
-.pancatantra-back-button:hover {
-  border-color: #0056b3;
-  background-color: #f0f8ff;
-  color: #0056b3;
-}
-
-.pancatantra-back-button:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
 .pancatantra-interval-summary {
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.pancatantra-interval-summary h3 {
-  margin: 0 0 0.75rem 0;
-  color: #007bff;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.pancatantra-interval-summary p {
+  grid-area: summary;
   margin: 0;
-  color: #424242;
-  line-height: 1.6;
+  font-size: 0.94rem;
+  line-height: 1.55;
+  color: #334155;
 }
 
 .pancatantra-interval-themes {
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.pancatantra-interval-themes h3 {
-  margin: 0 0 0.75rem 0;
-  color: #007bff;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.pancatantra-no-interval-message {
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background: #fff3cd;
-  border: 1px solid #ffc107;
-  border-radius: 8px;
-  color: #856404;
-}
-
-.pancatantra-no-interval-message p {
-  margin: 0;
-}
-
-.pancatantra-themes-list {
+  grid-area: themes;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 6px;
 }
 
 .pancatantra-theme-tag {
-  background: #f0f8ff;
-  border: 1px solid #007bff;
-  border-radius: 6px;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.85rem;
-  color: #007bff;
-  font-weight: 500;
+  display: inline-block;
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: #fdf6ec;
+  color: #8c5a36;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid #f1e4cd;
 }
 
-.pancatantra-context-verses {
+.pancatantra-interval-chevron {
+  grid-area: chevron;
+  color: #94a3b8;
+  font-size: 1.1rem;
+  align-self: center;
+}
+
+.pancatantra-interval.expanded .pancatantra-interval-chevron {
+  color: #8c5a36;
+}
+
+/* Interval body — the actual reading area */
+.pancatantra-interval-body {
+  padding: 8px 20px 24px;
+  border-top: 1px solid #f1e4cd;
+  background: #fffdf9;
+}
+
+/* Items: label-coded visual rhythm */
+.pancatantra-item {
+  position: relative;
+  padding: 14px 16px 14px 92px;
+  margin: 12px 0;
+  border-radius: 10px;
+}
+
+.pancatantra-item-meta {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 68px;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2px;
+  font-family: 'Roboto', sans-serif;
 }
 
-.pancatantra-context-verses h3 {
-  margin: 0 0 1rem 0;
-  color: #007bff;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.pancatantra-context-verse {
-  background: #fff;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 1rem 1.25rem;
-  transition: all 0.2s;
-}
-
-.pancatantra-context-verse.target {
-  border-color: #007bff;
-  background: #f0f8ff;
-  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
-}
-
-.pancatantra-context-verse-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.pancatantra-context-verse-label {
-  font-weight: 600;
-  color: #007bff;
-  font-size: 0.9rem;
+.pancatantra-item-label {
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: 700;
+  color: #b08968;
+  line-height: 1.3;
 }
 
-.pancatantra-context-verse.target .pancatantra-context-verse-label {
-  color: #0056b3;
+.pancatantra-item-number {
+  font-size: 0.7rem;
+  color: #cbd5e1;
+  font-family: 'Courier New', monospace;
 }
 
-.pancatantra-context-verse-number {
-  color: #007bff;
-  font-size: 0.9rem;
-  font-weight: 500;
+.pancatantra-devanagari {
+  font-family: 'Tiro Devanagari Sanskrit', 'Noto Serif Devanagari', serif;
+  font-size: 1.2rem;
+  line-height: 2;
+  color: #1f2937;
+  font-weight: 400;
 }
 
-.pancatantra-context-devanagari {
-  font-size: 1.1rem;
-  color: #212121;
-  margin-bottom: 0.5rem;
-  line-height: 1.6;
+.pancatantra-devanagari.is-prose {
+  font-size: 1.05rem;
+  line-height: 1.85;
+  text-align: justify;
 }
 
-.pancatantra-context-iast {
-  font-style: italic;
-  color: #0056b3;
-  margin-bottom: 0.75rem;
+.pancatantra-devanagari.is-verse {
+  text-align: center;
+}
+
+.pancatantra-line {
+  margin-bottom: 2px;
+}
+
+.pancatantra-translation {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-left: 3px solid #cdb38a;
+  border-radius: 6px;
   font-size: 0.95rem;
+  line-height: 1.6;
+  color: #334155;
 }
 
-.pancatantra-context-translation {
-  color: #424242;
-  line-height: 1.5;
+.pancatantra-pada {
+  margin-top: 14px;
+  background: #fffdf9;
 }
 
-/* Responsive design for context view */
+/* Label-coded backgrounds */
+.pancatantra-item.label-invocation {
+  background: linear-gradient(135deg, #fff1e0 0%, #ffe7c8 100%);
+  border: 1px solid #f5d8a8;
+}
+.pancatantra-item.label-invocation .pancatantra-devanagari {
+  font-style: italic;
+  color: #6b3f1f;
+}
+.pancatantra-item.label-invocation .pancatantra-item-label {
+  color: #b8651f;
+}
+
+.pancatantra-item.label-generalization {
+  background: #f8f5ec;
+  border: 1px solid #e7dcc2;
+  border-left: 4px solid #c9a060;
+}
+.pancatantra-item.label-generalization .pancatantra-item-label {
+  color: #8a6520;
+}
+
+.pancatantra-item.label-narrative {
+  background: transparent;
+  border: 1px solid transparent;
+}
+.pancatantra-item.label-narrative .pancatantra-item-label {
+  color: #94a3b8;
+}
+
+.pancatantra-item.label-transition {
+  background: transparent;
+  border: 1px dashed #e2e8f0;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.pancatantra-item.label-transition .pancatantra-devanagari {
+  font-size: 0.92rem;
+  color: #64748b;
+  font-style: italic;
+}
+.pancatantra-item.label-transition .pancatantra-translation {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+.pancatantra-item.label-transition .pancatantra-item-label {
+  color: #cbd5e1;
+}
+
+.pancatantra-item-missing {
+  color: #cbd5e1;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+/* Status / error */
+.pancatantra-status {
+  padding: 40px 20px;
+  text-align: center;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.pancatantra-error {
+  padding: 12px 16px;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+/* Search icon button (kept from the previous design in case other
+   pieces of the app reach for it) */
+.pancatantra-search-icon-button {
+  background: #fff;
+  border: 1px solid #d0d7de;
+  border-radius: 999px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+}
+
+.pancatantra-search-icon-button:hover {
+  background: #fff8f0;
+  border-color: #b08968;
+}
+
+/* Mobile tweaks */
 @media (max-width: 768px) {
-  .pancatantra-verse-context {
-    padding: 1rem;
+  .pancatantra-page {
+    padding: 16px 12px 100px;
   }
 
-  .pancatantra-interval-summary,
-  .pancatantra-interval-themes {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
+  .pancatantra-book-chip {
+    padding: 7px 11px;
   }
 
-  .pancatantra-context-verse {
-    padding: 0.75rem 1rem;
+  .pancatantra-book-devanagari {
+    font-size: 0.92rem;
+  }
+
+  .pancatantra-book-english {
+    font-size: 0.66rem;
+  }
+
+  .pancatantra-interval-header {
+    padding: 14px 16px;
+  }
+
+  .pancatantra-interval-body {
+    padding: 4px 14px 18px;
+  }
+
+  .pancatantra-item {
+    padding: 12px 12px 12px 68px;
+  }
+
+  .pancatantra-item-meta {
+    top: 12px;
+    left: 10px;
+    width: 50px;
+  }
+
+  .pancatantra-item-label {
+    font-size: 0.6rem;
+  }
+
+  .pancatantra-devanagari {
+    font-size: 1.1rem;
+    line-height: 1.85;
+  }
+
+  .pancatantra-devanagari.is-prose {
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  .pancatantra-translation {
+    font-size: 0.9rem;
+    padding: 10px 12px;
   }
 }
