@@ -38,8 +38,8 @@
 }
 
 .pancatantra-book-chip:hover {
-  border-color: #b08968;
-  background: #fff8f0;
+  border-color: #1976d2;
+  background: #f0f7ff;
 }
 
 .pancatantra-book-chip:active {
@@ -47,10 +47,10 @@
 }
 
 .pancatantra-book-chip.active {
-  background: linear-gradient(180deg, #8c5a36 0%, #6b3f1f 100%);
-  border-color: #6b3f1f;
+  background: linear-gradient(180deg, #1e88e5 0%, #1565c0 100%);
+  border-color: #1565c0;
   color: #ffffff;
-  box-shadow: 0 2px 6px rgba(107, 63, 31, 0.25);
+  box-shadow: 0 2px 6px rgba(21, 101, 192, 0.25);
 }
 
 .pancatantra-book-devanagari {
@@ -84,8 +84,8 @@
 }
 
 .pancatantra-interval.expanded {
-  border-color: #b08968;
-  box-shadow: 0 4px 16px rgba(140, 90, 54, 0.1);
+  border-color: #90caf9;
+  box-shadow: 0 4px 16px rgba(25, 118, 210, 0.12);
 }
 
 .pancatantra-interval-header {
@@ -108,7 +108,7 @@
 }
 
 .pancatantra-interval-header:hover {
-  background: #fff8f0;
+  background: #f7fbff;
 }
 
 .pancatantra-interval-meta {
@@ -121,7 +121,7 @@
 .pancatantra-interval-index {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #8c5a36;
+  color: #1565c0;
   font-family: 'Tiro Devanagari Sanskrit', 'Noto Serif Devanagari', serif;
   min-width: 28px;
   line-height: 1;
@@ -154,12 +154,12 @@
   display: inline-block;
   padding: 3px 11px;
   border-radius: 999px;
-  background: #fdf6ec;
-  color: #8c5a36;
+  background: #e3f2fd;
+  color: #1565c0;
   font-size: 0.74rem;
   font-weight: 600;
   letter-spacing: 0.02em;
-  border: 1px solid #f1e4cd;
+  border: 1px solid #bbdefb;
 }
 
 .pancatantra-interval-chevron {
@@ -170,14 +170,14 @@
 }
 
 .pancatantra-interval.expanded .pancatantra-interval-chevron {
-  color: #8c5a36;
+  color: #1976d2;
 }
 
 /* Interval body — the actual reading area */
 .pancatantra-interval-body {
   padding: 8px 20px 24px;
-  border-top: 1px solid #f1e4cd;
-  background: #fffdf9;
+  border-top: 1px solid #e3f2fd;
+  background: #f7fbff;
 }
 
 /* Items: label-coded visual rhythm */
@@ -204,7 +204,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 700;
-  color: #b08968;
+  color: #1976d2;
   line-height: 1.3;
 }
 
@@ -240,7 +240,7 @@
   margin-top: 12px;
   padding: 12px 16px;
   background: #ffffff;
-  border-left: 3px solid #cdb38a;
+  border-left: 3px solid #1976d2;
   border-radius: 6px;
   font-size: 0.95rem;
   line-height: 1.6;
@@ -249,29 +249,31 @@
 
 .pancatantra-pada {
   margin-top: 14px;
-  background: #fffdf9;
+  background: #ffffff;
 }
 
-/* Label-coded backgrounds */
+/* Label-coded backgrounds — all in the same blue family for visual
+   continuity with the Gita / Subhashita pages, but each label gets a
+   distinct treatment so narrative rhythm is still readable. */
 .pancatantra-item.label-invocation {
-  background: linear-gradient(135deg, #fff1e0 0%, #ffe7c8 100%);
-  border: 1px solid #f5d8a8;
+  background: linear-gradient(135deg, #eff6fd 0%, #dceaf8 100%);
+  border: 1px solid #c4ddf2;
 }
 .pancatantra-item.label-invocation .pancatantra-devanagari {
   font-style: italic;
-  color: #6b3f1f;
+  color: #0d3b66;
 }
 .pancatantra-item.label-invocation .pancatantra-item-label {
-  color: #b8651f;
+  color: #1565c0;
 }
 
 .pancatantra-item.label-generalization {
-  background: #f8f5ec;
-  border: 1px solid #e7dcc2;
-  border-left: 4px solid #c9a060;
+  background: #f4f9fe;
+  border: 1px solid #d5e6f7;
+  border-left: 4px solid #1976d2;
 }
 .pancatantra-item.label-generalization .pancatantra-item-label {
-  color: #8a6520;
+  color: #1565c0;
 }
 
 .pancatantra-item.label-narrative {
@@ -340,8 +342,8 @@
 }
 
 .pancatantra-search-icon-button:hover {
-  background: #fff8f0;
-  border-color: #b08968;
+  background: #f0f7ff;
+  border-color: #1976d2;
 }
 
 /* Mobile tweaks */
